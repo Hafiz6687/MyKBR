@@ -2747,8 +2747,37 @@ if (menuTindakanUrus) {
 
     document.getElementById('tajukHalamanAtas').innerHTML = 'Maklumat Kes Terperinci';
     document.getElementById('butangCetakHeader').style.display = 'none'; 
-// Render senarai perwakilan/kehadiran jika ada
+    // Render senarai perwakilan/kehadiran jika ada
     if (typeof renderSemuaJadualPerwakilan === 'function') renderSemuaJadualPerwakilan();
+
+    // =========================================================================
+    // KAWALAN PINTAR KAD PENETAPAN TARIKH SEBUTAN KES
+    // =========================================================================
+    // Sembunyikan kad secara lalai jika kes sudah ada tarikh sebutan atau ada sejarah Notis/Saman
+    let adaSebutanSaman = false;
+    
+    // 1. Semak jika input tarikh sebutan sudah pernah diisi (disimpan dalam dataSistem)
+    if (dataSistem['mk_tarikh_sebutan'] && dataSistem['mk_tarikh_sebutan'] !== '') {
+        adaSebutanSaman = true;
+    }
+    
+    // 2. Semak jika ada rekod cetakan notis sebutan atau saman di dalam sejarah tindakan
+    if (kes.sejarahTindakan && kes.sejarahTindakan.some(s => s.tindakan && (s.tindakan.includes("Sebutan") || s.tindakan.includes("Saman")))) {
+        adaSebutanSaman = true;
+    }
+
+    // Laksanakan arahan papar atau sembunyi
+    const kadSebutanKes = document.getElementById('kad_sebutan_kes');
+    if (kadSebutanKes) {
+        if (adaSebutanSaman) {
+            kadSebutanKes.style.display = 'none';
+        } else {
+            kadSebutanKes.style.display = 'block';
+        }
+    }
+    
+    // Auto-scroll ke atas skrin untuk kekemasan UI
+    window.scrollTo(0, 0);
 }
 
 
