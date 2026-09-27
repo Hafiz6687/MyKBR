@@ -3234,6 +3234,8 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     let tajukDefendan = '';
     let isiPengadu = '';
     let isiDefendan = '';
+    let isiPeguamPengadu = null;
+    let isiPeguamDefendan = null;
 
     let tarikhMasaBaruGabung = formatTarikhMasaLengkap(tarikhRaw, masaRaw);
 
@@ -3251,11 +3253,26 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
         `;
 
+        // KHAS UNTUK PEGUAM PENGADU (Perkara 3 ditukar, Perkara 4 dibuang)
+        isiPeguamPengadu = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+            ${p2Pengadu}
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta mengarahkan anak guam tuan hadir di pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong>. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+        `;
+
         let p2Defendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong>.</div>`;
         
         isiDefendan = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
             ${p2Defendan}
+        `;
+
+        // KHAS UNTUK PEGUAM DEFENDAN (Perkara 2 ditukar)
+        let p2PeguamDefendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan/anak guam tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong>.</div>`;
+        
+        isiPeguamDefendan = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+            ${p2PeguamDefendan}
         `;
 
     } else if (kunci === 'sebutan_semula') {
@@ -3641,7 +3658,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 <div style="margin-bottom: 15px;">Tuan,</div>
                 ${tajukPengadu}
                 <hr class="notis-garis-tajuk">
-                ${isiPengadu}
+                ${isiPeguamPengadu || isiPengadu}
                 ${templateFooterHTML}
             </div>
         </div>
@@ -3661,7 +3678,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 <div style="text-align: left; font-weight: bold; font-size: 9pt; margin-bottom: 15px; font-style: italic; color: #475569;">
                     *Salinan untuk Peguamcara Defendan:<br><span style="text-transform: uppercase;">${peguamDefendanHTML}</span>
                 </div>
-                ${isiDefendan}
+                ${isiPeguamDefendan || isiDefendan}
             </div>
             `;
         }
@@ -3691,7 +3708,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                     <div style="margin-bottom: 15px;">Tuan,</div>
                     ${tajukDefendan}
                     <hr class="notis-garis-tajuk">
-                    ${isiDefendan}
+                    ${isiPeguamDefendan || isiDefendan}
                     ${templateFooterHTML}
                 </div>
             </div>
