@@ -7879,20 +7879,36 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     `;
 
     // =====================================================================
-    // EKSTRAK MAKLUMAT PEGUAM PENGADU (JIKA ADA)
+    // EKSTRAK MAKLUMAT WAKIL/PEGUAM/KESATUAN PENGADU (JIKA ADA)
     // =====================================================================
-    let peguamPengaduHTML = '';
+    let wakilPengaduHTML = '';
+    let labelWakilPengadu = '';
+    let labelAnakGuam = 'anak guam'; // Default
+
     if (kes.senaraiPerwakilan) {
-        const peguamP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
-        if (peguamP) {
-            peguamPengaduHTML = `${peguamP.firma.toUpperCase()}<br>${peguamP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        // Cari mana-mana wakil yang didaftarkan (Peguam ATAU Kesatuan)
+        const wakilP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam' || p.kategori === 'Kesatuan');
+        if (wakilP) {
+            wakilPengaduHTML = `${wakilP.firma.toUpperCase()}<br>${wakilP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+            
+            // Logik pertukaran panggilan mengikut kategori perwakilan
+            if (wakilP.kategori === 'Peguam') {
+                labelWakilPengadu = '(Peguamcara bagi Pengadu)';
+                labelAnakGuam = 'anak guam';
+            } else if (wakilP.kategori === 'Kesatuan') {
+                labelWakilPengadu = '(Kesatuan bagi Pengadu)';
+                labelAnakGuam = 'ahli kesatuan';
+            } else {
+                labelWakilPengadu = '(Wakil bagi Pengadu)';
+                labelAnakGuam = 'pihak pengadu';
+            }
         }
     }
 
     let htmlNotisPeguamPengadu = '';
-    if (peguamPengaduHTML !== '') {
+    if (wakilPengaduHTML !== '') {
         htmlNotisPeguamPengadu = `
-        <!-- MUKA SURAT 3: NOTIS MAKLUMAN PEGUAM PENGADU -->
+        <!-- MUKA SURAT 3: NOTIS MAKLUMAN WAKIL PENGADU -->
         <div class="kumpulan-pengadu">
             <div class="kertas-notis" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
                 ${templateHeaderHTML}
@@ -7904,8 +7920,8 @@ function bukaPreviewSamanA(dataSimpanan = null) {
                     </div>
 
                     <div class="notis-alamat">
-                        <strong style="text-transform: uppercase;">${peguamPengaduHTML}</strong><br>
-                        <span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Pengadu)</span>
+                        <strong style="text-transform: uppercase;">${wakilPengaduHTML}</strong><br>
+                        <span style="font-size: 0.9em; font-style: italic; font-weight: bold;">${labelWakilPengadu}</span>
                     </div>
 
                     <div style="margin-bottom: 15px;">Tuan,</div>
@@ -7921,7 +7937,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
                     <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
 
                     <div class="notis-isi" style="text-align: justify;">
-                        2.<span class="jarak-tab"></span>Sebagaimana yang tuan maklum, sebutan kes ditetapkan pada <strong>${tarikhMasaAsalGabung}</strong> namun defendan tidak hadir. Oleh itu, kes ini ditetapkan untuk sebutan semula pada <strong>${tarikhMasaBaruGabung}</strong> dengan saman ke atas defendan akan dikeluarkan. Tuan diminta mengarahkan anak guam tuan hadir pada ketetapan tersebut dengan membawa bukti-bukti (3 salinan) mengenai tuntutan. Sila ambil perhatian, kes akan dibatalkan sekiranya anak guam tuan gagal hadir.
+                        2.<span class="jarak-tab"></span>Sebagaimana yang tuan maklum, sebutan kes ditetapkan pada <strong>${tarikhMasaAsalGabung}</strong> namun defendan tidak hadir. Oleh itu, kes ini ditetapkan untuk sebutan semula pada <strong>${tarikhMasaBaruGabung}</strong> dengan saman ke atas defendan akan dikeluarkan. Tuan diminta mengarahkan ${labelAnakGuam} tuan hadir pada ketetapan tersebut dengan membawa bukti-bukti (3 salinan) mengenai tuntutan. Sila ambil perhatian, kes akan dibatalkan sekiranya ${labelAnakGuam} tuan gagal hadir.
                     </div>
 
                     <div class="notis-isi" style="text-align: justify;">
