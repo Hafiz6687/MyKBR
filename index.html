@@ -7878,6 +7878,65 @@ function bukaPreviewSamanA(dataSimpanan = null) {
         <div class="notis-footer-line"></div>
     `;
 
+    // =====================================================================
+    // EKSTRAK MAKLUMAT PEGUAM PENGADU (JIKA ADA)
+    // =====================================================================
+    let peguamPengaduHTML = '';
+    if (kes.senaraiPerwakilan) {
+        const peguamP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+        if (peguamP) {
+            peguamPengaduHTML = `${peguamP.firma.toUpperCase()}<br>${peguamP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        }
+    }
+
+    let htmlNotisPeguamPengadu = '';
+    if (peguamPengaduHTML !== '') {
+        htmlNotisPeguamPengadu = `
+        <!-- MUKA SURAT 3: NOTIS MAKLUMAN PEGUAM PENGADU -->
+        <div class="kumpulan-pengadu">
+            <div class="kertas-notis" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
+                ${templateHeaderHTML}
+
+                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
+                    <div class="notis-rujukan">
+                        Rujukan Kami : ${noKes}<br>
+                        Tarikh : ${tarikhSamanDD} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}
+                    </div>
+
+                    <div class="notis-alamat">
+                        <strong style="text-transform: uppercase;">${peguamPengaduHTML}</strong><br>
+                        <span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Pengadu)</span>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">Tuan,</div>
+
+                    <div class="notis-tajuk">
+                        KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>
+                        ANTARA PENGADU : ${namaP}<br>
+                        TERHADAP DEFENDAN : ${namaD}<br>
+                        PERKARA: NOTIS SEBUTAN KES (SAMAN)
+                    </div>
+                    <hr class="notis-garis-tajuk">
+
+                    <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+
+                    <div class="notis-isi" style="text-align: justify;">
+                        2.<span class="jarak-tab"></span>Sebagaimana yang tuan maklum, sebutan kes ditetapkan pada <strong>${tarikhMasaAsalGabung}</strong> namun defendan tidak hadir. Oleh itu, kes ini ditetapkan untuk sebutan semula pada <strong>${tarikhMasaBaruGabung}</strong> dengan saman ke atas defendan akan dikeluarkan. Tuan diminta mengarahkan anak guam tuan hadir pada ketetapan tersebut dengan membawa bukti-bukti (3 salinan) mengenai tuntutan. Sila ambil perhatian, kes akan dibatalkan sekiranya anak guam tuan gagal hadir.
+                    </div>
+
+                    <div class="notis-isi" style="text-align: justify;">
+                        3.<span class="jarak-tab"></span>Sekiranya saman gagal diserahkan, pihak tuan adalah dikehendaki mengemukakan alamat terkini defendan bagi tujuan serahan saman.
+                    </div>
+
+                    ${perengganWakilKuasaHTML}
+
+                    ${templateFooterHTML}
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
     const htmlSamanA = `
         <style>
             @media print { 
@@ -8011,6 +8070,8 @@ function bukaPreviewSamanA(dataSimpanan = null) {
                     ${templateFooterHTML}
                 </div>
             </div>
+            
+            ${htmlNotisPeguamPengadu}
         </div>
     `;
 
