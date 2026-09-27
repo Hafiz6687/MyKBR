@@ -3276,7 +3276,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         `;
 
     } else if (kunci === 'sebutan_semula') {
-        let sebabTeks = window.tempSebabSebutanSemula || "defendan gagal hadir";
+        let sebabTeks = window.tempSebabSebutanSemula || "defendan gagal hadir.";
 
         let tarikhMasaLamaGabung = "[Tarikh dan Masa Sebutan Terakhir]";
         const sejarah = kes.sejarahTindakan || [];
@@ -3306,6 +3306,12 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
             <div class="notis-isi">2.<span class="jarak-tab"></span>Sebagaimana yang tuan maklum, sebutan kes ditetapkan pada <strong>${tarikhMasaLamaGabung}</strong> namun <strong>${sebabTeks}</strong>. Oleh itu, kes ini ditetapkan untuk sebutan semula pada <strong>${tarikhMasaBaruGabung}</strong> bagi tujuan serahan saman ke atas defendan. Tuan adalah dikehendaki hadir pada ketetapan tersebut. Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir.</div>
             <div class="notis-isi">3.<span class="jarak-tab"></span>Sekiranya saman gagal diserahkan, tuan adalah dikehendaki mengemukakan alamat terkini defendan bagi tujuan serahan saman.</div>
+        `;
+
+        // KHAS UNTUK PEGUAM PENGADU (Perkara 3 dibuang)
+        isiPeguamPengadu = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Sebagaimana yang tuan maklum, sebutan kes ditetapkan pada <strong>${tarikhMasaLamaGabung}</strong> namun <strong>${sebabTeks}</strong>. Oleh itu, kes ini ditetapkan untuk sebutan semula pada <strong>${tarikhMasaBaruGabung}</strong> bagi tujuan serahan saman ke atas defendan.</div>
         `;
 
         let d_idStr = "(No. Pendaftaran/KP: ....................)";
