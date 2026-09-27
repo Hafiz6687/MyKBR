@@ -7910,7 +7910,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
         htmlNotisPeguamPengadu = `
         <!-- MUKA SURAT 3: NOTIS MAKLUMAN WAKIL PENGADU -->
         <div class="kumpulan-pengadu">
-            <div class="kertas-notis" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
+            <div class="kertas-notis" id="kertasNotisSamanPeguamPengadu" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
                 ${templateHeaderHTML}
 
                 <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
@@ -7973,8 +7973,8 @@ function bukaPreviewSamanA(dataSimpanan = null) {
             #kertasSamanA { padding: 1.5cm 2.5cm !important; }
             #kertasSamanA .notis-body-wrapper { padding: 0 !important; }
             
-            #kertasNotisSamanPengadu { padding: 1.5cm 1.27cm !important; }
-            #kertasNotisSamanPengadu .notis-body-wrapper { padding: 0 1.23cm !important; }
+            #kertasNotisSamanPengadu, #kertasNotisSamanPeguamPengadu { padding: 1.5cm 1.27cm !important; }
+            #kertasNotisSamanPengadu .notis-body-wrapper, #kertasNotisSamanPeguamPengadu .notis-body-wrapper { padding: 0 1.23cm !important; }
             
             .jarak-tab { display: inline-block; width: 30px; }
             .notis-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 15px; }
