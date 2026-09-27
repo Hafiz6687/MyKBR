@@ -11326,6 +11326,60 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
     const templateFooterHTML = `<div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div><div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div><div class="notis-sign" style="margin-bottom: 60px;">Saya yang menjalankan amanah,</div><div class="gambar-sign" style="position: absolute; z-index: 2; pointer-events: none; margin-top: -85px;"><img src="tandatangan.png" alt="Tandatangan" style="height: 110px; width: auto; mix-blend-mode: multiply; display: block;"></div><div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1;">${namaPegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span></div><div class="notis-footer-line"></div>`;
     
+    // EKSTRAK MAKLUMAT PEGUAM UNTUK S.K.
+    let peguamPengaduHTML = '';
+    if (kes.senaraiPerwakilan) {
+        const peguamP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+        if (peguamP) {
+            peguamPengaduHTML = `${peguamP.firma.toUpperCase()}<br>${peguamP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        }
+    }
+
+    let peguamDefendanHTML = '';
+    if (kes.senaraiPerwakilanDefendan) {
+        const peguamD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
+        if (peguamD) {
+            peguamDefendanHTML = `${peguamD.firma.toUpperCase()}<br>${peguamD.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        }
+    }
+
+    let skPeguamPengaduHTML = '';
+    if (peguamPengaduHTML !== '') {
+        skPeguamPengaduHTML = `
+            <div style="margin-top: 30px; page-break-inside: avoid;">
+                <table style="border: none; font-size: 10pt; width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: top; width: 40px; border: none; padding: 0;">s.k:</td>
+                        <td style="vertical-align: top; border: none; padding: 0; text-transform: uppercase;">
+                            <strong>${peguamPengaduHTML}</strong><br>
+                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">(Peguamcara bagi Pengadu)</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+    }
+
+    let skPeguamDefendanHTML = '';
+    if (peguamDefendanHTML !== '') {
+        skPeguamDefendanHTML = `
+            <div style="margin-top: 30px; page-break-inside: avoid;">
+                <table style="border: none; font-size: 10pt; width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: top; width: 40px; border: none; padding: 0;">s.k:</td>
+                        <td style="vertical-align: top; border: none; padding: 0; text-transform: uppercase;">
+                            <strong>${peguamDefendanHTML}</strong><br>
+                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">(Peguamcara bagi Defendan)</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+    }
+
+    const templateFooterHTML_Pengadu = templateFooterHTML.replace('<div class="notis-footer-line"></div>', skPeguamPengaduHTML + '<div class="notis-footer-line"></div>');
+    const templateFooterHTML_Defendan = templateFooterHTML.replace('<div class="notis-footer-line"></div>', skPeguamDefendanHTML + '<div class="notis-footer-line"></div>');
+
     // SUNTIKAN SEMULA BORANG C
     const htmlBorangC = `
         <div class="kertas-notis" id="kertasBorangCMou" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
@@ -11506,7 +11560,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                     <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
                     <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Dimaklumkan, kedua-dua pihak bersetuju untuk penyelesaian kes. Walau bagaimanapun, kes hanya dianggap selesai apabila Borang C, Perintah di bawah seksyen 69 Akta Kerja 1955 dipatuhi.</div>
                     <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Oleh itu, tuan adalah diminta mengemukakan bukti pematuhan ke pejabat ini secara serahan tangan atau email ke <strong>hafizabubakar@mohr.gov.my</strong> untuk perhatian <strong>En. Mohamad Hafiz bin Abu Bakar</strong>.</div>
-                    ${templateFooterHTML}
+                    ${templateFooterHTML_Pengadu}
                 </div>
             </div>
         </div>
@@ -11524,7 +11578,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                     <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
                     <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Dimaklumkan, kedua-dua pihak bersetuju untuk penyelesaian kes. Walau bagaimanapun, kes hanya dianggap selesai apabila Borang C, Perintah di bawah seksyen 69 Akta Kerja 1955 dipatuhi.</div>
                     <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Oleh itu, tuan adalah diminta mengemukakan bukti pematuhan ke pejabat ini secara serahan tangan atau email ke <strong>hafizabubakar@mohr.gov.my</strong> untuk perhatian <strong>En. Mohamad Hafiz bin Abu Bakar</strong>.</div>
-                    ${templateFooterHTML}
+                    ${templateFooterHTML_Defendan}
                 </div>
             </div>
         </div>
