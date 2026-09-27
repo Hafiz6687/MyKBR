@@ -3569,12 +3569,36 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS ${c.tajukSurat}</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS ${c.tajukSurat}</div>`;
         
+        let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+        let ptkBandar = "KLUANG";
+        let ptkNegeri = "JOHOR DARUL TAKZIM";
+        const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+        if (statsDiv) {
+            const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+            if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+            const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+            if (poskodLineIndex !== -1) {
+                ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                    ptkNegeri = lines[poskodLineIndex + 1].trim();
+                }
+            }
+        }
+        const lokasiPejabat = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+
         isiPengadu = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
             <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir di pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
             <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
             <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
         `;
+
+        if (kunci === 'sebutan') {
+            isiPeguamPengadu = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabat}</strong> tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+            `;
+        }
 
         isiDefendan = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
@@ -3583,6 +3607,14 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
             <div class="notis-isi">5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
         `;
+
+        if (kunci === 'sebutan') {
+            isiPeguamDefendan = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabat}</strong> tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+            `;
+        }
     }
 
     let mukaSuratDefendanHTML = '';
