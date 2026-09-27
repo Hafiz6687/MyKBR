@@ -10169,30 +10169,33 @@ if (isPanjang) {
     `;
 
 // M/S TERAKHIR: NOTIS PENGADU & DEFENDAN
+    // Pengadu dikembalikan kepada margin standard (15px)
     let kandunganNotisPengadu = `
-        <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan/puan.</div>
-        <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh Perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>fi praecipe</em></strong> <strong>rayuan sebanyak RM400.00 dibayar secara kiriman wang pos atau bank draf kepada Ketua Pengarah Tenaga Kerja Semenanjung Malaysia</strong>. Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah dianggap sebagai <strong>selesai</strong>.</div>`;
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan/puan.</div>
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh Perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>fi praecipe</em></strong> <strong>rayuan sebanyak RM400.00 dibayar secara kiriman wang pos atau bank draf kepada Ketua Pengarah Tenaga Kerja Semenanjung Malaysia</strong>. Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah dianggap sebagai <strong>selesai</strong>.</div>`;
         
+    // Defendan dikekalkan dengan margin mampat (8px) khas untuk jimat ruang
     let kandunganNotisDefendan = `
-        <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan/puan.</div>
-        <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Untuk makluman, sekiranya pengadu tidak berpuashati dengan perintah yang dibuat, pengadu boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh Perintah dikeluarkan. Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah dianggap sebagai <strong>selesai</strong>.</div>`;
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan/puan.</div>
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Untuk makluman, sekiranya pengadu tidak berpuashati dengan perintah yang dibuat, pengadu boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh Perintah dikeluarkan. Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah dianggap sebagai <strong>selesai</strong>.</div>`;
 
     if (jenisPerintah === 'Bayar') {
         let isiPerintahBayarPengadu = `
-                    <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan.</div>
-                    <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>Fi Praecipe</em></strong> <strong>rayuan sebanyak RM400.00 secara draf bank atau wang pos atas nama Ketua Pengarah Tenaga Kerja Semenanjung Malaysia ke pejabat ini</strong> untuk tindakan selanjutnya.</div>
-                    <div class="notis-isi" style="text-align: justify;">4.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah untuk pemantauan ke atas bayaran perintah atau tindakan penguatkuasaan perintah.</div>`;
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan.</div>
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>Fi Praecipe</em></strong> <strong>rayuan sebanyak RM400.00 secara draf bank atau wang pos atas nama Ketua Pengarah Tenaga Kerja Semenanjung Malaysia ke pejabat ini</strong> untuk tindakan selanjutnya.</div>
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">4.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan, kes adalah untuk pemantauan ke atas bayaran perintah atau tindakan penguatkuasaan perintah.</div>`;
         
         let isiPerintahBayarDefendan = `
-                    <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan.</div>
-                    <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>Fi Praecipe</em></strong> <strong>rayuan sebanyak RM400.00 secara draf bank atau wang pos atas nama Ketua Pengarah Tenaga Kerja Semenanjung Malaysia ke pejabat ini</strong> untuk tindakan selanjutnya.</div>
-                    <div class="notis-isi" style="text-align: justify;">4.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan dan tuan gagal mematuhi perintah, tindakan <u><strong>PENDAKWAAN</strong></u> ke atas pihak tuan akan dijalankan sebagaimana seksyen 69(4) Akta Kerja 1955 dan apabila disabitkan, boleh didenda tidak melebihi lima puluh ribu ringgit; dan juga, dalam hal kesalahan berterusan, boleh dikenakan denda harian tidak melebihi satu ribu ringgit setiap hari kesalahan itu berterusan selepas sabitan.</div>
-                    <div class="notis-isi" style="text-align: justify;">5.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan dan sekiranya bayaran perintah tersebut dibuat secara terus kepada pengadu, kes adalah dianggap sebagai <strong>selesai</strong> dengan syarat bukti bayaran hendaklah dikemukakan ke pejabat ini secara serahan tangan atau email ke <u><strong>hafizabubakar@mohr.gov.my</strong></u> untuk perhatian En. Mohamad Hafiz bin Abu Bakar.</div>`;
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">2.<span class="jarak-tab"></span>Bersama-sama ini disertakan perintah untuk makluman dan tindakan tuan.</div>
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Mana-mana pihak yang tidak berpuashati dengan perintah yang dibuat boleh mengemukakan rayuan ke Mahkamah Tinggi dalam tempoh <strong>14 hari</strong> dari tarikh perintah dikeluarkan dengan mengemukakan <strong>7 salinan notis rayuan (Borang 111, Aturan 55 Kaedah-kaedah Mahkamah 2012)</strong> dan <strong><em>Fi Praecipe</em></strong> <strong>rayuan sebanyak RM400.00 secara draf bank atau wang pos atas nama Ketua Pengarah Tenaga Kerja Semenanjung Malaysia ke pejabat ini</strong> untuk tindakan selanjutnya.</div>
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">4.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan dan tuan gagal mematuhi perintah, tindakan <u><strong>PENDAKWAAN</strong></u> ke atas pihak tuan akan dijalankan sebagaimana seksyen 69(4) Akta Kerja 1955 dan apabila disabitkan, boleh didenda tidak melebihi lima puluh ribu ringgit; dan juga, dalam hal kesalahan berterusan, boleh dikenakan denda harian tidak melebihi satu ribu ringgit setiap hari kesalahan itu berterusan selepas sabitan.</div>
+                    <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">5.<span class="jarak-tab"></span>Jika tiada apa-apa rayuan diterima dalam tempoh yang ditetapkan dan sekiranya bayaran perintah tersebut dibuat secara terus kepada pengadu, kes adalah dianggap sebagai <strong>selesai</strong> dengan syarat bukti bayaran hendaklah dikemukakan ke pejabat ini secara serahan tangan atau email ke <u><strong>hafizabubakar@mohr.gov.my</strong></u> untuk perhatian En. Mohamad Hafiz bin Abu Bakar.</div>`;
 
         kandunganNotisPengadu = isiPerintahBayarPengadu;
         kandunganNotisDefendan = isiPerintahBayarDefendan;
     }
 
+    // PENGADU: Dikembalikan kepada standard margin atas/bawah 1.5cm
     const htmlNotisP = `
         <div class="kumpulan-pengadu">
             <div class="kertas-notis" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
@@ -10211,9 +10214,10 @@ if (isPanjang) {
         </div>
     `;
 
+    // DEFENDAN: Dikekalkan mampat 1.2cm (hanya margin atas bawah dikurangkan, kiri kanan tetap standard)
     const htmlNotisD = `
         <div class="kumpulan-defendan">
-            <div class="kertas-notis" style="padding: 1.5cm 1.27cm !important; page-break-before: always;">
+            <div class="kertas-notis" id="kertasNotisDefendanBorangC" style="padding: 1.2cm 1.27cm !important; page-break-before: always;">
                 ${templateHeaderHTML}
                 <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                     <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
@@ -10236,8 +10240,12 @@ const htmlPenuh = `
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
+                /* GLOBAL DIKEMBALIKAN KE 1.5cm */
                 .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important;} 
                 .kertas-notis:last-child { page-break-after: auto; } 
+                
+                /* KHAS UNTUK NOTIS DEFENDAN: Dikekalkan mampat 1.2cm top & bottom untuk muat 1 helai */
+                #kertasNotisDefendanBorangC { padding: 1.2cm 1.27cm !important; }
                 
                 body.print-only-borangc .kumpulan-pengadu, body.print-only-borangc .kumpulan-defendan { display: none !important; }
                 body.print-only-pengadu #kertasBorangCUtama, body.print-only-pengadu #kertasBorangCMuka2, body.print-only-pengadu #kertasLampiranABorangC, body.print-only-pengadu .kumpulan-defendan { display: none !important; }
