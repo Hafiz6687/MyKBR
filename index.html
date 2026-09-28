@@ -1838,45 +1838,57 @@ Portal rasmi : jtksm.mohr.gov.my
 
             <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em;">3. Maklumat Serahan (Defendan) Terkini</h5>
             <p style="font-size: 0.8em; color: var(--text-muted); margin-top: -5px; margin-bottom: 15px;">*Sistem telah mengekstrak alamat berdaftar. Sila kemaskini jika alamat serahan terkini berbeza.</p>
-            
-            <div class="grid-memo">
-                <!-- ROW 1 -->
-                <div class="grid-memo-span3">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Nama Defendan</label>
-                    <input type="text" id="mk_nama_defendan_memo" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;">
-                </div>
-                <div class="grid-memo-span2">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Poskod</label>
-                    <input type="text" id="mk_poskod_def_memo" placeholder="50000" maxlength="5" onkeyup="cariPoskodAutomatik('mk_poskod_def_memo', 'mk_negeri_def_memo', 'mk_bandar_def_memo'); semakButangSamanMemo();" onblur="semakPoskod(this)" style="margin:0; height: 42px; box-sizing: border-box;">
-                </div>
 
-                <!-- ROW 2 -->
-                <div class="grid-memo-span3">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 1</label>
-                    <input type="text" id="mk_alamat1_def_memo" placeholder="Baris 1" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;">
+            <!-- CHECKBOX TOGGLE ALAMAT SERAHAN BERBEZA -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <input type="checkbox" id="alamatSerahanBerbeza_memo" onchange="toggleAlamatSerahanMemo()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
+                    <label for="alamatSerahanBerbeza_memo" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Alamat serahan (Defendan) berbeza dengan alamat berdaftar?</label>
                 </div>
-                <div class="grid-memo-span2">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Bandar</label>
-                    <input type="text" id="mk_bandar_def_memo" placeholder="Lengkapkan Poskod" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;" readonly>
-                </div>
+                <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*(tanda kotak di atas jika ingin masukkan alamat serahan yang baharu)</p>
+            </div>
 
-                <!-- ROW 3 -->
-                <div class="grid-memo-span3">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 2</label>
-                    <input type="text" id="mk_alamat2_def_memo" placeholder="Baris 2" oninput="this.value = this.value.toUpperCase();" style="margin:0; height: 42px; box-sizing: border-box;">
-                </div>
-                <div class="grid-memo-span2">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Negeri</label>
-                    <input type="text" id="mk_negeri_def_memo" placeholder="Lengkapkan Poskod" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;" readonly>
-                </div>
+            <!-- WRAPPER ALAMAT SERAHAN (Disembunyikan secara lalai) -->
+            <div id="ruanganAlamatSerahan_memo" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color);">
+                <div class="grid-memo">
+                    <!-- ROW 1 -->
+                    <div class="grid-memo-span3">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Nama Defendan</label>
+                        <input type="text" id="mk_nama_defendan_memo" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;">
+                    </div>
+                    <div class="grid-memo-span2">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Poskod</label>
+                        <input type="text" id="mk_poskod_def_memo" placeholder="50000" maxlength="5" onkeyup="cariPoskodAutomatik('mk_poskod_def_memo', 'mk_negeri_def_memo', 'mk_bandar_def_memo'); semakButangSamanMemo();" onblur="semakPoskod(this)" style="margin:0; height: 42px; box-sizing: border-box;">
+                    </div>
 
-                <!-- ROW 4 -->
-                <div class="grid-memo-span3">
-                    <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 3</label>
-                    <input type="text" id="mk_alamat3_def_memo" placeholder="Baris 3" oninput="this.value = this.value.toUpperCase();" style="margin:0; height: 42px; box-sizing: border-box;">
-                </div>
-                <div class="grid-memo-span2">
-                    <!-- RUANG KOSONG (Butang diturunkan ke Modal Actions) -->
+                    <!-- ROW 2 -->
+                    <div class="grid-memo-span3">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 1</label>
+                        <input type="text" id="mk_alamat1_def_memo" placeholder="Baris 1" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;">
+                    </div>
+                    <div class="grid-memo-span2">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Bandar</label>
+                        <input type="text" id="mk_bandar_def_memo" placeholder="Lengkapkan Poskod" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;" readonly>
+                    </div>
+
+                    <!-- ROW 3 -->
+                    <div class="grid-memo-span3">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 2</label>
+                        <input type="text" id="mk_alamat2_def_memo" placeholder="Baris 2" oninput="this.value = this.value.toUpperCase();" style="margin:0; height: 42px; box-sizing: border-box;">
+                    </div>
+                    <div class="grid-memo-span2">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Negeri</label>
+                        <input type="text" id="mk_negeri_def_memo" placeholder="Lengkapkan Poskod" oninput="this.value = this.value.toUpperCase(); semakButangSamanMemo();" style="margin:0; height: 42px; box-sizing: border-box;" readonly>
+                    </div>
+
+                    <!-- ROW 4 -->
+                    <div class="grid-memo-span3">
+                        <label class="info-label" style="display: block; margin-bottom: 4px;">Alamat Baris 3</label>
+                        <input type="text" id="mk_alamat3_def_memo" placeholder="Baris 3" oninput="this.value = this.value.toUpperCase();" style="margin:0; height: 42px; box-sizing: border-box;">
+                    </div>
+                    <div class="grid-memo-span2">
+                        <!-- RUANG KOSONG (Butang diturunkan ke Modal Actions) -->
+                    </div>
                 </div>
             </div>
         </div> <!-- TAMAT WRAPPER SCROLL -->
@@ -9171,16 +9183,22 @@ function janaSamanADariModal() {
         bukaPreviewSamanA();
     }
 }
-       // =========================================================================
+// =========================================================================
 // FUNGSI KAWALAN POP-UP SAMAN (MEMO LUAR KAWASAN)
 // =========================================================================
 function bukaModalSamanMemo() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
+    // Pastikan checkbox "Alamat serahan berbeza" ditutup secara lalai apabila pop-up ini baru dibuka
+    const cbAlamat = document.getElementById('alamatSerahanBerbeza_memo');
+    if (cbAlamat) {
+        cbAlamat.checked = false;
+        toggleAlamatSerahanMemo();
+    }
+
     // Reset check box penerima (kosongkan semua lalai)
     document.querySelectorAll('input[name="smm_penerima"]').forEach(cb => cb.checked = false);
-    
     // Tarik data check box yang telah disimpan ke dalam memori
     if (window.tempDataSamanMemo && window.tempDataSamanMemo.senaraiPenerima) {
         window.tempDataSamanMemo.senaraiPenerima.forEach(val => {
@@ -9191,7 +9209,36 @@ function bukaModalSamanMemo() {
 
     document.getElementById('modalSamanMemo').style.display = 'flex';
 }
-
+// FUNGSI TOGOL ALAMAT SERAHAN MEMO LUAR KAWASAN
+function toggleAlamatSerahanMemo() {
+    const isBerbeza = document.getElementById('alamatSerahanBerbeza_memo').checked;
+    const ruanganSerahan = document.getElementById('ruanganAlamatSerahan_memo');
+    
+    if (isBerbeza) {
+        ruanganSerahan.style.display = 'block';
+    } else {
+        ruanganSerahan.style.display = 'none';
+        
+        // Reset input fields secara "silent" bila kotak ditutup
+        if(document.getElementById('mk_nama_defendan_memo')) document.getElementById('mk_nama_defendan_memo').value = '';
+        if(document.getElementById('mk_poskod_def_memo')) document.getElementById('mk_poskod_def_memo').value = '';
+        if(document.getElementById('mk_alamat1_def_memo')) document.getElementById('mk_alamat1_def_memo').value = '';
+        
+        if(document.getElementById('mk_bandar_def_memo')) {
+            document.getElementById('mk_bandar_def_memo').value = '';
+            document.getElementById('mk_bandar_def_memo').placeholder = 'Lengkapkan Poskod';
+        }
+        if(document.getElementById('mk_alamat2_def_memo')) document.getElementById('mk_alamat2_def_memo').value = '';
+        if(document.getElementById('mk_negeri_def_memo')) {
+            document.getElementById('mk_negeri_def_memo').value = '';
+            document.getElementById('mk_negeri_def_memo').placeholder = 'Lengkapkan Poskod';
+        }
+        if(document.getElementById('mk_alamat3_def_memo')) document.getElementById('mk_alamat3_def_memo').value = '';
+    }
+    
+    // Check validasi format button jika fungsi semakButangSamanMemo wujud
+    if (typeof semakButangSamanMemo === 'function') semakButangSamanMemo();
+}
 function janaSamanMemoDariModal() {
     // 1. Simpan senarai penerima notis ke dalam object global "tempDataSamanMemo"
     const penerimaNode = document.querySelectorAll('input[name="smm_penerima"]:checked');
