@@ -8311,9 +8311,36 @@ function bukaModalSamanTampal() {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('st_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    // 4. Kosongkan Medan Alamat Penuh & Tarikh
-    document.getElementById('st_tarikh_hadir').value = '';
-    document.getElementById('st_masa_hadir').value = '';
+    // 4. EKSTRAK TARIKH & MASA DARI SAMAN BORANG A SEBELUMNYA
+    let tarikhHadirLama = '';
+    let masaHadirLama = '';
+
+    const sejarah = kes.sejarahTindakan || [];
+    // Cari rekod Saman (Borang A) yang paling terkini dalam sejarah kes
+    const rekodSaman = [...sejarah].reverse().find(s => s.butiran && s.butiran.includes("[DATA_SAMANA:"));
+    
+    if (rekodSaman) {
+        let dMatch = rekodSaman.butiran.match(/\[DATA_SAMANA:(.*?)\]/);
+        if (dMatch && dMatch[1]) {
+            try {
+                let memoSaman = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
+                if (memoSaman.tarikh) tarikhHadirLama = memoSaman.tarikh;
+                if (memoSaman.masa) masaHadirLama = memoSaman.masa;
+            } catch(e) { console.error("Ralat extract Saman A:", e); }
+        }
+    } else {
+        // Fallback jika saman belum dicetak tetapi data ada ditaip di kotak input pengurusan utama
+        let inputTarikh = document.getElementById('mk_tarikh_saman');
+        let inputMasa = document.getElementById('mk_masa_saman');
+        if (inputTarikh && inputTarikh.value) tarikhHadirLama = inputTarikh.value;
+        if (inputMasa && inputMasa.value) masaHadirLama = inputMasa.value;
+    }
+
+    // Masukkan tarikh dan masa asal, sedia untuk diedit secara manual jika perlu
+    document.getElementById('st_tarikh_hadir').value = tarikhHadirLama;
+    document.getElementById('st_masa_hadir').value = masaHadirLama;
+
+    // 5. Kosongkan / Tetapkan Medan Alamat Penuh Pejabat
     document.getElementById('st_alamat1').value = 'JALAN PEJABAT KERAJAAN';
     document.getElementById('st_alamat2').value = '';
     document.getElementById('st_alamat3').value = '';
