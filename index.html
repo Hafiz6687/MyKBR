@@ -787,6 +787,16 @@
                 <input type="text" id="seb_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
 
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
             <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Sebutan</h5>
             
@@ -3363,6 +3373,15 @@ function bukaModalSebutan() {
     document.getElementById('seb_tarikh_sebutan').value = oldTarikh;
     document.getElementById('seb_masa_sebutan').value = oldMasa;
 
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="seb_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSebutan && window.tempDataSebutan.senaraiPenerima) {
+        window.tempDataSebutan.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="seb_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
     document.getElementById('modalSebutan').style.display = 'flex';
 }
 
@@ -3385,11 +3404,13 @@ function janaSebutanDariModal() {
     const bdr = document.getElementById('seb_bandar').value.trim();
     const ngr = document.getElementById('seb_negeri').value.trim();
 
+    const penerimaNode = document.querySelectorAll('input[name="seb_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
     // Simpan data pop-up ke memori sementara
-    window.tempDataSebutan = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr };
+    window.tempDataSebutan = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     
     document.getElementById('modalSebutan').style.display = 'none';
-    bukaPreviewNotisGenerik('sebutan'); // Buka terus ke skrin preview
 }
 
 // =========================================================================
@@ -4165,18 +4186,48 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     }
 
     let peguamPengaduHTML = '';
+    let labelWakilPengadu = '(Peguamcara bagi Pengadu)';
+    
+    let senaraiPenerimaSebutan = [];
+    if (kunci === 'sebutan' && window.tempDataSebutan && window.tempDataSebutan.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataSebutan.senaraiPenerima;
+    } else if (kunci !== 'sebutan') {
+        // Jika bukan notis sebutan, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
+        senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
+    }
+
     if (kes.senaraiPerwakilan) {
-        const peguamP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
-        if (peguamP) {
-            peguamPengaduHTML = `${peguamP.firma.toUpperCase()}<br>${peguamP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        let wakilP = null;
+        if (senaraiPenerimaSebutan.includes('Peguam Pengadu')) {
+            wakilP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+            labelWakilPengadu = '(Peguamcara bagi Pengadu)';
+        }
+        if (!wakilP && senaraiPenerimaSebutan.includes('Wakil Kesatuan Pengadu')) {
+            wakilP = kes.senaraiPerwakilan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            labelWakilPengadu = '(Kesatuan bagi Pengadu)';
+        }
+        
+        if (wakilP) {
+            peguamPengaduHTML = `${wakilP.firma.toUpperCase()}<br>${wakilP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
         }
     }
 
     let peguamDefendanHTML = '';
+    let labelWakilDefendan = '(Peguamcara bagi Defendan)';
+    
     if (kes.senaraiPerwakilanDefendan) {
-        const peguamD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
-        if (peguamD) {
-            peguamDefendanHTML = `${peguamD.firma.toUpperCase()}<br>${peguamD.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        let wakilD = null;
+        if (senaraiPenerimaSebutan.includes('Peguam Defendan')) {
+            wakilD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
+            labelWakilDefendan = '(Peguamcara bagi Defendan)';
+        }
+        if (!wakilD && senaraiPenerimaSebutan.includes('Wakil Kesatuan Defendan')) {
+            wakilD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            labelWakilDefendan = '(Kesatuan bagi Defendan)';
+        }
+
+        if (wakilD) {
+            peguamDefendanHTML = `${wakilD.firma.toUpperCase()}<br>${wakilD.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
         }
     }
 
@@ -4201,7 +4252,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             ${templateHeaderHTML}
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                 <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
-                <div class="notis-alamat"><strong style="text-transform: uppercase;">${peguamPengaduHTML}</strong><br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Pengadu)</span></div>
+                <div class="notis-alamat"><strong style="text-transform: uppercase;">${peguamPengaduHTML}</strong><br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">${labelWakilPengadu}</span></div>
                 <div style="margin-bottom: 15px;">Tuan,</div>
                 ${tajukPengadu}
                 <hr class="notis-garis-tajuk">
@@ -4251,7 +4302,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 ${templateHeaderHTML}
                 <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                     <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
-                    <div class="notis-alamat"><strong style="text-transform: uppercase;">${peguamDefendanHTML}</strong><br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Defendan)</span></div>
+                    <div class="notis-alamat"><strong style="text-transform: uppercase;">${peguamDefendanHTML}</strong><br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">${labelWakilDefendan}</span></div>
                     <div style="margin-bottom: 15px;">Tuan,</div>
                     ${tajukDefendan}
                     <hr class="notis-garis-tajuk">
@@ -4261,8 +4312,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             </div>
             `;
         }
-    }
-
     const htmlNotisGenerik = `
         <style>
             ${cssSebutanSemulaKhas}
