@@ -2514,43 +2514,65 @@ if (posDisimpan) {
         } // <--- penutup if (gambarDisimpan)
 
         // --- KEMASKINI: Tarik data dari Local Storage supaya tak hilang bila refresh ---
-const senaraiTersimpan = localStorage.getItem('eLC_senaraiKes');
-if (senaraiTersimpan) {
-    try {
-        memoriSenaraiKes = JSON.parse(senaraiTersimpan);
-    } catch (error) {
-        console.error("Data memori korup. Memuatkan semula data kosong.");
-        memoriSenaraiKes = []; 
-    }
-} else {
-            // Jika sistem baru pertama kali dibuka, masukkan 1 data contoh (dummy)
-            memoriSenaraiKes = [{
-                noKes: "KBR/10103/2026/0001", 
-                namaPengadu: "Mohamad Hafiz Bin Abu Bakar",
-                namaDefendan: "Abc Teknologi Enterprise<br><span style='font-size: 0.85em; font-weight: normal;'>Pemilik: Ali Bin Abu Chik</span>",
-                jenisAduan: "Individu",
-                tarikh: "2/8/2026"
-            }];
-        simpanSenaraiKeLokal();
+// Fungsi untuk menarik data dari awan Firestore
+    async function muatkanDataAwal() {
+        try {
+            console.log("Sedang memuat turun data dari awan...");
+            const docSnap = await window.getDocs(window.collection(window.db, "data_pengguna"));
+            
+            let dataDijumpai = false;
+            docSnap.forEach((docItem) => {
+                if (docItem.id === "hafiz_abubakar") {
+                    memoriSenaraiKes = docItem.data().senaraiKes || [];
+                    dataDijumpai = true;
+                }
+            });
+
+            if (!dataDijumpai) {
+                // Jika ini kali pertama buka, muatkan data kosong
+                memoriSenaraiKes = [];
+            }
+        } catch (error) {
+            console.error("Gagal menarik data awan. Cuba baca dari backup lokal:", error);
+            const senaraiLokal = localStorage.getItem('eLC_senaraiKes');
+            if (senaraiLokal) {
+                memoriSenaraiKes = JSON.parse(senaraiLokal);
+            } else {
+                memoriSenaraiKes = [];
+            }
         }
-        
+
+        // Paparkan jadual selepas data berjaya dimuat turun
         renderSenaraiTugas();
+    }
+
+    // Jalankan fungsi
+    muatkanDataAwal();
 
         // --- TAMBAHAN BARU: Tetapkan paparan utama ke Senarai Tugasan sebaik sahaja sistem dibuka ---
         tukarView('senarai'); 
 
     }); // <--- INI ADALAH PENUTUP DOMContentLoaded
 
-    // --- FUNGSI BARU: Simpan senarai kes ke dalam memori browser (Local Storage) ---
-function simpanSenaraiKeLokal() {
+// --- FUNGSI BARU: Simpan senarai kes ke dalam memori browser (Local Storage) ---
+async function simpanSenaraiKeLokal() {
     try {
+        // Simpan keseluruhan array memoriSenaraiKes ke Firestore
+        const docRef = window.doc(window.db, "data_pengguna", "hafiz_abubakar");
+        await window.setDoc(docRef, {
+            senaraiKes: memoriSenaraiKes,
+            kemaskiniTerakhir: new Date().toISOString()
+        });
+        
+        console.log("Berjaya! Data kes disimpan ke awan (Firestore).");
+        // Simpan juga salinan ke localStorage sebagai backup jika tiada internet
         localStorage.setItem('eLC_senaraiKes', JSON.stringify(memoriSenaraiKes));
     } catch (e) {
-        alert("Ralat Storan: Memori pelayar anda telah penuh. Sila hapuskan kes lama dari Senarai Tugasan.");
-        console.error(e);
+        console.error("Ralat menyimpan data ke Firestore:", e);
+        // Fallback: Guna memori browser jika gagal
+        localStorage.setItem('eLC_senaraiKes', JSON.stringify(memoriSenaraiKes));
     }
 }
-
 function bukaMaklumatKes(index) {
     isSelesaiDaftar = false;
     isEditMode = true; 
@@ -13494,11 +13516,10 @@ function sortSenaraiTugas(col) {
     simpanSenaraiKeLokal();
     renderSenaraiTugas();
 }
-       <!-- Muatkan Firebase SDK melalui CDN -->
+<!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-      import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-      import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+      import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
       // 1. Konfigurasi Firebase anda yang sebenar
       const firebaseConfig = {
@@ -13513,19 +13534,13 @@ function sortSenaraiTugas(col) {
       // 2. Inisialisasi Firebase
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
-      const storage = getStorage(app);
 
       // Jadikan ia global supaya fungsi asal anda boleh mengaksesnya
       window.db = db;
-      window.storage = storage;
       window.collection = collection;
       window.getDocs = getDocs;
       window.doc = doc;
       window.setDoc = setDoc;
-      window.deleteDoc = deleteDoc;
-      window.ref = ref;
-      window.uploadString = uploadString;
-      window.getDownloadURL = getDownloadURL;
     </script>
 </body>
 </html>
