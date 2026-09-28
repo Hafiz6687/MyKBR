@@ -13494,6 +13494,38 @@ function sortSenaraiTugas(col) {
     simpanSenaraiKeLokal();
     renderSenaraiTugas();
 }
-</script>
+       <!-- Muatkan Firebase SDK melalui CDN -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+      import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+      import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+      // 1. Konfigurasi Firebase anda yang sebenar
+      const firebaseConfig = {
+        apiKey: "AIzaSyBpnwaC7BVbnVsd4TU-89vGdHEShSzS5cU",
+        authDomain: "mysystem-77219.firebaseapp.com",
+        projectId: "mysystem-77219",
+        storageBucket: "mysystem-77219.firebasestorage.app",
+        messagingSenderId: "48926763177",
+        appId: "1:48926763177:web:c1a8deabf607e86ffae1b8"
+      };
+
+      // 2. Inisialisasi Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+
+      // Jadikan ia global supaya fungsi asal anda boleh mengaksesnya
+      window.db = db;
+      window.storage = storage;
+      window.collection = collection;
+      window.getDocs = getDocs;
+      window.doc = doc;
+      window.setDoc = setDoc;
+      window.deleteDoc = deleteDoc;
+      window.ref = ref;
+      window.uploadString = uploadString;
+      window.getDownloadURL = getDownloadURL;
+    </script>
 </body>
 </html>
