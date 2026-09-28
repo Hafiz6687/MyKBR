@@ -9719,14 +9719,46 @@ function bukaModalSebutanSemula() {
         document.getElementById('ss_masa_sebutan').value = '';
         
         if (tempatSamanInput && tempatSamanInput.value.trim() !== '') {
-            document.getElementById('ss_tempat_nama').value = tempatSamanInput.value.toUpperCase();
-            document.getElementById('ss_alamat1').value = '';
-            document.getElementById('ss_alamat2').value = '';
-            document.getElementById('ss_alamat3').value = '';
-            document.getElementById('ss_poskod').value = '';
-            document.getElementById('ss_bandar').value = '';
-            document.getElementById('ss_negeri').value = '';
+            // LOGIK AUTO-EKSTRAK ALAMAT KEPADA MEDAN BERASINGAN
+            let alamatRaw = tempatSamanInput.value.toUpperCase();
+            let parts = alamatRaw.split(',').map(s => s.trim());
+            
+            let nTempat = parts[0] || '';
+            let a1 = parts[1] || '';
+            let a2 = '';
+            let a3 = '';
+            let pKod = '';
+
+            // Ekstrak poskod guna regex
+            let posMatch = alamatRaw.match(/\b\d{5}\b/);
+            if (posMatch) {
+                pKod = posMatch[0];
+            }
+
+            // Agihkan bahagian alamat (mengabaikan poskod, bandar, negeri di hujung)
+            if (parts.length === 5) {
+                a2 = parts[2];
+            } else if (parts.length >= 6) {
+                a2 = parts[2];
+                a3 = parts[3];
+            }
+
+            document.getElementById('ss_tempat_nama').value = nTempat;
+            document.getElementById('ss_alamat1').value = a1;
+            document.getElementById('ss_alamat2').value = a2;
+            document.getElementById('ss_alamat3').value = a3;
+            document.getElementById('ss_poskod').value = pKod;
+            
+            if (pKod !== '') {
+                // Auto-generate bandar dan negeri menggunakan API Poskod sedia ada
+                cariPoskodAutomatik('ss_poskod', 'ss_negeri', 'ss_bandar');
+            } else {
+                document.getElementById('ss_bandar').value = '';
+                document.getElementById('ss_negeri').value = '';
+            }
+            
         } else {
+            // Lalai alamat penuh pejabat jika kosong
             document.getElementById('ss_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
             document.getElementById('ss_alamat1').value = 'JALAN PEJABAT KERAJAAN';
             document.getElementById('ss_alamat2').value = '';
