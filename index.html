@@ -1463,7 +1463,7 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalBicaraSambung()">
                             <span>⚖️ Bicara<br>(Sambung)</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('keputusan')">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalKeputusan()">
                             <span>📜 Keputusan<br>Kes</span>
                         </button>
                         <button class="btn-terapung" style="background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalBorangC()">
@@ -1749,18 +1749,82 @@ Portal rasmi : jtksm.mohr.gov.my
 <input type="hidden" id="mk_masa_bicara_sambung">
 <input type="hidden" id="mk_tempat_bicara_sambung">
 
-<div class="card full-width" id="kad_keputusan" style="display: none;">
-    <div class="card-header">Penetapan Tarikh Keputusan Kes</div>
-    <div class="card-body">
-        <div class="sebutan-grid-labels"><div class="info-label" style="margin:0;">Tarikh Keputusan</div><div class="info-label" style="margin:0;">Masa Keputusan</div><div class="info-label" style="margin:0;">Tempat Keputusan</div><div></div></div>
-        <div class="sebutan-grid-inputs">
-            <div><input type="date" id="mk_tarikh_keputusan" onchange="semakButangNotis('keputusan')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="time" id="mk_masa_keputusan" onchange="semakButangNotis('keputusan')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="text" id="mk_tempat_keputusan" value="Pejabat Tenaga Kerja Kluang" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><button id="btnTindakan_keputusan" class="btn-save" style="width: 100%; height: 42px; font-size: 0.9em; opacity: 0.5; cursor: not-allowed;" onclick="bukaPreviewNotisGenerik('keputusan')" disabled>📄 Jana Notis</button></div>
+<!-- MODAL POP-UP KHAS UNTUK KEPUTUSAN KES -->
+<div class="modal-overlay" id="modalKeputusan">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Jana Notis Keputusan Kes</div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+            <input type="date" id="kpt_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+        </div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+            <input type="text" id="kpt_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <!-- CHECKBOX PENERIMA NOTIS -->
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpt_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpt_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpt_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpt_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+        <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Penetapan Keputusan</h5>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Keputusan <span>*</span></label>
+                <input type="date" id="kpt_tarikh_keputusan" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Keputusan <span>*</span></label>
+                <input type="time" id="kpt_masa_keputusan" style="width: 100%; box-sizing: border-box;">
+            </div>
+        </div>
+
+        <!-- TOGGLE ALAMAT BERBEZA -->
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <input type="checkbox" id="tempatKeputusanBerbeza" onchange="toggleTempatKeputusan()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
+                <label for="tempatKeputusanBerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat keputusan berbeza dengan pejabat semasa?</label>
+            </div>
+            <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Keputusan (Alamat Penuh) berbeza.</p>
+        </div>
+
+        <!-- WRAPPER ALAMAT KEPUTUSAN (Disembunyikan secara lalai) -->
+        <div id="ruanganTempatKeputusan" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Keputusan (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="kpt_tempat_nama" placeholder="Nama Tempat (Cth: MAHKAMAH BURUH KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="kpt_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="kpt_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="kpt_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="kpt_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('kpt_poskod', 'kpt_negeri', 'kpt_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="kpt_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <input type="text" id="kpt_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modalKeputusan').style.display='none'">Batal</button>
+            <button class="btn-save" onclick="janaKeputusanDariModal()">✔ Teruskan</button>
         </div>
     </div>
 </div>
+
+<!-- HIDDEN INPUTS UNTUK KESERASIAN FUNGSI RESET ASAL (JANGAN PADAM) -->
+<input type="hidden" id="mk_tarikh_keputusan">
+<input type="hidden" id="mk_masa_keputusan">
+<input type="hidden" id="mk_tempat_keputusan">
 <!-- MODAL POP-UP KHAS UNTUK SAMAN HADIR (BORANG A) -->
 <div class="modal-overlay" id="modalSamanA">
     <div class="modal-box" style="max-width: 650px;">
@@ -4106,6 +4170,117 @@ function janaBicaraSambungDariModal() {
     bukaPreviewNotisGenerik('bicara_sambung'); // Buka terus ke skrin preview
 }
 // =========================================================================
+// FUNGSI KAWALAN POP-UP KEPUTUSAN KES
+// =========================================================================
+function toggleTempatKeputusan() {
+    const isBerbeza = document.getElementById('tempatKeputusanBerbeza').checked;
+    const ruangan = document.getElementById('ruanganTempatKeputusan');
+    if (isBerbeza) {
+        ruangan.style.display = 'block';
+    } else {
+        ruangan.style.display = 'none';
+        if(document.getElementById('kpt_tempat_nama')) document.getElementById('kpt_tempat_nama').value = '';
+        if(document.getElementById('kpt_alamat1')) document.getElementById('kpt_alamat1').value = '';
+        if(document.getElementById('kpt_alamat2')) document.getElementById('kpt_alamat2').value = '';
+        if(document.getElementById('kpt_alamat3')) document.getElementById('kpt_alamat3').value = '';
+        if(document.getElementById('kpt_poskod')) document.getElementById('kpt_poskod').value = '';
+        if(document.getElementById('kpt_bandar')) { document.getElementById('kpt_bandar').value = ''; document.getElementById('kpt_bandar').placeholder = 'Bandar'; }
+        if(document.getElementById('kpt_negeri')) { document.getElementById('kpt_negeri').value = ''; document.getElementById('kpt_negeri').placeholder = 'Negeri'; }
+    }
+}
+
+function bukaModalKeputusan() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    const td = new Date();
+    document.getElementById('kpt_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('kpt_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    let oldTarikh = document.getElementById('mk_tarikh_keputusan')?.value || '';
+    let oldMasa = document.getElementById('mk_masa_keputusan')?.value || '';
+    
+    // Reset paparan checkbox
+    document.querySelectorAll('input[name="kpt_penerima"]').forEach(cb => cb.checked = false);
+    document.getElementById('tempatKeputusanBerbeza').checked = false;
+    
+    if (window.tempDataKeputusan) {
+        oldTarikh = window.tempDataKeputusan.tarikhKeputusan;
+        oldMasa = window.tempDataKeputusan.masaKeputusan;
+        
+        if (window.tempDataKeputusan.isBerbeza) {
+            document.getElementById('tempatKeputusanBerbeza').checked = true;
+            document.getElementById('kpt_tempat_nama').value = window.tempDataKeputusan.tempatNama;
+            document.getElementById('kpt_alamat1').value = window.tempDataKeputusan.a1;
+            document.getElementById('kpt_alamat2').value = window.tempDataKeputusan.a2;
+            document.getElementById('kpt_alamat3').value = window.tempDataKeputusan.a3;
+            document.getElementById('kpt_poskod').value = window.tempDataKeputusan.pos;
+            document.getElementById('kpt_bandar').value = window.tempDataKeputusan.bdr;
+            document.getElementById('kpt_negeri').value = window.tempDataKeputusan.ngr;
+        }
+        
+        if (window.tempDataKeputusan.senaraiPenerima) {
+            window.tempDataKeputusan.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="kpt_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+    }
+    
+    toggleTempatKeputusan();
+
+    document.getElementById('kpt_tarikh_keputusan').value = oldTarikh;
+    document.getElementById('kpt_masa_keputusan').value = oldMasa;
+
+    document.getElementById('modalKeputusan').style.display = 'flex';
+}
+
+function janaKeputusanDariModal() {
+    const tarikhNotis = document.getElementById('kpt_tarikh_notis').value;
+    const pegawai = document.getElementById('kpt_pegawai').value.trim();
+    const tarikhKeputusan = document.getElementById('kpt_tarikh_keputusan').value;
+    const masaKeputusan = document.getElementById('kpt_masa_keputusan').value;
+    
+    const isBerbeza = document.getElementById('tempatKeputusanBerbeza').checked;
+    
+    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
+    
+    if (isBerbeza) {
+        tempatNama = document.getElementById('kpt_tempat_nama').value.trim();
+        a1 = document.getElementById('kpt_alamat1').value.trim();
+        a2 = document.getElementById('kpt_alamat2').value.trim();
+        a3 = document.getElementById('kpt_alamat3').value.trim();
+        pos = document.getElementById('kpt_poskod').value.trim();
+        bdr = document.getElementById('kpt_bandar').value.trim();
+        ngr = document.getElementById('kpt_negeri').value.trim();
+        
+        if (!tempatNama) {
+            alert("Sila lengkapkan Nama Tempat Keputusan.");
+            return;
+        }
+    }
+
+    if (!tarikhNotis || !pegawai || !tarikhKeputusan || !masaKeputusan) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const penerimaNode = document.querySelectorAll('input[name="kpt_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Simpan ke hidden inputs untuk maintain reset loops
+    document.getElementById('mk_tarikh_keputusan').value = tarikhKeputusan;
+    document.getElementById('mk_masa_keputusan').value = masaKeputusan;
+
+    // Simpan data pop-up ke memori sementara
+    window.tempDataKeputusan = { tarikhNotis, pegawai, tarikhKeputusan, masaKeputusan, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    
+    document.getElementById('modalKeputusan').style.display = 'none';
+    bukaPreviewNotisGenerik('keputusan'); // Buka terus ke skrin preview
+}
+// =========================================================================
 // FUNGSI GENERIK MENCETAK DAN PREVIEW NOTIS (Sebutan, Bicara, Keputusan)
 // =========================================================================
 window.isNotisPengaduPrinted = false;
@@ -4811,24 +4986,74 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KEPUTUSAN KES</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KEPUTUSAN KES</div>`;
         
-        let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-        let ptkBandar = "KLUANG";
-        let ptkNegeri = "JOHOR DARUL TAKZIM";
-        const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-        if (statsDiv) {
-            const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-            if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-            const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-            if (poskodLineIndex !== -1) {
-                ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                    ptkNegeri = lines[poskodLineIndex + 1].trim();
+        let lokasiMahkamahCetak = "";
+        
+        // INTERCEPT DATA DARI POP-UP KEPUTUSAN KES
+        let dKeputusan = window.tempDataKeputusan;
+        if (dKeputusan) {
+            tarikhRaw = dKeputusan.tarikhKeputusan;
+            masaRaw = dKeputusan.masaKeputusan;
+            tarikhMasaBaruGabung = formatTarikhMasaLengkap(tarikhRaw, masaRaw);
+            
+            let tN = new Date(dKeputusan.tarikhNotis);
+            if (!isNaN(tN)) {
+                tarikhSurat = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
+            }
+            
+            let pegawaiKeputusan = dKeputusan.pegawai.toUpperCase();
+            templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiKeputusan);
+            
+            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
+            if (dKeputusan.isBerbeza) {
+                let arrTpt = [dKeputusan.tempatNama, dKeputusan.a1, dKeputusan.a2, dKeputusan.a3].filter(Boolean);
+                let posBdr = [dKeputusan.pos, dKeputusan.bdr].filter(Boolean).join(' ');
+                if (posBdr) arrTpt.push(posBdr);
+                if (dKeputusan.ngr) arrTpt.push(dKeputusan.ngr);
+                lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+            } else {
+                // Ekstrak dari pejabat semasa jika TIDAK berbeza
+                let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+                let ptkBandar = "KLUANG";
+                let ptkNegeri = "JOHOR DARUL TAKZIM";
+                const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+                if (statsDiv) {
+                    const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+                    if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+                    const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+                    if (poskodLineIndex !== -1) {
+                        ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                        if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                            ptkNegeri = lines[poskodLineIndex + 1].trim();
+                        }
+                    }
+                }
+                const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
+                lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+            }
+            
+            window.dataNotisSemasa.tarikhStr = tarikhRaw;
+            window.dataNotisSemasa.masaStr = masaRaw;
+
+        } else {
+            // Lalai Asal (Jika tiada pop-up)
+            let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+            let ptkBandar = "KLUANG";
+            let ptkNegeri = "JOHOR DARUL TAKZIM";
+            const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+            if (statsDiv) {
+                const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+                if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+                const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+                if (poskodLineIndex !== -1) {
+                    ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                    if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                        ptkNegeri = lines[poskodLineIndex + 1].trim();
+                    }
                 }
             }
+            const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
+            lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
         }
-        
-        const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
-        const lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
 
         isiPengadu = `
             <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa adalah dimaklumkan bahawa keputusan kes ini akan dibacakan pada <strong>${tarikhMasaBaruGabung}</strong> di Mahkamah Buruh di <strong>${lokasiMahkamahCetak}</strong>.</div>
@@ -4968,7 +5193,9 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         senaraiPenerimaSebutan = window.tempDataBicaraTangguh.senaraiPenerima;
     } else if (kunci === 'bicara_sambung' && window.tempDataBicaraSambung && window.tempDataBicaraSambung.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataBicaraSambung.senaraiPenerima;
-    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung') {
+    } else if (kunci === 'keputusan' && window.tempDataKeputusan && window.tempDataKeputusan.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataKeputusan.senaraiPenerima;
+    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung' && kunci !== 'keputusan') {
         // Jika bukan notis di atas, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
