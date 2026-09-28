@@ -3522,13 +3522,18 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         let almtDefHTML = arrDef.join('<br>');
         let almtPengHTML = arrPeng.join('<br>');
 
-        alamatDefendanBersih = arrDef.join(', ').toUpperCase();
-        alamatPengaduBersih = arrPeng.join(', ').toUpperCase();
-
         if (isMajikan) {
+            // TUKAR: Defendan adalah Pekerja, Pengadu adalah Syarikat
+            alamatDefendanBersih = arrPeng.join(', ').toUpperCase();
+            alamatPengaduBersih = arrDef.join(', ').toUpperCase();
+            
             namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]'; alamatP = almtDefHTML || '[ALAMAT PENGADU]';
             namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]'; alamatD = almtPengHTML || '[ALAMAT DEFENDAN]';
         } else {
+            // LALAI: Defendan adalah Syarikat, Pengadu adalah Pekerja
+            alamatDefendanBersih = arrDef.join(', ').toUpperCase();
+            alamatPengaduBersih = arrPeng.join(', ').toUpperCase();
+            
             namaP = inputs['namaPengadu'] || '[NAMA PENGADU]'; alamatP = almtPengHTML || '[ALAMAT PENGADU]';
             namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]'; alamatD = almtDefHTML || '[ALAMAT DEFENDAN]';
         }
@@ -9116,13 +9121,18 @@ function bukaPreviewSamanMemo(dataSimpanan = null) {
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
+        
+        let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
         let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
+        
+        let almtDefClean = arrDef.join(', ').toUpperCase();
+        let almtDefHTML = arrDef.join('<br>').toUpperCase();
         let almtPengClean = arrPeng.join(', ').toUpperCase();
         let almtPengHTML = arrPeng.join('<br>').toUpperCase();
 
         if (isMajikan) {
             namaP = inputs['namaDefendan'] ? inputs['namaDefendan'].toUpperCase() : '[NAMA SYARIKAT]';
-            alamatP = almtPengHTML || '[ALAMAT PENGADU]';
+            alamatP = almtDefHTML || '[ALAMAT PENGADU]';
             let idDef = inputs['noPendPengadu'] || '....................';
             d_idStr = `(No. Kad Pengenalan: ${idDef})`;
         } else {
