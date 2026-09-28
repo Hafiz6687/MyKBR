@@ -772,6 +772,62 @@
             </div>
         </div>
     </div>
+<!-- MODAL POP-UP KHAS UNTUK SAMAN TAMPAL & BORANG A -->
+    <div class="modal-overlay" id="modalSamanTampal">
+        <div class="modal-box" style="max-width: 650px;">
+            <div class="modal-title">Jana Saman (Tampal) & Borang A</div>
+            
+            <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">1. Maklumat Perintah Penyampaian Ganti</h5>
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+                <input type="date" id="st_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Tempat Tampal (Papan Kenyataan) <span>*</span></label>
+                <input type="text" id="st_tempat_tampal" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+                <input type="text" id="st_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+            <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">2. Maklumat Saman Hadir (Borang A)</h5>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Hadir <span>*</span></label>
+                    <input type="date" id="st_tarikh_hadir" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Hadir <span>*</span></label>
+                    <input type="time" id="st_masa_hadir" style="width: 100%; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left; margin-bottom: 5px;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="st_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="st_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="st_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="st_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="st_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('st_poskod', 'st_negeri', 'st_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="st_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <input type="text" id="st_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('modalSamanTampal').style.display='none'">Batal</button>
+                <button class="btn-save" onclick="janaSamanTampal()">✔ Teruskan</button>
+            </div>
+        </div>
+    </div>
+
 <!-- MODAL POP-UP KHAS UNTUK TAMBAH PERWAKILAN / SAKSI -->
     <div class="modal-overlay" id="modalPerwakilan">
         <div class="modal-box">
@@ -1189,7 +1245,7 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('saman_memo')">
                             <span>📄 Saman<br>(Memo Luar Kawasan)</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaPreviewSamanTampal()">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalSamanTampal()">
                             <span>📄 Saman<br>(Tampal)</span>
                         </button>
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('bicara')">
@@ -7383,7 +7439,9 @@ if ((tdk.includes("Notis") && !tdk.includes("Notis Custom")) || tdk.includes("Bo
                 btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanA(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
             }
             else if (tdk.includes("Saman (Tampal)")) {
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanTampal()">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
+                let dMatch = btr.match(/\[DATA_TAMPAL:(.*?)\]/);
+                let param = dMatch ? `'${dMatch[1]}'` : 'null';
+                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanTampal(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
             }
             else if (tdk.includes("Saman (Memo)")) {
                 let dMatch = btr.match(/\[DATA_MEMO:(.*?)\]/);
@@ -8229,15 +8287,102 @@ function bukaPreviewSamanA(dataSimpanan = null) {
 }
        
 // =========================================================================
-// FUNGSI MENJANA DAN MEMAPARKAN SURAT SAMAN (TAMPAL)
+// FUNGSI KAWALAN POP-UP SAMAN TAMPAL
 // =========================================================================
-function bukaPreviewSamanTampal() {
+function bukaModalSamanTampal() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // Dapatkan maklumat asas
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
+    const td = new Date();
+    document.getElementById('st_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // 2. Ekstrak Nama Pejabat untuk Papan Kenyataan
+    let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+    const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+    if (statsDiv) {
+        const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+        if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+    }
+    document.getElementById('st_tempat_tampal').value = ptkNamaPenuh.toUpperCase();
+    document.getElementById('st_tempat_nama').value = ptkNamaPenuh.toUpperCase();
+
+    // 3. Ekstrak Nama Pegawai
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('st_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    // 4. Kosongkan Medan Alamat Penuh & Tarikh
+    document.getElementById('st_tarikh_hadir').value = '';
+    document.getElementById('st_masa_hadir').value = '';
+    document.getElementById('st_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+    document.getElementById('st_alamat2').value = '';
+    document.getElementById('st_alamat3').value = '';
+    document.getElementById('st_poskod').value = '86000';
+    document.getElementById('st_bandar').value = 'KLUANG';
+    document.getElementById('st_negeri').value = 'JOHOR';
+
+    document.getElementById('modalSamanTampal').style.display = 'flex';
+}
+
+function janaSamanTampal() {
+    const tarikhNotis = document.getElementById('st_tarikh_notis').value;
+    const tempatTampal = document.getElementById('st_tempat_tampal').value.trim();
+    const pegawai = document.getElementById('st_pegawai').value.trim();
+    
+    const tarikhHadir = document.getElementById('st_tarikh_hadir').value;
+    const masaHadir = document.getElementById('st_masa_hadir').value;
+    const tempatNama = document.getElementById('st_tempat_nama').value.trim();
+
+    if (!tarikhNotis || !tempatTampal || !pegawai || !tarikhHadir || !masaHadir || !tempatNama) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const a1 = document.getElementById('st_alamat1').value.trim();
+    const a2 = document.getElementById('st_alamat2').value.trim();
+    const a3 = document.getElementById('st_alamat3').value.trim();
+    const pos = document.getElementById('st_poskod').value.trim();
+    const bdr = document.getElementById('st_bandar').value.trim();
+    const ngr = document.getElementById('st_negeri').value.trim();
+
+    // Simpan data pop-up sementara
+    window.tempDataSamanTampal = {
+        tarikhNotis, tempatTampal, pegawai,
+        tarikhHadir, masaHadir,
+        tempatNama, a1, a2, a3, pos, bdr, ngr
+    };
+
+    document.getElementById('modalSamanTampal').style.display = 'none';
+    bukaPreviewSamanTampal();
+}
+
+// =========================================================================
+// FUNGSI MENJANA DAN MEMAPARKAN SURAT SAMAN (TAMPAL + BORANG A)
+// =========================================================================
+function bukaPreviewSamanTampal(dataSimpanan = null) {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    // Terima pemulihan data dari Sejarah Tindakan
+    let memoData = null;
+    if (dataSimpanan && dataSimpanan !== 'null') {
+        try { memoData = JSON.parse(decodeURIComponent(escape(atob(dataSimpanan)))); } catch(e){}
+    }
+
+    // Tangkap jika tiada data langsung
+    if (!memoData && !window.tempDataSamanTampal) {
+        bukaModalSamanTampal();
+        return;
+    }
+
+    // Tetapkan rujukan data
+    const dSaman = memoData || window.tempDataSamanTampal;
+    const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+
+    // 1. Ekstrak Data Pengadu & Defendan
     let noKes = kes.noKes.split('<br>')[0].trim();
     let namaP = "", namaD = "", alamatD = "";
+    let d_idStr = "(No. Pendaftaran/KP: ....................)";
 
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
@@ -8247,72 +8392,106 @@ function bukaPreviewSamanTampal() {
         let almtPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "").join(', ');
 
         if (isMajikan) {
-            namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]';
-            namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
+            namaP = inputs['namaDefendan'] ? inputs['namaDefendan'].toUpperCase() : '[NAMA SYARIKAT]';
+            namaD = inputs['namaPengadu'] ? inputs['namaPengadu'].toUpperCase() : '[NAMA PEKERJA]';
             alamatD = almtPeng || '[ALAMAT DEFENDAN]';
+            let idDef = inputs['noPendPengadu'] || '....................';
+            d_idStr = `(No. Kad Pengenalan: ${idDef})`;
         } else {
-            namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
-            namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
+            namaP = inputs['namaPengadu'] ? inputs['namaPengadu'].toUpperCase() : '[NAMA PENGADU]';
+            namaD = inputs['namaDefendan'] ? inputs['namaDefendan'].toUpperCase() : '[NAMA DEFENDAN]';
             alamatD = almtDef || '[ALAMAT DEFENDAN]';
+            let idDef = inputs['noPendDefendan'] || '....................';
+            let jenisDaftarDef = inputs['jenisDaftarDefendan'] || '';
+            let labelDef = jenisDaftarDef === 'MyKad' ? 'No. Kad Pengenalan' : 'No. Pendaftaran';
+            d_idStr = `(${labelDef}: ${idDef})`;
         }
     } else {
-        namaP = kes.namaPengadu.replace(/<br>.*$/g, '');
-        namaD = kes.namaDefendan.replace(/<br>.*$/g, '');
+        namaP = kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase();
+        namaD = kes.namaDefendan.replace(/<br>.*$/g, '').toUpperCase();
         alamatD = "[ALAMAT DEFENDAN TIDAK LENGKAP]";
     }
 
-    const tempatSamanRaw = 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim';
-    const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    // 2. Ekstrak Tarikh Notis, Pegawai & Tempat Tampal
+    const tarikhNotisD = new Date(dSaman.tarikhNotis);
+    const tarikhSamanDD = tarikhNotisD.getDate();
+    const tarikhSamanMMYYYY = `${bulanMY[tarikhNotisD.getMonth()]} ${tarikhNotisD.getFullYear()}`;
+
+    const namaPejabatSaman = dSaman.tempatTampal.toUpperCase();
+    const namaPegawai = dSaman.pegawai.toUpperCase();
+
+    // 3. Ekstrak Data Borang A (Saman Hadir)
+    let tHadir = new Date(dSaman.tarikhHadir);
+    let tarikhSebutanDD = tHadir.getDate();
+    let tarikhSebutanMMYYYY = `${bulanMY[tHadir.getMonth()]} ${tHadir.getFullYear()}`;
+
+    let masaSebutanText = ".......";
+    if (dSaman.masaHadir) {
+        let [jam, minit] = dSaman.masaHadir.split(':');
+        let jamNum = parseInt(jam, 10);
+        let ampm = jamNum >= 12 ? "petang" : "pagi";
+        let jamFormat = jamNum % 12 || 12;
+        masaSebutanText = `${jamFormat}.${minit} ${ampm}`;
+    }
+
+    let arrTempat = [dSaman.tempatNama, dSaman.a1, dSaman.a2, dSaman.a3].filter(Boolean);
+    let posBdr = [dSaman.pos, dSaman.bdr].filter(Boolean).join(' ');
+    if (posBdr) arrTempat.push(posBdr);
+    if (dSaman.ngr) arrTempat.push(dSaman.ngr);
+    const tempatSamanRaw = arrTempat.join(', ').toUpperCase();
+
+    // 4. Jadual Tuntutan Borang A
+    let htmlJadualTuntutan = "";
+    let jumlahKeseluruhan = 0;
+    let senaraiTuntutanSemasa = (kes.dataBorang && kes.dataBorang.tuntutanBiasa) ? kes.dataBorang.tuntutanBiasa : [];
     
-    // Ekstrak Nama Pejabat dan Negeri
-    const arraySaman = tempatSamanRaw.split(',');
-    const namaPejabatSaman = arraySaman[0].trim();
-    let negeriSaman = arraySaman[arraySaman.length - 1].trim(); // Ambil bahagian paling hujung selepas koma terakhir
-    
-    // Buang gelaran rasmi negeri (seperti Darul Takzim, Darul Ehsan) supaya lebih kemas (Cth: NEGERI JOHOR)
-    negeriSaman = negeriSaman.replace(/ Darul \w+/gi, '').replace(/ Wilayah Persekutuan/gi, '');
+    if (senaraiTuntutanSemasa.length === 0) { 
+        htmlJadualTuntutan = `<tr><td colspan="3" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: center;">Tiada tuntutan direkodkan.</td></tr>`; 
+    } else {
+        senaraiTuntutanSemasa.forEach((item, index) => {
+            const jumlahNum = parseFloat(item.jumlah);
+            jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
+            let keteranganCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
+            htmlJadualTuntutan += `
+            <tr>
+                <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: center;">${index + 1}</td>
+                <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px;">${item.jenis} <span style="font-size: 0.9em; color: #333;">${keteranganCetak}</span></td>
+                <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: right;">RM ${Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            </tr>`;
+        });
+        htmlJadualTuntutan += `
+        <tr>
+            <td colspan="2" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; padding-right: 15px; background-color: #e2e8f0;">JUMLAH KESELURUHAN</td>
+            <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: right; font-weight: bold; background-color: #e2e8f0;">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        </tr>`;
+    }
 
-    const tH = new Date();
-    const tarikhSamanDD = tH.getDate();
-    const tarikhSamanMMYYYY = `${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
-
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
-    const namaPegawai = namaPegawaiRaw.toUpperCase();
-
-    // HTML UTAMA SAMAN (TAMPAL)
-const htmlSamanTampal = `
+    // 5. Pembinaan HTML Sepenuhnya
+    const htmlSamanTampal = `
         <style>
             @media print { 
                 @page { margin: 0; } 
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
-                .kertas-notis { margin: 0 !important; padding: 3cm 2.5cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
+                .kertas-notis { margin: 0 !important; padding: 1.5cm 2.5cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
                 .kertas-notis:last-child { page-break-after: auto; }
             }
-            /* Font ditetapkan kepada 12pt */
-            .kertas-notis { background: white; width: 210mm; min-height: 297mm; padding: 3cm 2.5cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; font-size: 12pt; line-height: 1.25; box-sizing: border-box; position: relative; }
-            .notis-body-wrapper { padding: 0; font-size: 12pt; } 
+            .kertas-notis { background: white; width: 210mm; min-height: 297mm; padding: 1.5cm 2.5cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; line-height: 1.25; box-sizing: border-box; position: relative; }
+            .notis-body-wrapper { padding: 0; } 
         </style>
         
-        <div class="kertas-notis" id="kertasSamanTampal">
-
+        <!-- MUKA SURAT 1: PERINTAH TAMPAL -->
+        <div class="kertas-notis" id="kertasSamanTampal_P1" style="font-size: 12pt; padding: 3cm 2.5cm;">
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.25;">
-                
                 <div style="text-align: center; font-weight: bold; margin-bottom: 25px;">
-                    KETUA PENGARAH TENAGA KERJA KES SAMAN<br>
-                    NO. ${noKes}<br>
-                    DI ${namaPejabatSaman.toUpperCase()} NEGERI ${negeriSaman.toUpperCase()}
+                    KETUA PENGARAH TENAGA KERJA KES SAMAN<br>NO. ${noKes}
                 </div>
                 
-                <div style="text-align: center; margin-bottom: 10px;">Antara</div>
-                    <br>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="text-transform: uppercase; font-weight: bold;">${namaP}</div><div>... Pengadu</div></div>
-                    <br>
-                    <div style="text-align: center; margin-bottom: 10px;">Dan</div>
-                    <br>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;"><div style="text-transform: uppercase; font-weight: bold;">${namaD}</div><div>... Defendan</div></div>
-                    <br>
+                <div style="text-align: center; margin-bottom: 10px;">Antara</div><br>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="text-transform: uppercase; font-weight: bold;">${namaP}</div><div>... Pengadu</div></div><br>
+                <div style="text-align: center; margin-bottom: 10px;">Dan</div><br>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;"><div style="text-transform: uppercase; font-weight: bold;">${namaD}</div><div>... Defendan</div></div><br>
 
                 <div style="text-align: center; font-weight: bold; margin-top: 30px; margin-bottom: 20px; line-height: 1.5;">
                     <span style="text-decoration: underline;">PERINTAH PENYAMPAIAN GANTI</span><br>
@@ -8320,7 +8499,7 @@ const htmlSamanTampal = `
                 </div>
 
                 <div style="text-align: justify; margin-bottom: 15px; line-height: 1.25;">
-                    MAKA ADALAH PADA HARI INI DIPERINTAHKAN bahawa Saman dalam tindakan ini hendaklah disampaikan ke atas Defendan secara Penyampaian Ganti dengan menampalkan satu salinan Saman dan satu salinan Perintah Penyampaian Ganti ini di Papan Kenyataan ${namaPejabatSaman.toUpperCase()} dan dengan menampalkan sesalinan serupa di bahagian ketara di ${alamatD.toUpperCase()} tempat defendan yang dinamakan di atas bermastautin (atau mempunyai tempat pekerjaan atau bekerja).
+                    MAKA ADALAH PADA HARI INI DIPERINTAHKAN bahawa Saman dalam tindakan ini hendaklah disampaikan ke atas Defendan secara Penyampaian Ganti dengan menampalkan satu salinan Saman dan satu salinan Perintah Penyampaian Ganti ini di Papan Kenyataan ${namaPejabatSaman} dan dengan menampalkan sesalinan serupa di bahagian ketara di ${alamatD.toUpperCase()} tempat defendan yang dinamakan di atas bermastautin (atau mempunyai tempat pekerjaan atau bekerja).
                 </div>
 
                 <div style="text-align: justify; margin-bottom: 25px; line-height: 1.25;">
@@ -8340,28 +8519,96 @@ const htmlSamanTampal = `
                 </div>
             </div>
         </div>
+
+        <!-- MUKA SURAT 2: BORANG A -->
+        <div class="kertas-notis" id="kertasSamanTampal_P2" style="font-size: 10pt; page-break-before: always;">
+            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
+                <div style="text-align: right; font-weight: bold; font-size: 10pt; margin: 0 0 15px 0;">(Buruh 79—Pin. 12/91)</div>
+                <div style="text-align: center; font-weight: bold; font-size: 10.5pt; margin-bottom: 25px; line-height: 1.25;">
+                    BORANG A<br>SAMAN<br><span style="font-weight: normal; font-size: 10pt;">(Di bawah seksyen 70 (c) Akta Kerja 1955)</span>
+                </div>
+
+                <div style="text-align: center; font-weight: bold; margin-bottom: 20px;">Ketua Pengarah Tenaga Kerja Kes Saman No. ${noKes}</div>
+                <div style="text-align: center; margin-bottom: 10px;">Antara</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><div style="text-transform: uppercase; font-weight: bold;">${namaP}</div><div>... Pengadu</div></div>
+                <div style="text-align: center; margin-bottom: 10px;">Dan</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;"><div style="text-transform: uppercase; font-weight: bold;">${namaD}</div><div>... Defendan</div></div>
+
+                <div style="text-indent: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.25;">Defendan yang dinamakan di atas <strong>${namaD}</strong> ${d_idStr} yang bermastautin (atau mempunyai tempat perniagaannya atau bekerja) di <strong>${alamatD}</strong>.</div>
+                <div style="text-indent: 40px; text-align: justify; margin-bottom: 8px; line-height: 1.25;">Kamu adalah dengan ini disaman untuk hadir di ${tempatSamanRaw} pada pukul <strong>${masaSebutanText}</strong> pada <strong>${tarikhSebutanDD}</strong> haribulan <strong>${tarikhSebutanMMYYYY}</strong> untuk menjawab aduan yang dibuat terhadap kamu oleh pengadu yang disebutkan di atas, bahawa:</div>
+                <div style="text-align: justify; margin-bottom: 10px; line-height: 1.25;">Pengadu membuat pengaduan sebagaimana lampiran.</div>
+                <div style="text-align: justify; margin-bottom: 10px; line-height: 1.25;">Dengan itu pengadu ingin menuntut:</div>
+
+                <div style="margin-bottom: 15px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10pt; line-height: 1.25;">
+                        <thead>
+                            <tr>
+                                <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: center; width: 5%; background-color: #e2e8f0;">Bil.</th>
+                                <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: left; background-color: #e2e8f0;">Jenis & Keterangan Tuntutan</th>
+                                <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px; text-align: right; width: 25%; background-color: #e2e8f0;">Jumlah (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${htmlJadualTuntutan}</tbody>
+                    </table>
+                </div>
+
+                <div style="text-indent: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.25;">Sila ambil perhatian bahawa kamu boleh membawa saksi-saksi yang kamu ingin panggil bagi pihak kamu ke perbicaraan aduan di atas, dan bahawa kamu boleh memohon kepada Ketua Pengarah bagi saman-saman kepada orang-orang yang harus hadir dan memberi keterangan.</div>
+                
+                <!-- WRAPPER KHAS CETAKAN (Mengikat perenggan akhir & tandatangan) -->
+                <div style="page-break-inside: avoid; display: inline-block; width: 100%;">
+                    <div style="text-indent: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.25;">Dan sila ambil perhatian selanjutnya bahawa dalam kemungkiran kehadiran kamu aduan tersebut akan dibicarakan dan diputuskan tanpa kehadiran kamu; dan bahawa kamu akan terikat dengan keputusan tersebut dan keputusan tersebut boleh dikuatkuasakan terhadap kamu menurut seksyen 70 (h) dan (i) Akta Kerja 1955.</div>
+                    <div style="text-indent: 40px; text-align: justify; margin-bottom: 25px; line-height: 1.25;">Dan sila ambil perhatian selanjutnya bahawa walau apa pun peruntukkan yang terdahulu, jika kamu gagal mematuhi saman-saman yang di atas itu, maka menurut seksyen 80 dan 101 Akta Kerja 1955, kamu boleh didakwa bagi suatu kesalahan di bawah Bab X Kanun Keseksaan dan boleh dihukum di bawahnya.</div>
+
+                    <div style="text-align: justify; margin-bottom: 0; line-height: 1.25;">Bertarikh pada: <strong>${tarikhSamanDD}</strong> haribulan <strong>${tarikhSamanMMYYYY}</strong></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; margin-top: 40px; line-height: 1.25;">
+                        <div></div> 
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold; text-transform: uppercase;">${namaPegawai}</div>
+                            <div style="margin-top: 5px;">Ketua Pengarah Tenaga Kerja</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- TAMAT WRAPPER -->
+            </div>
+        </div>
     `;
 
     document.getElementById('previewContent').innerHTML = htmlSamanTampal;
     document.getElementById('printArea').innerHTML = htmlSamanTampal;
 
-    document.getElementById('menuCetakAkuan').style.display = 'none';
-    document.getElementById('menuCetakKenyataan').style.display = 'none';
-    document.getElementById('menuDaftar').style.display = 'none';
-    document.getElementById('menuSelesai').style.display = 'none';
-    if(document.getElementById('menuCetakNotisPengadu')) document.getElementById('menuCetakNotisPengadu').style.display = 'none';
-    if(document.getElementById('menuCetakNotisDefendan')) document.getElementById('menuCetakNotisDefendan').style.display = 'none';
+    // Bersihkan butang Action yang tidak berkaitan
+    let actionMenu = document.getElementById('actionMenu');
+    Array.from(actionMenu.querySelectorAll('a')).forEach(btn => btn.style.display = 'none');
 
-    const menuCetakG1 = document.getElementById('menuCetakG1');
-    menuCetakG1.style.display = 'flex';
-    menuCetakG1.innerHTML = '🖨️ Cetak Saman (Tampal)';
+    // Wujudkan Butang Cetak Khas
+    let menuCetakG1 = document.getElementById('menuCetakG1');
+    if (menuCetakG1) {
+        menuCetakG1.style.display = 'flex';
+        menuCetakG1.innerHTML = '🖨️ Cetak Saman (Tampal)';
+        menuCetakG1.onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('actionMenu').classList.remove('show');
+            window.print();
+            
+            let d64 = btoa(unescape(encodeURIComponent(JSON.stringify(dSaman))));
+            rekodSejarahTindakan(indexKesSemasa, "Saman (Tampal)", `Dokumen Saman (Tampal + Borang A) telah dijana dan dicetak. [DATA_TAMPAL:${d64}]`);
+            window.tempDataSamanTampal = null;
+
+            setTimeout(() => {
+                document.getElementById('modalPreview').style.display = 'none';
+                tukarView('senarai');
+            }, 500);
+        };
+    }
     
+    // Kembalikan Butang Asas
     const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
         document.getElementById('actionMenu').classList.remove('show');
         document.getElementById('modalPreview').style.display = 'none';
+        bukaModalSamanTampal();
     };
 
     const btnBatal = document.getElementById('menuBatal');
@@ -8370,19 +8617,6 @@ const htmlSamanTampal = `
         e.preventDefault();
         document.getElementById('actionMenu').classList.remove('show');
         document.getElementById('modalPreview').style.display = 'none';
-    };
-
-    menuCetakG1.onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('actionMenu').classList.remove('show');
-        window.print();
-        
-        rekodSejarahTindakan(indexKesSemasa, "Saman (Tampal)", "Dokumen Saman (Tampal) telah dijana dan dicetak.");
-        
-        setTimeout(() => {
-            document.getElementById('modalPreview').style.display = 'none';
-            tukarView('senarai');
-        }, 500);
     };
 
     document.getElementById('modalPreview').style.display = 'flex';
