@@ -588,6 +588,17 @@
                 </select>
             </div>
 
+            <!-- CHECKBOX PENERIMA NOTIS BORANG C -->
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bc_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bc_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bc_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bc_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
             <!-- SENARAI TUNTUTAN UNTUK DI SELESAIKAN (DENGAN INPUT AMAUN) -->
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
                 <label style="text-align: left;">Keputusan Tuntutan <span>*</span> <span style="font-size: 0.85em; color: var(--text-muted); font-weight: normal;">(Tanda dan isi amaun diperintahkan)</span></label>
@@ -636,6 +647,17 @@
                     <option value="Penuh">Penuh</option>
                     <option value="Ansuran">Ansuran</option>
                 </select>
+            </div>
+
+            <!-- CHECKBOX PENERIMA NOTIS MOU -->
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="mou_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="mou_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="mou_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="mou_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
             </div>
             
             <!-- SUIS BARU: MUNCUL JIKA ANSURAN & BERKUMPULAN SAHAJA -->
@@ -11907,6 +11929,10 @@ function bukaModalBorangC() {
     document.getElementById('bc_jumlah_perintah').value = '0.00';
     document.getElementById('bc_dibayar_pejabat').value = '0.00'; // <-- TAMBAH INI
     document.getElementById('ruangan_bc_dibayar_pejabat').style.display = 'none'; // <-- TAMBAH INI
+    
+    // Reset paparan checkbox penerima notis Borang C
+    document.querySelectorAll('input[name="bc_penerima"]').forEach(cb => cb.checked = false);
+
     const kes = memoriSenaraiKes[indexKesSemasa];
     let isMajikan = false; let isBerkumpulan = false;
     if (kes && kes.dataBorang && kes.dataBorang.inputs) {
@@ -12043,6 +12069,14 @@ function semakButangBorangC() {
 }
 function tindakanBorangC() {
     if (!document.getElementById('btnTindakanBorangC').disabled) {
+        
+        // Tangkap pilihan checkbox penerima notis Borang C
+        const penerimaNodeBC = document.querySelectorAll('input[name="bc_penerima"]:checked');
+        let senaraiPenerimaBC = Array.from(penerimaNodeBC).map(cb => cb.value);
+        
+        // Simpan senarai penerima ke memori global untuk ditarik oleh enjin preview Borang C
+        window.tempDataBorangC = { senaraiPenerima: senaraiPenerimaBC };
+
         bukaPreviewBorangC();
     }
 }
@@ -12612,6 +12646,9 @@ function bukaModalMou() {
     document.getElementById('auto_bil_ansuran').value = '';
     document.getElementById('auto_tarikh_mula').value = '';
     document.getElementById('ruangan_ansuran_mou').style.display = 'none';
+
+    // Reset paparan checkbox penerima notis MOU
+    document.querySelectorAll('input[name="mou_penerima"]').forEach(cb => cb.checked = false);
     
     const kes = memoriSenaraiKes[indexKesSemasa];
     let isMajikan = false; let isBerkumpulan = false;
@@ -12968,6 +13005,11 @@ function semakButangMou() {
     const kaedah = document.getElementById('mk_kaedah_mou')?.value;
     const jumlah = document.getElementById('mk_jumlah_mou')?.value;
     const btn = document.getElementById('btnTindakanMou');
+
+    // Tangkap pilihan checkbox penerima notis MOU
+    const penerimaNodeMOU = document.querySelectorAll('input[name="mou_penerima"]:checked');
+    let senaraiPenerimaMOU = Array.from(penerimaNodeMOU).map(cb => cb.value);
+    // (Anda boleh simpan senaraiPenerimaMOU ini ke dalam memori global untuk ditarik oleh enjin preview MOU anda)
     
     if (!btn) return;
 
