@@ -10953,11 +10953,21 @@ const htmlSamanMemo = `
 // FUNGSI KAWALAN POP-UP BATAL KES
 // =========================================================================
 function bukaModalBatalKes() {
+    // Reset radio button Kebebasan Memfailkan Semula
+    const radKebebasan = document.querySelector('input[name="bk_kebebasan"][value="Ya"]');
+    if (radKebebasan) radKebebasan.checked = true;
+    
+    // Reset dropdown Sebab Pembatalan
     document.getElementById('bk_sebab').value = '';
-    document.getElementById('bk_sebab_lain').value = '';
+    
+    // Reset ruangan Sebab Lain
     document.getElementById('ruangan_bk_sebab_lain').style.display = 'none';
-    document.querySelector('input[name="bk_kebebasan"][value="Ya"]').checked = true;
-    document.querySelector('input[name="bk_salinan"][value="Tidak"]').checked = true;
+    document.getElementById('bk_sebab_lain').value = '';
+
+    // Reset Checkbox Penerima Notis Perwakilan (Kosongkan Semua)
+    document.querySelectorAll('input[name="bk_penerima"]').forEach(cb => cb.checked = false);
+
+    // Buka Modal Batal Kes
     document.getElementById('modalBatalKes').style.display = 'flex';
 }
 
@@ -10967,20 +10977,15 @@ function kawalSebabBatal() {
         document.getElementById('ruangan_bk_sebab_lain').style.display = 'block';
     } else {
         document.getElementById('ruangan_bk_sebab_lain').style.display = 'none';
+        document.getElementById('bk_sebab_lain').value = '';
     }
 }
 
 function janaBatalKes() {
-    const kebebasan = document.querySelector('input[name="bk_kebebasan"]:checked').value;
+    const kebebasanNode = document.querySelector('input[name="bk_kebebasan"]:checked');
+    const kebebasan = kebebasanNode ? kebebasanNode.value : '';
     const sebab = document.getElementById('bk_sebab').value;
     const sebabLain = document.getElementById('bk_sebab_lain').value.trim();
-    const salinan = document.querySelector('input[name="bk_salinan"]:checked').value;
-    // Tangkap pilihan checkbox penerima notis Batal Kes
-    const penerimaNodeBK = document.querySelectorAll('input[name="bk_penerima"]:checked');
-    let senaraiPenerimaBK = Array.from(penerimaNodeBK).map(cb => cb.value);
-    // Simpan ke memori global untuk ditarik oleh enjin preview anda
-    window.tempDataBatalKes = window.tempDataBatalKes || {};
-    window.tempDataBatalKes.senaraiPenerima = senaraiPenerimaBK;
     
     if (sebab === '') {
         alert('Sila pilih Sebab Pembatalan.');
@@ -10991,18 +10996,29 @@ function janaBatalKes() {
         return;
     }
 
+    // Tangkap pilihan checkbox penerima notis Batal Kes
+    const penerimaNodeBK = document.querySelectorAll('input[name="bk_penerima"]:checked');
+    let senaraiPenerimaBK = Array.from(penerimaNodeBK).map(cb => cb.value);
+    
+    // Simpan senarai penerima ke memori global untuk ditarik oleh enjin preview
+    window.tempDataBatalKes = window.tempDataBatalKes || {};
+    window.tempDataBatalKes.senaraiPenerima = senaraiPenerimaBK;
+
+    // Tutup Pop-up
     document.getElementById('modalBatalKes').style.display = 'none';
     
-    // Simpan data pop-up sementara
+    // Simpan data pop-up asal supaya fungsi Preview Batal Kes lama tidak ralat
     window.tempDataBatal = {
         kebebasan: kebebasan,
         sebab: sebab,
         sebabLain: sebabLain,
-        salinan: salinan
+        salinan: "Tidak" // Nilai ini ditinggalkan untuk keserasian dengan koding Preview lama
     };
 
     // Terus buka surat
-    bukaPreviewBatalKes();
+    if (typeof bukaPreviewBatalKes === 'function') {
+        bukaPreviewBatalKes();
+    }
 }
 // 1. Kawal paparan medan "Lain-lain" pada modal
 function kawalSebabSebutanSemula() {
