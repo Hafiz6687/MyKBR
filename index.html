@@ -1460,7 +1460,7 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalBicaraTangguh()">
                             <span>⚖️ Bicara<br>(Tangguh)</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('bicara_sambung')">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalBicaraSambung()">
                             <span>⚖️ Bicara<br>(Sambung)</span>
                         </button>
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('keputusan')">
@@ -1672,18 +1672,82 @@ Portal rasmi : jtksm.mohr.gov.my
 <input type="hidden" id="mk_masa_bicara_tangguh">
 <input type="hidden" id="mk_tempat_bicara_tangguh">
 
-<div class="card full-width" id="kad_bicara_sambung" style="display: none;">
-    <div class="card-header">Penetapan Tarikh Perbicaraan (Sambung)</div>
-    <div class="card-body">
-        <div class="sebutan-grid-labels"><div class="info-label" style="margin:0;">Tarikh Bicara</div><div class="info-label" style="margin:0;">Masa Bicara</div><div class="info-label" style="margin:0;">Tempat Bicara</div><div></div></div>
-        <div class="sebutan-grid-inputs">
-            <div><input type="date" id="mk_tarikh_bicara_sambung" onchange="semakButangNotis('bicara_sambung')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="time" id="mk_masa_bicara_sambung" onchange="semakButangNotis('bicara_sambung')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="text" id="mk_tempat_bicara_sambung" value="Pejabat Tenaga Kerja Kluang" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><button id="btnTindakan_bicara_sambung" class="btn-save" style="width: 100%; height: 42px; font-size: 0.9em; opacity: 0.5; cursor: not-allowed;" onclick="bukaPreviewNotisGenerik('bicara_sambung')" disabled>📄 Jana Notis</button></div>
+<!-- MODAL POP-UP KHAS UNTUK BICARA (SAMBUNG) -->
+<div class="modal-overlay" id="modalBicaraSambung">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Jana Notis Perbicaraan Kes (Sambung)</div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+            <input type="date" id="bsc_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+        </div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+            <input type="text" id="bsc_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <!-- CHECKBOX PENERIMA NOTIS -->
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bsc_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bsc_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bsc_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bsc_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+        <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Perbicaraan</h5>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Bicara <span>*</span></label>
+                <input type="date" id="bsc_tarikh_bicara" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Bicara <span>*</span></label>
+                <input type="time" id="bsc_masa_bicara" style="width: 100%; box-sizing: border-box;">
+            </div>
+        </div>
+
+        <!-- TOGGLE ALAMAT BERBEZA -->
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <input type="checkbox" id="tempatBicaraSambungBerbeza" onchange="toggleTempatBicaraSambung()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
+                <label for="tempatBicaraSambungBerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat bicara berbeza dengan pejabat semasa?</label>
+            </div>
+            <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Bicara (Alamat Penuh) berbeza.</p>
+        </div>
+
+        <!-- WRAPPER ALAMAT BICARA SAMBUNG (Disembunyikan secara lalai) -->
+        <div id="ruanganTempatBicaraSambung" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Bicara (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="bsc_tempat_nama" placeholder="Nama Tempat (Cth: MAHKAMAH BURUH KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="bsc_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="bsc_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="bsc_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="bsc_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('bsc_poskod', 'bsc_negeri', 'bsc_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="bsc_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <input type="text" id="bsc_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modalBicaraSambung').style.display='none'">Batal</button>
+            <button class="btn-save" onclick="janaBicaraSambungDariModal()">✔ Teruskan</button>
         </div>
     </div>
 </div>
+
+<!-- HIDDEN INPUTS UNTUK KESERASIAN FUNGSI RESET ASAL (JANGAN PADAM) -->
+<input type="hidden" id="mk_tarikh_bicara_sambung">
+<input type="hidden" id="mk_masa_bicara_sambung">
+<input type="hidden" id="mk_tempat_bicara_sambung">
 
 <div class="card full-width" id="kad_keputusan" style="display: none;">
     <div class="card-header">Penetapan Tarikh Keputusan Kes</div>
@@ -3931,6 +3995,117 @@ function janaBicaraTangguhDariModal() {
     bukaPreviewNotisGenerik('bicara_tangguh'); // Buka terus ke skrin preview
 }
 // =========================================================================
+// FUNGSI KAWALAN POP-UP BICARA (SAMBUNG)
+// =========================================================================
+function toggleTempatBicaraSambung() {
+    const isBerbeza = document.getElementById('tempatBicaraSambungBerbeza').checked;
+    const ruangan = document.getElementById('ruanganTempatBicaraSambung');
+    if (isBerbeza) {
+        ruangan.style.display = 'block';
+    } else {
+        ruangan.style.display = 'none';
+        if(document.getElementById('bsc_tempat_nama')) document.getElementById('bsc_tempat_nama').value = '';
+        if(document.getElementById('bsc_alamat1')) document.getElementById('bsc_alamat1').value = '';
+        if(document.getElementById('bsc_alamat2')) document.getElementById('bsc_alamat2').value = '';
+        if(document.getElementById('bsc_alamat3')) document.getElementById('bsc_alamat3').value = '';
+        if(document.getElementById('bsc_poskod')) document.getElementById('bsc_poskod').value = '';
+        if(document.getElementById('bsc_bandar')) { document.getElementById('bsc_bandar').value = ''; document.getElementById('bsc_bandar').placeholder = 'Bandar'; }
+        if(document.getElementById('bsc_negeri')) { document.getElementById('bsc_negeri').value = ''; document.getElementById('bsc_negeri').placeholder = 'Negeri'; }
+    }
+}
+
+function bukaModalBicaraSambung() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    const td = new Date();
+    document.getElementById('bsc_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('bsc_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    let oldTarikh = document.getElementById('mk_tarikh_bicara_sambung')?.value || '';
+    let oldMasa = document.getElementById('mk_masa_bicara_sambung')?.value || '';
+    
+    // Reset paparan checkbox
+    document.querySelectorAll('input[name="bsc_penerima"]').forEach(cb => cb.checked = false);
+    document.getElementById('tempatBicaraSambungBerbeza').checked = false;
+    
+    if (window.tempDataBicaraSambung) {
+        oldTarikh = window.tempDataBicaraSambung.tarikhBicara;
+        oldMasa = window.tempDataBicaraSambung.masaBicara;
+        
+        if (window.tempDataBicaraSambung.isBerbeza) {
+            document.getElementById('tempatBicaraSambungBerbeza').checked = true;
+            document.getElementById('bsc_tempat_nama').value = window.tempDataBicaraSambung.tempatNama;
+            document.getElementById('bsc_alamat1').value = window.tempDataBicaraSambung.a1;
+            document.getElementById('bsc_alamat2').value = window.tempDataBicaraSambung.a2;
+            document.getElementById('bsc_alamat3').value = window.tempDataBicaraSambung.a3;
+            document.getElementById('bsc_poskod').value = window.tempDataBicaraSambung.pos;
+            document.getElementById('bsc_bandar').value = window.tempDataBicaraSambung.bdr;
+            document.getElementById('bsc_negeri').value = window.tempDataBicaraSambung.ngr;
+        }
+        
+        if (window.tempDataBicaraSambung.senaraiPenerima) {
+            window.tempDataBicaraSambung.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="bsc_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+    }
+    
+    toggleTempatBicaraSambung();
+
+    document.getElementById('bsc_tarikh_bicara').value = oldTarikh;
+    document.getElementById('bsc_masa_bicara').value = oldMasa;
+
+    document.getElementById('modalBicaraSambung').style.display = 'flex';
+}
+
+function janaBicaraSambungDariModal() {
+    const tarikhNotis = document.getElementById('bsc_tarikh_notis').value;
+    const pegawai = document.getElementById('bsc_pegawai').value.trim();
+    const tarikhBicara = document.getElementById('bsc_tarikh_bicara').value;
+    const masaBicara = document.getElementById('bsc_masa_bicara').value;
+    
+    const isBerbeza = document.getElementById('tempatBicaraSambungBerbeza').checked;
+    
+    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
+    
+    if (isBerbeza) {
+        tempatNama = document.getElementById('bsc_tempat_nama').value.trim();
+        a1 = document.getElementById('bsc_alamat1').value.trim();
+        a2 = document.getElementById('bsc_alamat2').value.trim();
+        a3 = document.getElementById('bsc_alamat3').value.trim();
+        pos = document.getElementById('bsc_poskod').value.trim();
+        bdr = document.getElementById('bsc_bandar').value.trim();
+        ngr = document.getElementById('bsc_negeri').value.trim();
+        
+        if (!tempatNama) {
+            alert("Sila lengkapkan Nama Tempat Bicara.");
+            return;
+        }
+    }
+
+    if (!tarikhNotis || !pegawai || !tarikhBicara || !masaBicara) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const penerimaNode = document.querySelectorAll('input[name="bsc_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Simpan ke hidden inputs untuk maintain reset loops
+    document.getElementById('mk_tarikh_bicara_sambung').value = tarikhBicara;
+    document.getElementById('mk_masa_bicara_sambung').value = masaBicara;
+
+    // Simpan data pop-up ke memori sementara
+    window.tempDataBicaraSambung = { tarikhNotis, pegawai, tarikhBicara, masaBicara, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    
+    document.getElementById('modalBicaraSambung').style.display = 'none';
+    bukaPreviewNotisGenerik('bicara_sambung'); // Buka terus ke skrin preview
+}
+// =========================================================================
 // FUNGSI GENERIK MENCETAK DAN PREVIEW NOTIS (Sebutan, Bicara, Keputusan)
 // =========================================================================
 window.isNotisPengaduPrinted = false;
@@ -4554,24 +4729,74 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (SAMBUNG)</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (SAMBUNG)</div>`;
         
-        let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-        let ptkBandar = "KLUANG";
-        let ptkNegeri = "JOHOR DARUL TAKZIM";
-        const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-        if (statsDiv) {
-            const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-            if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-            const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-            if (poskodLineIndex !== -1) {
-                ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                    ptkNegeri = lines[poskodLineIndex + 1].trim();
+        let lokasiMahkamahCetak = "";
+        
+        // INTERCEPT DATA DARI POP-UP BICARA SAMBUNG
+        let dBicaraSambung = window.tempDataBicaraSambung;
+        if (dBicaraSambung) {
+            tarikhRaw = dBicaraSambung.tarikhBicara;
+            masaRaw = dBicaraSambung.masaBicara;
+            tarikhMasaBaruGabung = formatTarikhMasaLengkap(tarikhRaw, masaRaw);
+            
+            let tN = new Date(dBicaraSambung.tarikhNotis);
+            if (!isNaN(tN)) {
+                tarikhSurat = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
+            }
+            
+            let pegawaiBicaraSambung = dBicaraSambung.pegawai.toUpperCase();
+            templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiBicaraSambung);
+            
+            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
+            if (dBicaraSambung.isBerbeza) {
+                let arrTpt = [dBicaraSambung.tempatNama, dBicaraSambung.a1, dBicaraSambung.a2, dBicaraSambung.a3].filter(Boolean);
+                let posBdr = [dBicaraSambung.pos, dBicaraSambung.bdr].filter(Boolean).join(' ');
+                if (posBdr) arrTpt.push(posBdr);
+                if (dBicaraSambung.ngr) arrTpt.push(dBicaraSambung.ngr);
+                lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+            } else {
+                // Ekstrak dari pejabat semasa jika TIDAK berbeza
+                let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+                let ptkBandar = "KLUANG";
+                let ptkNegeri = "JOHOR DARUL TAKZIM";
+                const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+                if (statsDiv) {
+                    const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+                    if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+                    const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+                    if (poskodLineIndex !== -1) {
+                        ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                        if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                            ptkNegeri = lines[poskodLineIndex + 1].trim();
+                        }
+                    }
+                }
+                const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
+                lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+            }
+            
+            window.dataNotisSemasa.tarikhStr = tarikhRaw;
+            window.dataNotisSemasa.masaStr = masaRaw;
+
+        } else {
+            // Lalai Asal (Jika tiada pop-up)
+            let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+            let ptkBandar = "KLUANG";
+            let ptkNegeri = "JOHOR DARUL TAKZIM";
+            const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+            if (statsDiv) {
+                const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+                if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+                const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+                if (poskodLineIndex !== -1) {
+                    ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                    if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                        ptkNegeri = lines[poskodLineIndex + 1].trim();
+                    }
                 }
             }
+            const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
+            lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
         }
-        
-        const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
-        const lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
 
         isiPengadu = `
             <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas akan disambung kepada <strong>${tarikhMasaBaruGabung}</strong> di Mahkamah Buruh di <strong>${lokasiMahkamahCetak}</strong>.</div>
@@ -4741,8 +4966,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         senaraiPenerimaSebutan = window.tempDataBicara.senaraiPenerima;
     } else if (kunci === 'bicara_tangguh' && window.tempDataBicaraTangguh && window.tempDataBicaraTangguh.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataBicaraTangguh.senaraiPenerima;
-    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh') {
-        // Jika bukan notis sebutan atau sebutan semula atau sebutan tangguh atau bicara, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
+    } else if (kunci === 'bicara_sambung' && window.tempDataBicaraSambung && window.tempDataBicaraSambung.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataBicaraSambung.senaraiPenerima;
+    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung') {
+        // Jika bukan notis di atas, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
 
