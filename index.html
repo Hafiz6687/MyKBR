@@ -13511,36 +13511,37 @@ function sortSenaraiTugas(col) {
             }
         }
     });
+// Simpan susunan baharu dan paparkan semula jadual
+        simpanSenaraiKeLokal();
+        renderSenaraiTugas();
+    }
+</script> <!-- ANDA TERTINGGAL PENUTUP INI YANG MENYEBABKAN CRASH -->
 
-    // Simpan susunan baharu dan paparkan semula jadual
-    simpanSenaraiKeLokal();
-    renderSenaraiTugas();
-}
 <!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-      import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-      // 1. Konfigurasi Firebase anda yang sebenar
-      const firebaseConfig = {
-        apiKey: "AIzaSyBpnwaC7BVbnVsd4TU-89vGdHEShSzS5cU",
-        authDomain: "mysystem-77219.firebaseapp.com",
-        projectId: "mysystem-77219",
-        storageBucket: "mysystem-77219.firebasestorage.app",
-        messagingSenderId: "48926763177",
-        appId: "1:48926763177:web:c1a8deabf607e86ffae1b8"
-      };
+  // 1. Konfigurasi Firebase anda yang sebenar
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpnwaC7BVbnVsd4TU-89vGdHEShSzS5cU",
+    authDomain: "mysystem-77219.firebaseapp.com",
+    projectId: "mysystem-77219",
+    storageBucket: "mysystem-77219.firebasestorage.app",
+    messagingSenderId: "48926763177",
+    appId: "1:48926763177:web:c1a8deabf607e86ffae1b8"
+  };
 
-      // 2. Inisialisasi Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+  // 2. Inisialisasi Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-      // Jadikan ia global supaya fungsi asal anda boleh mengaksesnya
-      window.db = db;
-      window.collection = collection;
-      window.getDocs = getDocs;
-      window.doc = doc;
-      window.setDoc = setDoc;
-    </script>
+  // Jadikan ia global supaya fungsi asal anda boleh mengaksesnya
+  window.db = db;
+  window.collection = collection;
+  window.getDocs = getDocs;
+  window.doc = doc;
+  window.setDoc = setDoc;
+</script>
 </body>
 </html>
