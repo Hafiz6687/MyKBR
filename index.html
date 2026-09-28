@@ -1000,6 +1000,17 @@
                 <input type="text" id="st_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
 
+            <!-- CHECKBOX PENERIMA NOTIS -->
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="st_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="st_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="st_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="st_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
             <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">2. Maklumat Saman Hadir (Borang A)</h5>
             
@@ -1014,25 +1025,42 @@
                 </div>
             </div>
 
-            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                <label style="text-align: left; margin-bottom: 5px;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
-                <input type="text" id="st_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="st_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="st_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="st_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                    <input type="text" id="st_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('st_poskod', 'st_negeri', 'st_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
-                    <input type="text" id="st_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            <!-- TOGGLE ALAMAT BERBEZA -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <input type="checkbox" id="tempatSamanTampalBerbeza" onchange="toggleTempatSamanTampal()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
+                    <label for="tempatSamanTampalBerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat saman hadir berbeza dengan pejabat semasa?</label>
                 </div>
-                <input type="text" id="st_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Saman Hadir (Alamat Penuh) berbeza.</p>
+            </div>
+
+            <!-- WRAPPER ALAMAT SAMAN TAMPAL (Disembunyikan secara lalai) -->
+            <div id="ruanganTempatSamanTampal" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
+                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                    <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
+                    <input type="text" id="st_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" id="st_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" id="st_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                    <input type="text" id="st_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="st_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('st_poskod', 'st_negeri', 'st_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                        <input type="text" id="st_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                    <input type="text" id="st_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
             </div>
 
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="document.getElementById('modalSamanTampal').style.display='none'">Batal</button>
-                <button class="btn-save" onclick="janaSamanTampal()">✔ Teruskan</button>
+                <button class="btn-save" onclick="janaSamanTampalDariModal()">✔ Teruskan</button>
             </div>
         </div>
     </div>
+
+<!-- HIDDEN INPUTS UNTUK KESERASIAN FUNGSI RESET ASAL (JANGAN PADAM) -->
+<input type="hidden" id="mk_tarikh_saman_tampal">
+<input type="hidden" id="mk_masa_saman_tampal">
+<input type="hidden" id="mk_tempat_saman_tampal">
 
 <!-- MODAL POP-UP KHAS UNTUK TAMBAH PERWAKILAN / SAKSI -->
     <div class="modal-overlay" id="modalPerwakilan">
@@ -5256,7 +5284,9 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         senaraiPenerimaSebutan = window.tempDataBicaraSambung.senaraiPenerima;
     } else if (kunci === 'keputusan' && window.tempDataKeputusan && window.tempDataKeputusan.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataKeputusan.senaraiPenerima;
-    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung' && kunci !== 'keputusan') {
+    } else if (kunci === 'saman_tampal' && window.tempDataSamanTampal && window.tempDataSamanTampal.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataSamanTampal.senaraiPenerima;
+    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung' && kunci !== 'keputusan' && kunci !== 'saman_tampal') {
         // Jika bukan notis di atas, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
@@ -10082,6 +10112,131 @@ function janaSamanMemoDariModal() {
         tindakanSamanMemo();
     } else {
         console.error("Fungsi tindakanSamanMemo() tidak dijumpai dalam skrip.");
+    }
+}
+// =========================================================================
+// FUNGSI KAWALAN POP-UP SAMAN TAMPAL & BORANG A
+// =========================================================================
+function toggleTempatSamanTampal() {
+    const isBerbeza = document.getElementById('tempatSamanTampalBerbeza').checked;
+    const ruangan = document.getElementById('ruanganTempatSamanTampal');
+    if (isBerbeza) {
+        ruangan.style.display = 'block';
+    } else {
+        ruangan.style.display = 'none';
+        if(document.getElementById('st_tempat_nama')) document.getElementById('st_tempat_nama').value = '';
+        if(document.getElementById('st_alamat1')) document.getElementById('st_alamat1').value = '';
+        if(document.getElementById('st_alamat2')) document.getElementById('st_alamat2').value = '';
+        if(document.getElementById('st_alamat3')) document.getElementById('st_alamat3').value = '';
+        if(document.getElementById('st_poskod')) document.getElementById('st_poskod').value = '';
+        if(document.getElementById('st_bandar')) { document.getElementById('st_bandar').value = ''; document.getElementById('st_bandar').placeholder = 'Bandar'; }
+        if(document.getElementById('st_negeri')) { document.getElementById('st_negeri').value = ''; document.getElementById('st_negeri').placeholder = 'Negeri'; }
+    }
+}
+
+function bukaModalSamanTampal() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    const td = new Date();
+    document.getElementById('st_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('st_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    let oldTarikh = document.getElementById('mk_tarikh_saman_tampal')?.value || '';
+    let oldMasa = document.getElementById('mk_masa_saman_tampal')?.value || '';
+    
+    // Reset paparan checkbox & tempat
+    document.querySelectorAll('input[name="st_penerima"]').forEach(cb => cb.checked = false);
+    document.getElementById('tempatSamanTampalBerbeza').checked = false;
+    if(document.getElementById('st_tempat_tampal')) document.getElementById('st_tempat_tampal').value = '';
+    
+    if (window.tempDataSamanTampal) {
+        if (window.tempDataSamanTampal.tarikhHadir) oldTarikh = window.tempDataSamanTampal.tarikhHadir;
+        if (window.tempDataSamanTampal.masaHadir) oldMasa = window.tempDataSamanTampal.masaHadir;
+        if (window.tempDataSamanTampal.tempatTampal) document.getElementById('st_tempat_tampal').value = window.tempDataSamanTampal.tempatTampal;
+        
+        if (window.tempDataSamanTampal.isBerbeza) {
+            document.getElementById('tempatSamanTampalBerbeza').checked = true;
+            document.getElementById('st_tempat_nama').value = window.tempDataSamanTampal.tempatNama;
+            document.getElementById('st_alamat1').value = window.tempDataSamanTampal.a1;
+            document.getElementById('st_alamat2').value = window.tempDataSamanTampal.a2;
+            document.getElementById('st_alamat3').value = window.tempDataSamanTampal.a3;
+            document.getElementById('st_poskod').value = window.tempDataSamanTampal.pos;
+            document.getElementById('st_bandar').value = window.tempDataSamanTampal.bdr;
+            document.getElementById('st_negeri').value = window.tempDataSamanTampal.ngr;
+        }
+        
+        if (window.tempDataSamanTampal.senaraiPenerima) {
+            window.tempDataSamanTampal.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="st_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+    }
+    
+    toggleTempatSamanTampal();
+
+    document.getElementById('st_tarikh_hadir').value = oldTarikh;
+    document.getElementById('st_masa_hadir').value = oldMasa;
+
+    document.getElementById('modalSamanTampal').style.display = 'flex';
+}
+
+function janaSamanTampalDariModal() {
+    const tarikhNotis = document.getElementById('st_tarikh_notis').value;
+    const tempatTampal = document.getElementById('st_tempat_tampal').value.trim();
+    const pegawai = document.getElementById('st_pegawai').value.trim();
+    const tarikhHadir = document.getElementById('st_tarikh_hadir').value;
+    const masaHadir = document.getElementById('st_masa_hadir').value;
+    
+    const isBerbeza = document.getElementById('tempatSamanTampalBerbeza').checked;
+    
+    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
+    
+    if (isBerbeza) {
+        tempatNama = document.getElementById('st_tempat_nama').value.trim();
+        a1 = document.getElementById('st_alamat1').value.trim();
+        a2 = document.getElementById('st_alamat2').value.trim();
+        a3 = document.getElementById('st_alamat3').value.trim();
+        pos = document.getElementById('st_poskod').value.trim();
+        bdr = document.getElementById('st_bandar').value.trim();
+        ngr = document.getElementById('st_negeri').value.trim();
+        
+        if (!tempatNama) {
+            alert("Sila lengkapkan Nama Tempat Saman Hadir.");
+            return;
+        }
+    }
+
+    if (!tarikhNotis || !tempatTampal || !pegawai || !tarikhHadir || !masaHadir) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const penerimaNode = document.querySelectorAll('input[name="st_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Simpan ke hidden inputs untuk maintain reset loops
+    const mkTarikhSamanTampal = document.getElementById('mk_tarikh_saman_tampal');
+    const mkMasaSamanTampal = document.getElementById('mk_masa_saman_tampal');
+    if (mkTarikhSamanTampal) mkTarikhSamanTampal.value = tarikhHadir;
+    if (mkMasaSamanTampal) mkMasaSamanTampal.value = masaHadir;
+
+    // Simpan data pop-up ke memori sementara (proxy bridge)
+    window.tempDataSamanTampal = { 
+        tarikhNotis, tempatTampal, pegawai, tarikhHadir, masaHadir, 
+        isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima 
+    };
+    
+    document.getElementById('modalSamanTampal').style.display = 'none';
+    
+    // Panggil fungsi Preview asal tanpa sebarang gangguan
+    if (typeof janaSamanTampal === 'function') {
+        janaSamanTampal();
+    } else {
+        console.warn("Fungsi janaSamanTampal tidak dijumpai. Sila pastikan fungsi asal sedia ada.");
     }
 }
 // =========================================================================
