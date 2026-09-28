@@ -1410,7 +1410,7 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('sebutan_semula')">
                             <span>📅 Sebutan Kes<br>(Penetapan semula)</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('sebutan_tangguh')">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalSebutanTangguh()">
                             <span>📅 Sebutan Kes<br>(Tangguh)</span>
                         </button>
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalMou()">
@@ -1500,15 +1500,61 @@ Portal rasmi : jtksm.mohr.gov.my
 </div>
 
             <!-- KAD-KAD TAMBAHAN NOTIS (GENERIK) -->
-<div class="card full-width" id="kad_sebutan_tangguh" style="display: none;">
-    <div class="card-header">Penetapan Tarikh Sebutan Kes (Tangguh)</div>
-    <div class="card-body">
-        <div class="sebutan-grid-labels"><div class="info-label" style="margin:0;">Tarikh Sebutan</div><div class="info-label" style="margin:0;">Masa Sebutan</div><div class="info-label" style="margin:0;">Tempat Sebutan</div><div></div></div>
-        <div class="sebutan-grid-inputs">
-            <div><input type="date" id="mk_tarikh_sebutan_tangguh" onchange="semakButangNotis('sebutan_tangguh')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="time" id="mk_masa_sebutan_tangguh" onchange="semakButangNotis('sebutan_tangguh')" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><input type="text" id="mk_tempat_sebutan_tangguh" value="Pejabat Tenaga Kerja Kluang" style="margin:0; height: 42px; box-sizing: border-box;"></div>
-            <div><button id="btnTindakan_sebutan_tangguh" class="btn-save" style="width: 100%; height: 42px; font-size: 0.9em; opacity: 0.5; cursor: not-allowed;" onclick="bukaPreviewNotisGenerik('sebutan_tangguh')" disabled>📄 Jana Notis</button></div>
+<!-- MODAL POP-UP KHAS UNTUK SEBUTAN KES (TANGGUH) -->
+<div class="modal-overlay" id="modalSebutanTangguh">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Jana Notis Sebutan Kes (Tangguh)</div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+            <input type="date" id="stg_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+        </div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+            <input type="text" id="stg_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="stg_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="stg_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="stg_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="stg_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+        <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Sebutan</h5>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Sebutan <span>*</span></label>
+                <input type="date" id="stg_tarikh_sebutan" style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div>
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Sebutan <span>*</span></label>
+                <input type="time" id="stg_masa_sebutan" style="width: 100%; box-sizing: border-box;">
+            </div>
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left; margin-bottom: 5px;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
+            <input type="text" id="stg_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="stg_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('stg_poskod', 'stg_negeri', 'stg_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                <input type="text" id="stg_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+            <input type="text" id="stg_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modalSebutanTangguh').style.display='none'">Batal</button>
+            <button class="btn-save" onclick="janaSebutanTangguhDariModal()">✔ Teruskan</button>
         </div>
     </div>
 </div>
@@ -3452,7 +3498,89 @@ function janaSebutanDariModal() {
     
     document.getElementById('modalSebutan').style.display = 'none';
 }
+// =========================================================================
+// FUNGSI KAWALAN POP-UP SEBUTAN TANGGUH
+// =========================================================================
+function bukaModalSebutanTangguh() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
 
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
+    const td = new Date();
+    document.getElementById('stg_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // 2. Ekstrak Nama Pegawai
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('stg_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    // 3. Muatkan data jika sudah pernah disetup sebelumnya
+    let oldTarikh = document.getElementById('stg_tarikh_sebutan')?.value || '';
+    let oldMasa = document.getElementById('stg_masa_sebutan')?.value || '';
+    
+    if (window.tempDataSebutanTangguh) {
+        oldTarikh = window.tempDataSebutanTangguh.tarikhSebutan;
+        oldMasa = window.tempDataSebutanTangguh.masaSebutan;
+        document.getElementById('stg_tempat_nama').value = window.tempDataSebutanTangguh.tempatNama;
+        document.getElementById('stg_alamat1').value = window.tempDataSebutanTangguh.a1;
+        document.getElementById('stg_alamat2').value = window.tempDataSebutanTangguh.a2;
+        document.getElementById('stg_alamat3').value = window.tempDataSebutanTangguh.a3;
+        document.getElementById('stg_poskod').value = window.tempDataSebutanTangguh.pos;
+        document.getElementById('stg_bandar').value = window.tempDataSebutanTangguh.bdr;
+        document.getElementById('stg_negeri').value = window.tempDataSebutanTangguh.ngr;
+    } else {
+        // Lalai alamat penuh pejabat
+        document.getElementById('stg_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+        document.getElementById('stg_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+        document.getElementById('stg_alamat2').value = '';
+        document.getElementById('stg_alamat3').value = '';
+        document.getElementById('stg_poskod').value = '86000';
+        document.getElementById('stg_bandar').value = 'KLUANG';
+        document.getElementById('stg_negeri').value = 'JOHOR';
+    }
+
+    document.getElementById('stg_tarikh_sebutan').value = oldTarikh;
+    document.getElementById('stg_masa_sebutan').value = oldMasa;
+
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="stg_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSebutanTangguh && window.tempDataSebutanTangguh.senaraiPenerima) {
+        window.tempDataSebutanTangguh.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="stg_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
+    document.getElementById('modalSebutanTangguh').style.display = 'flex';
+}
+
+function janaSebutanTangguhDariModal() {
+    const tarikhNotis = document.getElementById('stg_tarikh_notis').value;
+    const pegawai = document.getElementById('stg_pegawai').value.trim();
+    const tarikhSebutan = document.getElementById('stg_tarikh_sebutan').value;
+    const masaSebutan = document.getElementById('stg_masa_sebutan').value;
+    const tempatNama = document.getElementById('stg_tempat_nama').value.trim();
+
+    if (!tarikhNotis || !pegawai || !tarikhSebutan || !masaSebutan || !tempatNama) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const a1 = document.getElementById('stg_alamat1').value.trim();
+    const a2 = document.getElementById('stg_alamat2').value.trim();
+    const a3 = document.getElementById('stg_alamat3').value.trim();
+    const pos = document.getElementById('stg_poskod').value.trim();
+    const bdr = document.getElementById('stg_bandar').value.trim();
+    const ngr = document.getElementById('stg_negeri').value.trim();
+
+    const penerimaNode = document.querySelectorAll('input[name="stg_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Simpan data pop-up ke memori sementara
+    window.tempDataSebutanTangguh = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    
+    document.getElementById('modalSebutanTangguh').style.display = 'none';
+    bukaPreviewNotisGenerik('sebutan_tangguh'); 
+}
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
@@ -3684,6 +3812,12 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         masaRaw = window.tempDataSebutanSemula.masaSebutan;
     }
 
+    // INTERCEPT KHAS UNTUK SEBUTAN TANGGUH DARI POP-UP
+    if (kunci === 'sebutan_tangguh' && window.tempDataSebutanTangguh) {
+        tarikhRaw = window.tempDataSebutanTangguh.tarikhSebutan;
+        masaRaw = window.tempDataSebutanTangguh.masaSebutan;
+    }
+
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     let tarikhText = "[Tarikh]";
     if (tarikhRaw && tarikhRaw !== '-') { let t = new Date(tarikhRaw); if (!isNaN(t)) tarikhText = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`; }
@@ -3732,8 +3866,30 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}</div>`;
 
+        let lokasiPejabatCetak = "";
+        
+        // INTERCEPT DATA DARI POP-UP SEBUTAN TANGGUH
+        if (window.tempDataSebutanTangguh) {
+            let dSebutanTangguh = window.tempDataSebutanTangguh;
+            
+            let tN = new Date(dSebutanTangguh.tarikhNotis);
+            if (!isNaN(tN)) tarikhSurat = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
+            
+            let pegawaiSebutanTangguh = dSebutanTangguh.pegawai.toUpperCase();
+            templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSebutanTangguh);
+            
+            let arrTpt = [dSebutanTangguh.tempatNama, dSebutanTangguh.a1, dSebutanTangguh.a2, dSebutanTangguh.a3].filter(Boolean);
+            let posBdr = [dSebutanTangguh.pos, dSebutanTangguh.bdr].filter(Boolean).join(' ');
+            if (posBdr) arrTpt.push(posBdr);
+            if (dSebutanTangguh.ngr) arrTpt.push(dSebutanTangguh.ngr);
+            
+            lokasiPejabatCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+        }
+
+        let ayatDiTempatHadir = window.tempDataSebutanTangguh ? `di <strong>${lokasiPejabatCetak}</strong>` : `di pejabat ini`;
+
         let p2Pengadu = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, Mahkamah Buruh telah menerima suatu permohonan bagi penangguhan kes daripada pihak <strong>${namaD}</strong>. Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes.</div>`;
-        let p3Pengadu = `<div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir di pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>`;
+        let p3Pengadu = `<div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>`;
         
         isiPengadu = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
@@ -3746,10 +3902,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         isiPeguamPengadu = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
             ${p2Pengadu}
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta mengarahkan anak guam tuan hadir di pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong>. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta mengarahkan anak guam tuan hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong>. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
         `;
 
-        let p2Defendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong>.</div>`;
+        let p2Defendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong> ${ayatDiTempatHadir}.</div>`;
         
         isiDefendan = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
@@ -3757,7 +3913,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         `;
 
         // KHAS UNTUK PEGUAM DEFENDAN (Perkara 2 ditukar)
-        let p2PeguamDefendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan/anak guam tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong>.</div>`;
+        let p2PeguamDefendan = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, berhubung suatu permohonan penangguhan kes yang dikemukakan oleh pihak tuan/anak guam tuan, Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes kepada <strong>${tarikhMasaBaruGabung}</strong> ${ayatDiTempatHadir}.</div>`;
         
         isiPeguamDefendan = `
             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
@@ -4233,8 +4389,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         senaraiPenerimaSebutan = window.tempDataSebutan.senaraiPenerima;
     } else if (kunci === 'sebutan_semula' && window.tempDataSebutanSemula && window.tempDataSebutanSemula.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataSebutanSemula.senaraiPenerima;
-    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula') {
-        // Jika bukan notis sebutan atau sebutan semula, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
+    } else if (kunci === 'sebutan_tangguh' && window.tempDataSebutanTangguh && window.tempDataSebutanTangguh.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataSebutanTangguh.senaraiPenerima;
+    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh') {
+        // Jika bukan notis sebutan atau sebutan semula atau sebutan tangguh, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
 
