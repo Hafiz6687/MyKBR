@@ -517,7 +517,19 @@
                 <input type="text" id="tb_jawatanWakil" placeholder="Contoh: Pengurus Sumber Manusia" oninput="hurufBesarSetiapPerkataan(this)">
             </div>
 
-<div class="modal-actions">
+            <!-- CHECKBOX PENERIMA NOTIS TARIK BALIK -->
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="tb_penerima" value="Defendan"> Defendan</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="tb_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="tb_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="tb_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="tb_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
                 <button class="btn-cancel" onclick="document.getElementById('modalTarikBalikMajikan').style.display='none'">Batal</button>
                 <button class="btn-save" onclick="janaTarikBalikMajikan()">✔ Teruskan</button>
             </div>
@@ -554,11 +566,15 @@
                 <textarea id="bk_sebab_lain" rows="3" class="auto-expand" style="resize: vertical; width: 100%; box-sizing: border-box;"></textarea>
             </div>
 
+            <!-- CHECKBOX PENERIMA NOTIS BATAL KES -->
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                <label style="text-align: left;">Salinan kepada Defendan (s.k.) <span>*</span></label>
-                <div class="input-wrapper radio-group">
-                    <label><input type="radio" name="bk_salinan" value="Ya"> Ya</label>
-                    <label><input type="radio" name="bk_salinan" value="Tidak" checked> Tidak</label>
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bk_penerima" value="Defendan"> Defendan</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bk_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bk_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bk_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="bk_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
                 </div>
             </div>
 
@@ -773,7 +789,33 @@
             </div>
         </div>
     </div>
+<!-- MODAL POP-UP KHAS UNTUK ALAMAT TERKINI DEFENDAN -->
+    <div class="modal-overlay" id="modalAlamatTerkini">
+        <div class="modal-box">
+            <div class="modal-title">Jana Notis Alamat Terkini Defendan</div>
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+                <input type="date" id="atd_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+            </div>
 
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Tambahan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk salinan s.k. / notis wakil)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="atd_penerima" value="Defendan" checked> Defendan</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="atd_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="atd_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="atd_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="atd_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('modalAlamatTerkini').style.display='none'">Batal</button>
+                <button class="btn-save" onclick="janaAlamatTerkiniDariModal()">✔ Teruskan</button>
+            </div>
+        </div>
+    </div>
 <!-- MODAL POP-UP KHAS UNTUK JANA NOTIS LAIN-LAIN -->
     <div class="modal-overlay" id="modalNotisLain">
         <div class="modal-box">
@@ -1494,7 +1536,7 @@ Portal rasmi : jtksm.mohr.gov.my
                          <button class="btn-terapung" style="background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPeringatanBayaran('Borang C')">
                             <span>⚠️ Peringatan<br>Bayaran Perintah</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('alamat')">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalAlamatTerkini()">
                             <span>📍 Alamat Terkini<br>Defendan</span>
                         </button>
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaPreviewTarikBalik()">
@@ -9019,6 +9061,12 @@ function janaTarikBalikMajikan() {
     const jenis = document.getElementById('tb_jenisPendWakil').value;
     const idWakil = document.getElementById('tb_idWakil').value.trim();
     const jawatan = document.getElementById('tb_jawatanWakil').value.trim();
+    // Tangkap pilihan checkbox penerima notis Tarik Balik
+    const penerimaNodeTB = document.querySelectorAll('input[name="tb_penerima"]:checked');
+    let senaraiPenerimaTB = Array.from(penerimaNodeTB).map(cb => cb.value);
+    // Simpan ke memori global untuk ditarik oleh enjin preview anda
+    window.tempDataWakil = window.tempDataWakil || {}; 
+    window.tempDataWakil.senaraiPenerima = senaraiPenerimaTB;
     
     if (!nama || !jenis || !idWakil || !jawatan) {
         alert("Sila lengkapkan semua maklumat wakil majikan.");
@@ -10927,7 +10975,13 @@ function janaBatalKes() {
     const sebab = document.getElementById('bk_sebab').value;
     const sebabLain = document.getElementById('bk_sebab_lain').value.trim();
     const salinan = document.querySelector('input[name="bk_salinan"]:checked').value;
-
+    // Tangkap pilihan checkbox penerima notis Batal Kes
+    const penerimaNodeBK = document.querySelectorAll('input[name="bk_penerima"]:checked');
+    let senaraiPenerimaBK = Array.from(penerimaNodeBK).map(cb => cb.value);
+    // Simpan ke memori global untuk ditarik oleh enjin preview anda
+    window.tempDataBatalKes = window.tempDataBatalKes || {};
+    window.tempDataBatalKes.senaraiPenerima = senaraiPenerimaBK;
+    
     if (sebab === '') {
         alert('Sila pilih Sebab Pembatalan.');
         return;
@@ -14000,7 +14054,66 @@ function janaPeringatanBayaran() {
         bukaPreviewPeringatanBorangC();
     }
 }
+// =========================================================================
+// FUNGSI KAWALAN POP-UP ALAMAT TERKINI DEFENDAN
+// =========================================================================
+function bukaModalAlamatTerkini() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
 
+    // Auto-isi Tarikh Notis (Hari Ini)
+    const td = new Date();
+    document.getElementById('atd_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // Reset check box penerima kepada default (Hanya Defendan di-check)
+    document.querySelectorAll('input[name="atd_penerima"]').forEach(cb => {
+        if (cb.value === "Defendan") {
+            cb.checked = true;
+        } else {
+            cb.checked = false;
+        }
+    });
+    
+    // Muatkan kembali data yang disimpan jika user pernah setup sebelum ini
+    if (window.tempDataAlamatTerkini) {
+        if (window.tempDataAlamatTerkini.tarikhNotis) {
+            document.getElementById('atd_tarikh_notis').value = window.tempDataAlamatTerkini.tarikhNotis;
+        }
+        if (window.tempDataAlamatTerkini.senaraiPenerima) {
+            document.querySelectorAll('input[name="atd_penerima"]').forEach(cb => cb.checked = false);
+            window.tempDataAlamatTerkini.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="atd_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+    }
+
+    document.getElementById('modalAlamatTerkini').style.display = 'flex';
+}
+
+function janaAlamatTerkiniDariModal() {
+    const tarikhNotis = document.getElementById('atd_tarikh_notis').value;
+    
+    if (!tarikhNotis) {
+        alert("Sila lengkapkan Tarikh Notis.");
+        return;
+    }
+
+    const penerimaNode = document.querySelectorAll('input[name="atd_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Simpan data pop-up ke memori sementara (objek proxy bridge)
+    window.tempDataAlamatTerkini = { tarikhNotis, senaraiPenerima };
+    
+    document.getElementById('modalAlamatTerkini').style.display = 'none';
+    
+    // Panggil fungsi Preview asal tanpa diganggu
+    if (typeof bukaPreviewNotisGenerik === 'function') {
+        bukaPreviewNotisGenerik('alamat');
+    } else {
+        console.warn('Fungsi janaan notis alamat terkini akan disambung oleh sistem kemudian.');
+    }
+}
 // =========================================================
 // FUNGSI PREVIEW PERINGATAN BAYARAN (MOU & BORANG C)
 // =========================================================
