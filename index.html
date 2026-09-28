@@ -1036,6 +1036,16 @@
                 <input type="text" id="ss_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
 
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="ss_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="ss_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="ss_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="ss_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
             <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Sebab Penetapan Semula</h5>
 
@@ -4191,8 +4201,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     let senaraiPenerimaSebutan = [];
     if (kunci === 'sebutan' && window.tempDataSebutan && window.tempDataSebutan.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataSebutan.senaraiPenerima;
-    } else if (kunci !== 'sebutan') {
-        // Jika bukan notis sebutan, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
+    } else if (kunci === 'sebutan_semula' && window.tempDataSebutanSemula && window.tempDataSebutanSemula.senaraiPenerima) {
+        senaraiPenerimaSebutan = window.tempDataSebutanSemula.senaraiPenerima;
+    } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula') {
+        // Jika bukan notis sebutan atau sebutan semula, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
 
@@ -9784,6 +9796,15 @@ function bukaModalSebutanSemula() {
     document.getElementById('ss_sebab_lain').value = 'namun '; 
     document.getElementById('ruangan_ss_sebab_lain').style.display = 'none';
 
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="ss_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSebutanSemula && window.tempDataSebutanSemula.senaraiPenerima) {
+        window.tempDataSebutanSemula.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="ss_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
     // 3. Muatkan data jika sudah pernah disetup (seperti kemaskini)
     if (window.tempDataSebutanSemula) {
         document.getElementById('ss_tarikh_sebutan').value = window.tempDataSebutanSemula.tarikhSebutan;
@@ -9885,12 +9906,14 @@ function janaSebutanSemulaDariModal() {
     const bdr = document.getElementById('ss_bandar').value.trim();
     const ngr = document.getElementById('ss_negeri').value.trim();
 
+    const penerimaNode = document.querySelectorAll('input[name="ss_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
     const sebabAkhir = sebab === 'Lain-lain' ? sebabLain : sebab;
     
     // Simpan maklumat ke dalam memori
     window.tempSebabSebutanSemula = sebabAkhir;
-    window.tempDataSebutanSemula = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr };
-    
+    window.tempDataSebutanSemula = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     document.getElementById('modalSebutanSemula').style.display = 'none';
 
     // Buka preview dokumen
