@@ -1013,9 +1013,22 @@
     </div>
     <!-- ⬇️ LETAKKAN MODAL SEBUTAN SEMULA DI SINI ⬇️ -->
     <div class="modal-overlay" id="modalSebutanSemula">
-        <div class="modal-box">
-            <div class="modal-title">Sebab Penetapan Semula Sebutan Kes</div>
+        <div class="modal-box" style="max-width: 650px;">
+            <div class="modal-title">Jana Notis Sebutan Kes (Penetapan Semula)</div>
             
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+                <input type="date" id="ss_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+                <input type="text" id="ss_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+            <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Sebab Penetapan Semula</h5>
+
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
                 <label style="text-align: left;">Sebab Penetapan Semula <span>*</span></label>
                 <select id="ss_sebab" onchange="kawalSebabSebutanSemula()" style="width: 100%; box-sizing: border-box;">
@@ -1028,6 +1041,33 @@
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px; display: none;" id="ruangan_ss_sebab_lain">
                 <label style="text-align: left;">Nyatakan Sebab Lain <span>*</span></label>
                 <textarea id="ss_sebab_lain" rows="3" class="auto-expand" placeholder="Sila nyatakan sebab lain..." style="resize: vertical; width: 100%; box-sizing: border-box;" oninput="autoResize(this)"></textarea>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+            <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Sebutan Semula</h5>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Sebutan <span>*</span></label>
+                    <input type="date" id="ss_tarikh_sebutan" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Sebutan <span>*</span></label>
+                    <input type="time" id="ss_masa_sebutan" style="width: 100%; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left; margin-bottom: 5px;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="ss_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="ss_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('ss_poskod', 'ss_negeri', 'ss_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="ss_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <input type="text" id="ss_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
 
             <div class="modal-actions">
@@ -3555,8 +3595,13 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         if (elM && elM.value) masaRaw = elM.value;
     }
 
+    // INTERCEPT KHAS UNTUK SEBUTAN SEMULA DARI POP-UP
+    if (kunci === 'sebutan_semula' && window.tempDataSebutanSemula) {
+        tarikhRaw = window.tempDataSebutanSemula.tarikhSebutan;
+        masaRaw = window.tempDataSebutanSemula.masaSebutan;
+    }
+
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
-    
     let tarikhText = "[Tarikh]";
     if (tarikhRaw && tarikhRaw !== '-') { let t = new Date(tarikhRaw); if (!isNaN(t)) tarikhText = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`; }
     
@@ -3715,6 +3760,24 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         }
 
         let tempatSamanRaw = 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim';
+        
+        // INTERCEPT DATA ALAMAT & PEGAWAI DARI POP-UP SEBUTAN SEMULA
+        if (window.tempDataSebutanSemula) {
+            let dSemula = window.tempDataSebutanSemula;
+            let arrTpt = [dSemula.tempatNama, dSemula.a1, dSemula.a2, dSemula.a3].filter(Boolean);
+            let posBdr = [dSemula.pos, dSemula.bdr].filter(Boolean).join(' ');
+            if (posBdr) arrTpt.push(posBdr);
+            if (dSemula.ngr) arrTpt.push(dSemula.ngr);
+            tempatSamanRaw = arrTpt.join(', ').toUpperCase();
+
+            // Override Tarikh Surat & Nama Pegawai
+            let tN = new Date(dSemula.tarikhNotis);
+            if (!isNaN(tN)) tarikhSurat = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
+            
+            let pegawaiSemula = dSemula.pegawai.toUpperCase();
+            templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSemula);
+        }
+
         let tarikhSebutanDD = ".......";
         let tarikhSebutanMMYYYY = "........................";
         
@@ -8987,6 +9050,12 @@ function toggleKadUrus(jenis) {
         return;
     }
 
+    // PINTASAN POP-UP UNTUK SEBUTAN KES (PENETAPAN SEMULA)
+    if (jenis === 'sebutan_semula') {
+        bukaModalSebutanSemula();
+        return;
+    }
+
     const mapKad = {
         'sebutan':          'kad_sebutan_kes',
         'sebutan_tangguh':  'kad_sebutan_tangguh',
@@ -9610,43 +9679,86 @@ function kawalSebabSebutanSemula() {
     }
 }
 
-// 2. Fungsi apabila butang "Jana Notis" pada Kad Sebutan Kes (Penetapan Semula) ditekan
+// 2. Fungsi apabila butang pada menu "Sebutan Kes (Penetapan Semula)" ditekan
 function bukaModalSebutanSemula() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
+    const td = new Date();
+    document.getElementById('ss_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // 2. Ekstrak Nama Pegawai
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('ss_pegawai').value = namaPegawaiRaw.toUpperCase();
+
     document.getElementById('ss_sebab').value = '';
-    
-    // Wujudkan perkataan "namun " sebagai idea permulaan kepada pengguna
     document.getElementById('ss_sebab_lain').value = 'namun '; 
-    
     document.getElementById('ruangan_ss_sebab_lain').style.display = 'none';
+
+    // 3. Muatkan data jika sudah pernah disetup (seperti kemaskini)
+    if (window.tempDataSebutanSemula) {
+        document.getElementById('ss_tarikh_sebutan').value = window.tempDataSebutanSemula.tarikhSebutan;
+        document.getElementById('ss_masa_sebutan').value = window.tempDataSebutanSemula.masaSebutan;
+        document.getElementById('ss_tempat_nama').value = window.tempDataSebutanSemula.tempatNama;
+        document.getElementById('ss_alamat1').value = window.tempDataSebutanSemula.a1;
+        document.getElementById('ss_alamat2').value = window.tempDataSebutanSemula.a2;
+        document.getElementById('ss_alamat3').value = window.tempDataSebutanSemula.a3;
+        document.getElementById('ss_poskod').value = window.tempDataSebutanSemula.pos;
+        document.getElementById('ss_bandar').value = window.tempDataSebutanSemula.bdr;
+        document.getElementById('ss_negeri').value = window.tempDataSebutanSemula.ngr;
+    } else {
+        // Lalai alamat penuh pejabat
+        document.getElementById('ss_tarikh_sebutan').value = '';
+        document.getElementById('ss_masa_sebutan').value = '';
+        document.getElementById('ss_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+        document.getElementById('ss_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+        document.getElementById('ss_alamat2').value = '';
+        document.getElementById('ss_alamat3').value = '';
+        document.getElementById('ss_poskod').value = '86000';
+        document.getElementById('ss_bandar').value = 'KLUANG';
+        document.getElementById('ss_negeri').value = 'JOHOR';
+    }
+
     document.getElementById('modalSebutanSemula').style.display = 'flex';
 }
 
 // 3. Validasi & teruskan penjanaan dokumen selepas menekan "Teruskan" di modal
 function janaSebutanSemulaDariModal() {
+    const tarikhNotis = document.getElementById('ss_tarikh_notis').value;
+    const pegawai = document.getElementById('ss_pegawai').value.trim();
     const sebab = document.getElementById('ss_sebab').value;
     let sebabLain = document.getElementById('ss_sebab_lain').value.trim();
+    const tarikhSebutan = document.getElementById('ss_tarikh_sebutan').value;
+    const masaSebutan = document.getElementById('ss_masa_sebutan').value;
+    const tempatNama = document.getElementById('ss_tempat_nama').value.trim();
 
-    // KOD BARU: Buang perkataan "namun" atau "Namun" di permulaan ayat supaya tak bertindih dalam notis
     sebabLain = sebabLain.replace(/^namun\s*/i, '').trim();
-
-    // Padam semua tanda titik di hujung perkataan/ayat akhir (jika ada)
     sebabLain = sebabLain.replace(/\.+$/, '');
 
-    if (sebab === '') {
-        alert('Sila pilih Sebab Penetapan Semula.');
+    if (!tarikhNotis || !pegawai || sebab === '' || !tarikhSebutan || !masaSebutan || !tempatNama) {
+        alert("Sila lengkapkan maklumat wajib (*).");
         return;
     }
 
-    // Jika pengguna hanya biarkan perkataan "namun" tanpa menambah apa-apa, ia akan dianggap kosong
     if (sebab === 'Lain-lain' && sebabLain === '') {
         alert('Sila nyatakan sebab lain secara ringkas.');
         return;
     }
 
+    const a1 = document.getElementById('ss_alamat1').value.trim();
+    const a2 = document.getElementById('ss_alamat2').value.trim();
+    const a3 = document.getElementById('ss_alamat3').value.trim();
+    const pos = document.getElementById('ss_poskod').value.trim();
+    const bdr = document.getElementById('ss_bandar').value.trim();
+    const ngr = document.getElementById('ss_negeri').value.trim();
+
     const sebabAkhir = sebab === 'Lain-lain' ? sebabLain : sebab;
     
-    // Simpan sebab pilihan dalam memori sementara
+    // Simpan maklumat ke dalam memori
     window.tempSebabSebutanSemula = sebabAkhir;
+    window.tempDataSebutanSemula = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr };
+    
     document.getElementById('modalSebutanSemula').style.display = 'none';
 
     // Buka preview dokumen
