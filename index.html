@@ -9684,12 +9684,16 @@ function bukaModalSebutanSemula() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // 1. Auto-isi Tarikh Notis (Hari Ini)
+    // 1. Auto-isi Tarikh Notis (Hari Ini) - Dipendekkan supaya tak terpotong
     const td = new Date();
-    document.getElementById('ss_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+    const yyyy = td.getFullYear();
+    const mm = String(td.getMonth() + 1).padStart(2, '0');
+    const dd = String(td.getDate()).padStart(2, '0');
+    document.getElementById('ss_tarikh_notis').value = `${yyyy}-${mm}-${dd}`;
 
-    // 2. Ekstrak Nama Pegawai
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    // 2. Ekstrak Nama Pegawai - Dipendekkan supaya tak terpotong
+    const profilEdit = document.getElementById('namaProfilEdit');
+    let namaPegawaiRaw = profilEdit ? profilEdit.innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('ss_pegawai').value = namaPegawaiRaw.toUpperCase();
 
     document.getElementById('ss_sebab').value = '';
@@ -9708,21 +9712,33 @@ function bukaModalSebutanSemula() {
         document.getElementById('ss_bandar').value = window.tempDataSebutanSemula.bdr;
         document.getElementById('ss_negeri').value = window.tempDataSebutanSemula.ngr;
     } else {
-        // Lalai alamat penuh pejabat
+        // Lalai alamat sebutan mengambil nilai dari Medan Saman A (jika ada) atau Lalai Pejabat
+        let tempatSamanInput = document.getElementById('mk_tempat_saman');
+        
         document.getElementById('ss_tarikh_sebutan').value = '';
         document.getElementById('ss_masa_sebutan').value = '';
-        document.getElementById('ss_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
-        document.getElementById('ss_alamat1').value = 'JALAN PEJABAT KERAJAAN';
-        document.getElementById('ss_alamat2').value = '';
-        document.getElementById('ss_alamat3').value = '';
-        document.getElementById('ss_poskod').value = '86000';
-        document.getElementById('ss_bandar').value = 'KLUANG';
-        document.getElementById('ss_negeri').value = 'JOHOR';
+        
+        if (tempatSamanInput && tempatSamanInput.value.trim() !== '') {
+            document.getElementById('ss_tempat_nama').value = tempatSamanInput.value.toUpperCase();
+            document.getElementById('ss_alamat1').value = '';
+            document.getElementById('ss_alamat2').value = '';
+            document.getElementById('ss_alamat3').value = '';
+            document.getElementById('ss_poskod').value = '';
+            document.getElementById('ss_bandar').value = '';
+            document.getElementById('ss_negeri').value = '';
+        } else {
+            document.getElementById('ss_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+            document.getElementById('ss_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+            document.getElementById('ss_alamat2').value = '';
+            document.getElementById('ss_alamat3').value = '';
+            document.getElementById('ss_poskod').value = '86000';
+            document.getElementById('ss_bandar').value = 'KLUANG';
+            document.getElementById('ss_negeri').value = 'JOHOR';
+        }
     }
 
     document.getElementById('modalSebutanSemula').style.display = 'flex';
 }
-
 // 3. Validasi & teruskan penjanaan dokumen selepas menekan "Teruskan" di modal
 function janaSebutanSemulaDariModal() {
     const tarikhNotis = document.getElementById('ss_tarikh_notis').value;
