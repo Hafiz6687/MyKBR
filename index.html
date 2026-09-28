@@ -4301,17 +4301,18 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             <div class="kertas-notis">
                 ${templateHeaderHTML}
                 <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
-                    <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
+                    <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh :${tarikhSurat}</div>
                     <div class="notis-alamat"><strong style="text-transform: uppercase;">${peguamDefendanHTML}</strong><br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">${labelWakilDefendan}</span></div>
                     <div style="margin-bottom: 15px;">Tuan,</div>
                     ${tajukDefendan}
                     <hr class="notis-garis-tajuk">
-                    ${isiPeguamDefendan || isiDefendan}
-                    ${templateFooterHTML}
+                    ${isiPeguamDefendan \vert{}\vert{} isiDefendan}${templateFooterHTML}
                 </div>
             </div>
             `;
         }
+    } // <--- INI ADALAH PENUTUP 'else' YANG TERCICIR SEBELUM INI. WAJIB ADA!
+
     const htmlNotisGenerik = `
         <style>
             ${cssSebutanSemulaKhas}
