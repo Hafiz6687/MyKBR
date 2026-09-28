@@ -1422,7 +1422,7 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPeringatanBayaran('MOU')">
                             <span>⚠️ Peringatan<br>Bayaran MOU</span>
                         </button>
-                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('saman_a')">
+                        <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalSamanA()">
                             <span>📄 Saman<br>(Borang A)</span>
                         </button>
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="toggleKadUrus('saman_memo')">
@@ -1610,58 +1610,70 @@ Portal rasmi : jtksm.mohr.gov.my
         </div>
     </div>
 </div>
-<!-- BAHAGIAN 4.5: Penetapan Tarikh Saman Hadir (Borang A) -->
-<div class="card full-width" id="kad_saman_hadir" style="display: none;">
-    <div class="card-header">Penetapan Tarikh Saman Hadir</div>
-    <div class="card-body">
-        <!-- Grid Responsive Custom (Baris Label dan Baris Input) -->
-        <div class="sebutan-grid-labels">
-            <div class="info-label" style="margin:0;">Tarikh Hadir</div>
-            <div class="info-label" style="margin:0;">Masa Hadir</div>
-            <div class="info-label" style="margin:0; display: flex; align-items: center; gap: 5px;">
-                Tempat Saman Hadir
-                <div class="tooltip-container">
-                    <span style="font-size: 1.2em; color: var(--primary-blue); cursor: help;">ℹ️</span>
-                    <div class="tooltip-text" style="text-transform: none; font-weight: 500;">
-                        Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim
-                    </div>
-                </div>
-            </div>
-            <div></div> <!-- Spacer untuk butang -->
+<!-- MODAL POP-UP KHAS UNTUK SAMAN HADIR (BORANG A) -->
+<div class="modal-overlay" id="modalSamanA">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Jana Saman Hadir (Borang A) & Notis</div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Tarikh Notis & Saman Borang A <span>*</span></label>
+            <input type="date" id="sma_tarikh_notis" style="width: 100%; box-sizing: border-box;">
         </div>
         
-        <div class="sebutan-grid-inputs">
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+            <input type="text" id="sma_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="sma_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="sma_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="sma_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="sma_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
+        <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Saman Hadir</h5>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;">
             <div>
-                <label class="mobile-label">Tarikh Hadir</label>
-                <input type="date" id="mk_tarikh_saman" onchange="semakButangSaman()" style="margin:0; height: 42px; box-sizing: border-box;">
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Tarikh Hadir <span>*</span></label>
+                <input type="date" id="sma_tarikh_hadir" style="width: 100%; box-sizing: border-box;">
             </div>
             <div>
-                <label class="mobile-label">Masa Hadir</label>
-                <input type="time" id="mk_masa_saman" onchange="semakButangSaman()" style="margin:0; height: 42px; box-sizing: border-box;">
+                <label style="font-size: 0.85em; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Masa Hadir <span>*</span></label>
+                <input type="time" id="sma_masa_hadir" style="width: 100%; box-sizing: border-box;">
             </div>
-            <div>
-                <!-- PEMBETULAN: display flex dialihkan ke dalam span supaya mobile-label boleh tersembunyi di PC -->
-                <label class="mobile-label">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; margin-bottom: 4px;">
-                        Tempat Saman Hadir
-                        <span class="tooltip-container">
-                            <span style="font-size: 1.2em; color: var(--primary-blue); cursor: help;">ℹ️</span>
-                            <span class="tooltip-text" style="text-transform: none; font-weight: 500;">
-                                Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim
-                            </span>
-                        </span>
-                    </span>
-                </label>
-                <input type="text" id="mk_tempat_saman" value="Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim" style="margin:0; height: 42px; box-sizing: border-box; width: 100%;">
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left; margin-bottom: 5px;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
+            <input type="text" id="sma_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="sma_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('sma_poskod', 'sma_negeri', 'sma_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                <input type="text" id="sma_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
-            <div>
-                <button id="btnTindakanSaman" class="btn-save" style="width: 100%; height: 42px; padding: 0 10px; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px; margin:0; opacity: 0.5; cursor: not-allowed; box-sizing: border-box;" onclick="tindakanSamanA()" disabled>
-                    📄 Jana Saman (Borang A)
-                </button>
-            </div>
+            <input type="text" id="sma_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modalSamanA').style.display='none'">Batal</button>
+            <button class="btn-save" onclick="janaSamanADariModal()">✔ Teruskan</button>
         </div>
     </div>
 </div>
+
+<!-- HIDDEN INPUTS UNTUK KESERASIAN FUNGSI ASAL (JANGAN PADAM) -->
+<!-- Ini membolehkan fungsi sistem lama 'bukaPreviewSamanA' membaca data tanpa perlu diubah -->
+<input type="hidden" id="mk_tarikh_saman">
+<input type="hidden" id="mk_masa_saman">
+<input type="hidden" id="mk_tempat_saman">
 
 <!-- BAHAGIAN 4.6: Sebutan Kes (Penetapan semula) -->
             <div class="card full-width" id="kad_sebutan_semula" style="display: none;">
@@ -9039,7 +9051,107 @@ function janaSamanTampal() {
     document.getElementById('modalSamanTampal').style.display = 'none';
     bukaPreviewSamanTampal();
 }
+// =========================================================================
+// FUNGSI KAWALAN POP-UP SAMAN HADIR (BORANG A)
+// =========================================================================
+function bukaModalSamanA() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
 
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
+    const td = new Date();
+    document.getElementById('sma_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // 2. Ekstrak Nama Pegawai
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('sma_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    // 3. Muatkan data jika sudah pernah disetup sebelumnya
+    let oldTarikh = document.getElementById('mk_tarikh_saman')?.value || '';
+    let oldMasa = document.getElementById('mk_masa_saman')?.value || '';
+    
+    if (window.tempDataSamanA) {
+        oldTarikh = window.tempDataSamanA.tarikhHadir;
+        oldMasa = window.tempDataSamanA.masaHadir;
+        document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
+        document.getElementById('sma_alamat1').value = window.tempDataSamanA.a1;
+        document.getElementById('sma_alamat2').value = window.tempDataSamanA.a2;
+        document.getElementById('sma_alamat3').value = window.tempDataSamanA.a3;
+        document.getElementById('sma_poskod').value = window.tempDataSamanA.pos;
+        document.getElementById('sma_bandar').value = window.tempDataSamanA.bdr;
+        document.getElementById('sma_negeri').value = window.tempDataSamanA.ngr;
+    } else {
+        // Lalai alamat penuh pejabat
+        document.getElementById('sma_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+        document.getElementById('sma_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+        document.getElementById('sma_alamat2').value = '';
+        document.getElementById('sma_alamat3').value = '';
+        document.getElementById('sma_poskod').value = '86000';
+        document.getElementById('sma_bandar').value = 'KLUANG';
+        document.getElementById('sma_negeri').value = 'JOHOR DARUL TAKZIM';
+    }
+
+    document.getElementById('sma_tarikh_hadir').value = oldTarikh;
+    document.getElementById('sma_masa_hadir').value = oldMasa;
+
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSamanA && window.tempDataSamanA.senaraiPenerima) {
+        window.tempDataSamanA.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="sma_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
+    document.getElementById('modalSamanA').style.display = 'flex';
+}
+
+function janaSamanADariModal() {
+    const tarikhNotis = document.getElementById('sma_tarikh_notis').value;
+    const pegawai = document.getElementById('sma_pegawai').value.trim();
+    const tarikhHadir = document.getElementById('sma_tarikh_hadir').value;
+    const masaHadir = document.getElementById('sma_masa_hadir').value;
+    const tempatNama = document.getElementById('sma_tempat_nama').value.trim();
+
+    if (!tarikhNotis || !pegawai || !tarikhHadir || !masaHadir || !tempatNama) {
+        alert("Sila lengkapkan maklumat wajib (*).");
+        return;
+    }
+
+    const a1 = document.getElementById('sma_alamat1').value.trim();
+    const a2 = document.getElementById('sma_alamat2').value.trim();
+    const a3 = document.getElementById('sma_alamat3').value.trim();
+    const pos = document.getElementById('sma_poskod').value.trim();
+    const bdr = document.getElementById('sma_bandar').value.trim();
+    const ngr = document.getElementById('sma_negeri').value.trim();
+
+    const penerimaNode = document.querySelectorAll('input[name="sma_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    // Cantumkan alamat penuh untuk diisi ke dalam hidden input (untuk keserasian dengan fungsi lama)
+    let arrTpt = [tempatNama, a1, a2, a3].filter(Boolean);
+    let posBdr = [pos, bdr].filter(Boolean).join(' ');
+    if (posBdr) arrTpt.push(posBdr);
+    if (ngr) arrTpt.push(ngr);
+    const alamatPenuhGabung = arrTpt.join(', ').replace(/\b\w/g, s => s.toUpperCase());
+
+    // Masukkan ke dalam hidden inputs untuk pastikan fungsi tindakanSamanA() lama tetap mendapat nilai yang betul
+    document.getElementById('mk_tarikh_saman').value = tarikhHadir;
+    document.getElementById('mk_masa_saman').value = masaHadir;
+    document.getElementById('mk_tempat_saman').value = alamatPenuhGabung;
+
+    // Simpan data pop-up ke memori sementara (termasuk senaraiPenerima Notis untuk digunakan oleh Preview)
+    window.tempDataSamanA = { tarikhNotis, pegawai, tarikhHadir, masaHadir, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    
+    document.getElementById('modalSamanA').style.display = 'none';
+
+    // Panggil terus fungsi jana dokumen asal TANPA MENGGANGGU proses Preview dan Action Button
+    if (typeof tindakanSamanA === 'function') {
+        tindakanSamanA();
+    } else if (typeof bukaPreviewSamanA === 'function') {
+        bukaPreviewSamanA();
+    }
+}
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN SURAT SAMAN (TAMPAL + BORANG A)
 // =========================================================================
