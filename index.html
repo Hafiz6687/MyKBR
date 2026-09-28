@@ -5514,20 +5514,32 @@ function kawalJenisAduanTuntutan() {
     const butangSeterusnya = document.getElementById('ruanganButangSeterusnyaTab1');
 
     // --- KAWALAN SYARAT PAPARAN JADUAL DINAMIK ---
-    let lulusPaparan = false;
+        let lulusPaparan = false;
 
-    if (window.paparanSemasa === 'urus') {
-        // PENGURUSAN KES: Syaratnya maklumat Pekerja (Kad 1) mesti ada No Tel, HP atau Emel
-        // Tidak kira siapa pengadu, maklumat pekerja sentiasa berada di ID 'pengadu'
-        const tel = document.getElementById('telPengadu').value.trim();
-        const hp = document.getElementById('hpPengadu').value.trim();
-        const emel = document.getElementById('emelPengadu').value.trim();
-        
-        if (tel !== '' || hp !== '' || emel !== '') {
-            lulusPaparan = true;
-        }
-    } else {
-        // PENDAFTARAN KES: Syaratnya Sektor & Jenis Perniagaan mesti diisi
+        if (window.paparanSemasa === 'urus') {
+            if (isMajikan) {
+                // PENGURUSAN KES (MAJIKAN ADALAH PENGADU): Syaratnya maklumat Pengadu Majikan mesti ada No Tel, HP atau Emel
+                // Maklumat Pengadu (Majikan) berada di ID 'defendan'
+                const tel = document.getElementById('telDefendan').value.trim();
+                const hp = document.getElementById('hpDefendan').value.trim();
+                const emel = document.getElementById('emelDefendan').value.trim();
+                
+                if (tel !== '' || hp !== '' || emel !== '') {
+                    lulusPaparan = true;
+                }
+            } else {
+                // PENGURUSAN KES (PEKERJA ADALAH PENGADU): Syaratnya maklumat Pengadu Pekerja mesti ada No Tel, HP atau Emel
+                // Maklumat Pengadu (Pekerja) berada di ID 'pengadu'
+                const tel = document.getElementById('telPengadu').value.trim();
+                const hp = document.getElementById('hpPengadu').value.trim();
+                const emel = document.getElementById('emelPengadu').value.trim();
+                
+                if (tel !== '' || hp !== '' || emel !== '') {
+                    lulusPaparan = true;
+                }
+            }
+        } else {
+            // PENDAFTARAN KES: Syaratnya Sektor & Jenis Perniagaan mesti diisi
         const sektor = document.getElementById('sektorDefendan').value;
         const jp = document.getElementById('jenisPerniagaan').value.trim();
         
