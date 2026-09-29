@@ -14566,6 +14566,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     // ENJIN EKSTRAK DATA MOU DARI SEJARAH TINDAKAN
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
     let jumRM = "RM 0.00";
+    let teksTuntutanMOU = "wang berjumlah <strong>RM 0.00</strong>"; // Variabel dinamik baharu
 
     const rekodMOU = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
     if (rekodMOU && rekodMOU.butiran) {
@@ -14575,24 +14576,33 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
                 if (memoData.jumlah) {
                     let jumPersetujuanFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    
-                    // Semak jika pengguna telah membuka jadual pemantauan, kita ambil baki terkini.
-                    let bakiMOU = (window.tempBakiMOU !== undefined && window.tempBakiMOU_kesIndex === indexKesSemasa) ? window.tempBakiMOU : jumPersetujuanFormatted;
-                    
-                    // Logik Paparan Surat
-                    if (bakiMOU < jumPersetujuanFormatted && bakiMOU > 0) {
-                        jumRM = `RM ${bakiMOU.toLocaleString('en-MY', { minimumFractionDigits: 2 })} (Baki Tunggakan)`;
-                    } else if (bakiMOU === 0) {
-                        jumRM = `RM 0.00 (Telah Lunas)`;
-                    } else {
-                        jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                    }
+                    jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+                    teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
                 }
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
                     if (!isNaN(t.getTime())) {
                         tarikhDD = t.getDate();
                         tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
+                    }
+                }
+                
+                // LOGIK AUTO-DETECT ANSURAN
+                let kaedahMOU = memoData.kaedah || (kes.dataBorang && kes.dataBorang.inputs ? kes.dataBorang.inputs['mk_kaedah_mou'] : "Penuh");
+                if (kaedahMOU === "Ansuran" && kes.rekodPemantauanMou) {
+                    let ansuranTertunggak = kes.rekodPemantauanMou.find(r => r.status === "Belum Bayar");
+                    if (ansuranTertunggak) {
+                        teksTuntutanMOU = `bayaran ansuran tertunggak berjumlah <strong>RM ${ansuranTertunggak.amaun || "0.00"}</strong>`;
+                    } else {
+                        let telahDibayar = 0;
+                        let jumlahAsal = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
+                        kes.rekodPemantauanMou.forEach(r => {
+                            if (r.status === "Telah Bayar" || r.status === "Selesai") {
+                                telahDibayar += parseFloat((r.amaun || "0").replace(/,/g, ''));
+                            }
+                        });
+                        let baki = jumlahAsal - telahDibayar;
+                        teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
                     }
                 }
             } catch(e) { console.error("Ralat extract MOU:", e); }
@@ -14630,7 +14640,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                             <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN </div>
                             <hr class="notis-garis-tajuk">
                             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                             <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Tuan diminta menasihati ${anak} tuan mematuhi arahan tersebut. Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil tanpa sebarang rujukan lanjut sekiranya gagal berbuat demikian.</div>
                             <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
                             <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
@@ -14665,7 +14675,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                             <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
                             <hr class="notis-garis-tajuk">
                             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                             <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Tuan diminta menasihati ${anak} tuan mematuhi arahan tersebut. Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil tanpa sebarang rujukan lanjut sekiranya gagal berbuat demikian.</div>
                             <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
                             <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
