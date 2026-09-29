@@ -1989,17 +1989,29 @@ Portal rasmi : jtksm.mohr.gov.my
             </div>
         </div>
 
-        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-            <label style="text-align: left; margin-bottom: 5px;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
-            <input type="text" id="sma_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-            <input type="text" id="sma_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-            <input type="text" id="sma_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-            <input type="text" id="sma_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                <input type="text" id="sma_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('sma_poskod', 'sma_negeri', 'sma_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
-                <input type="text" id="sma_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        <!-- TOGGLE ALAMAT BERBEZA -->
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <input type="checkbox" id="tempatSamanABerbeza" onchange="toggleTempatSamanA()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
+                <label for="tempatSamanABerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat saman hadir berbeza dengan pejabat semasa?</label>
             </div>
-            <input type="text" id="sma_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Saman Hadir (Alamat Penuh) berbeza.</p>
+        </div>
+
+        <!-- WRAPPER ALAMAT SAMAN A (Disembunyikan secara lalai) -->
+        <div id="ruanganTempatSamanA" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="sma_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="sma_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="sma_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="sma_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="sma_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('sma_poskod', 'sma_negeri', 'sma_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="sma_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <input type="text" id="sma_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+            </div>
         </div>
 
         <div class="modal-actions">
@@ -10127,6 +10139,30 @@ function janaSamanTampal() {
 // =========================================================================
 // FUNGSI KAWALAN POP-UP SAMAN HADIR (BORANG A)
 // =========================================================================
+function toggleTempatSamanA() {
+    const isBerbeza = document.getElementById('tempatSamanABerbeza').checked;
+    const ruangan = document.getElementById('ruanganTempatSamanA');
+    if (isBerbeza) {
+        ruangan.style.display = 'block';
+    } else {
+        ruangan.style.display = 'none';
+        // Reset input secara automatik bila kotak untick supaya ekstrak asal sistem tidak terganggu
+        if(document.getElementById('sma_tempat_nama')) document.getElementById('sma_tempat_nama').value = '';
+        if(document.getElementById('sma_alamat1')) document.getElementById('sma_alamat1').value = '';
+        if(document.getElementById('sma_alamat2')) document.getElementById('sma_alamat2').value = '';
+        if(document.getElementById('sma_alamat3')) document.getElementById('sma_alamat3').value = '';
+        if(document.getElementById('sma_poskod')) document.getElementById('sma_poskod').value = '';
+        if(document.getElementById('sma_bandar')) { 
+            document.getElementById('sma_bandar').value = ''; 
+            document.getElementById('sma_bandar').placeholder = 'Bandar'; 
+        }
+        if(document.getElementById('sma_negeri')) { 
+            document.getElementById('sma_negeri').value = ''; 
+            document.getElementById('sma_negeri').placeholder = 'Negeri'; 
+        }
+    }
+}
+
 function bukaModalSamanA() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -10143,38 +10179,42 @@ function bukaModalSamanA() {
     let oldTarikh = document.getElementById('mk_tarikh_saman')?.value || '';
     let oldMasa = document.getElementById('mk_masa_saman')?.value || '';
     
+    // Reset check box penerima & tempat berbeza
+    document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
+    document.getElementById('tempatSamanABerbeza').checked = false;
+    
     if (window.tempDataSamanA) {
         oldTarikh = window.tempDataSamanA.tarikhHadir;
         oldMasa = window.tempDataSamanA.masaHadir;
-        document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
-        document.getElementById('sma_alamat1').value = window.tempDataSamanA.a1;
-        document.getElementById('sma_alamat2').value = window.tempDataSamanA.a2;
-        document.getElementById('sma_alamat3').value = window.tempDataSamanA.a3;
-        document.getElementById('sma_poskod').value = window.tempDataSamanA.pos;
-        document.getElementById('sma_bandar').value = window.tempDataSamanA.bdr;
-        document.getElementById('sma_negeri').value = window.tempDataSamanA.ngr;
+        
+        // Load data alamat jika checkbox pernah ditanda
+        if (window.tempDataSamanA.isBerbeza) {
+            document.getElementById('tempatSamanABerbeza').checked = true;
+            document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
+            document.getElementById('sma_alamat1').value = window.tempDataSamanA.a1;
+            document.getElementById('sma_alamat2').value = window.tempDataSamanA.a2;
+            document.getElementById('sma_alamat3').value = window.tempDataSamanA.a3;
+            document.getElementById('sma_poskod').value = window.tempDataSamanA.pos;
+            document.getElementById('sma_bandar').value = window.tempDataSamanA.bdr;
+            document.getElementById('sma_negeri').value = window.tempDataSamanA.ngr;
+        }
+
+        if (window.tempDataSamanA.senaraiPenerima) {
+            window.tempDataSamanA.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="sma_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
     } else {
-        // Lalai alamat penuh pejabat
-        document.getElementById('sma_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
-        document.getElementById('sma_alamat1').value = 'JALAN PEJABAT KERAJAAN';
-        document.getElementById('sma_alamat2').value = '';
-        document.getElementById('sma_alamat3').value = '';
-        document.getElementById('sma_poskod').value = '86000';
-        document.getElementById('sma_bandar').value = 'KLUANG';
-        document.getElementById('sma_negeri').value = 'JOHOR DARUL TAKZIM';
+        document.getElementById('sma_tarikh_hadir').value = '';
+        document.getElementById('sma_masa_hadir').value = '';
     }
+
+    // Panggil fungsi toggle untuk papar/sembunyi ruangan alamat berdasarkan checkbox
+    toggleTempatSamanA();
 
     document.getElementById('sma_tarikh_hadir').value = oldTarikh;
     document.getElementById('sma_masa_hadir').value = oldMasa;
-
-    // Reset check box penerima (kosongkan semua lalai)
-    document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
-    if (window.tempDataSamanA && window.tempDataSamanA.senaraiPenerima) {
-        window.tempDataSamanA.senaraiPenerima.forEach(val => {
-            let cb = document.querySelector(`input[name="sma_penerima"][value="${val}"]`);
-            if(cb) cb.checked = true;
-        });
-    }
 
     document.getElementById('modalSamanA').style.display = 'flex';
 }
@@ -10184,45 +10224,77 @@ function janaSamanADariModal() {
     const pegawai = document.getElementById('sma_pegawai').value.trim();
     const tarikhHadir = document.getElementById('sma_tarikh_hadir').value;
     const masaHadir = document.getElementById('sma_masa_hadir').value;
-    const tempatNama = document.getElementById('sma_tempat_nama').value.trim();
+    
+    // TANGKAP VARIABLE CHECKBOX TEMPAT BERBEZA
+    const isBerbeza = document.getElementById('tempatSamanABerbeza').checked;
+    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
 
-    if (!tarikhNotis || !pegawai || !tarikhHadir || !masaHadir || !tempatNama) {
+    // JIKA BERBEZA, AMBIL NILAI ALAMAT DAN VALIDASI
+    if (isBerbeza) {
+        tempatNama = document.getElementById('sma_tempat_nama').value.trim();
+        a1 = document.getElementById('sma_alamat1').value.trim();
+        a2 = document.getElementById('sma_alamat2').value.trim();
+        a3 = document.getElementById('sma_alamat3').value.trim();
+        pos = document.getElementById('sma_poskod').value.trim();
+        bdr = document.getElementById('sma_bandar').value.trim();
+        ngr = document.getElementById('sma_negeri').value.trim();
+
+        if (!tempatNama) {
+            alert("Sila lengkapkan Nama Tempat Saman Hadir.");
+            return;
+        }
+    } else {
+        // PENGELAKAN GANGGUAN PREVIEW: Auto-ekstrak alamat dari profil Sidebar di belakang tabir
+        let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
+        let ptkA1 = "JALAN PEJABAT KERAJAAN";
+        let ptkA2 = "";
+        let ptkA3 = "";
+        let ptkPos = "86000";
+        let ptkBdr = "KLUANG";
+        let ptkNgr = "JOHOR DARUL TAKZIM";
+        
+        const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
+        if (statsDiv) {
+            const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
+            if (lines.length > 0) ptkNamaPenuh = lines[0]; 
+            const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
+            if (poskodLineIndex !== -1) {
+                ptkBdr = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
+                ptkPos = lines[poskodLineIndex].match(/^\d{5}/)[0];
+                if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
+                    ptkNgr = lines[poskodLineIndex + 1].trim();
+                }
+            }
+        }
+        tempatNama = ptkNamaPenuh;
+        a1 = ptkA1;
+        a2 = ptkA2;
+        a3 = ptkA3;
+        pos = ptkPos;
+        bdr = ptkBdr;
+        ngr = ptkNgr;
+    }
+
+    if (!tarikhNotis || !pegawai || !tarikhHadir || !masaHadir) {
         alert("Sila lengkapkan maklumat wajib (*).");
         return;
     }
 
-    const a1 = document.getElementById('sma_alamat1').value.trim();
-    const a2 = document.getElementById('sma_alamat2').value.trim();
-    const a3 = document.getElementById('sma_alamat3').value.trim();
-    const pos = document.getElementById('sma_poskod').value.trim();
-    const bdr = document.getElementById('sma_bandar').value.trim();
-    const ngr = document.getElementById('sma_negeri').value.trim();
-
     const penerimaNode = document.querySelectorAll('input[name="sma_penerima"]:checked');
     let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
 
-    // Cantumkan alamat penuh untuk diisi ke dalam hidden input (untuk keserasian dengan fungsi lama)
-    let arrTpt = [tempatNama, a1, a2, a3].filter(Boolean);
-    let posBdr = [pos, bdr].filter(Boolean).join(' ');
-    if (posBdr) arrTpt.push(posBdr);
-    if (ngr) arrTpt.push(ngr);
-    const alamatPenuhGabung = arrTpt.join(', ').replace(/\b\w/g, s => s.toUpperCase());
+    // Simpan ke hidden inputs untuk maintain keserasian fungsi asal (rujuk kod anda)
+    if(document.getElementById('mk_tarikh_saman')) document.getElementById('mk_tarikh_saman').value = tarikhHadir;
+    if(document.getElementById('mk_masa_saman')) document.getElementById('mk_masa_saman').value = masaHadir;
 
-    // Masukkan ke dalam hidden inputs untuk pastikan fungsi tindakanSamanA() lama tetap mendapat nilai yang betul
-    document.getElementById('mk_tarikh_saman').value = tarikhHadir;
-    document.getElementById('mk_masa_saman').value = masaHadir;
-    document.getElementById('mk_tempat_saman').value = alamatPenuhGabung;
-
-    // Simpan data pop-up ke memori sementara (termasuk senaraiPenerima Notis untuk digunakan oleh Preview)
-    window.tempDataSamanA = { tarikhNotis, pegawai, tarikhHadir, masaHadir, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    // Simpan data pop-up ke memori sementara (dikongsi terus ke sistem Preview asal anda)
+    window.tempDataSamanA = { tarikhNotis, pegawai, tarikhHadir, masaHadir, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     
     document.getElementById('modalSamanA').style.display = 'none';
-
-    // Panggil terus fungsi jana dokumen asal TANPA MENGGANGGU proses Preview dan Action Button
-    if (typeof tindakanSamanA === 'function') {
-        tindakanSamanA();
-    } else if (typeof bukaPreviewSamanA === 'function') {
-        bukaPreviewSamanA();
+    
+    // Panggil preview asal anda.
+    if (typeof bukaPreviewSamanA === 'function') {
+        bukaPreviewSamanA(); 
     }
 }
 // =========================================================================
