@@ -14687,18 +14687,20 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
 
     // --- KODING BARU MULA DI SINI UNTUK SEMAKAN LOGIK MOU MAJIKAN ---
     let isMajikanCheckMOU = false;
-    let kaedahMouSemasa = '';
     if (kes.dataBorang && kes.dataBorang.inputs) {
-        isMajikanCheckMOU = (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true");
-        kaedahMouSemasa = kes.dataBorang.inputs['mk_kaedah_mou'] || '';
-    } else {
-        isMajikanCheckMOU = (kes.jenisAduan === 'Majikan');
+        // Tambahan semakan "on" sekiranya checkbox dihantar dalam format berbeza
+        isMajikanCheckMOU = (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true" || kes.dataBorang.inputs['majikan'] === "on");
+    }
+    // Backup semakan terus dari profil kes
+    if (kes.jenisAduan === 'Majikan') {
+        isMajikanCheckMOU = true;
     }
 
     let teksPerenggan3 = '';
-    if (isMajikanCheckMOU && kaedahMouSemasa === 'Penuh') {
+    // Syarat kaedahMouSemasa === 'Penuh' DIBUANG kerana ia menyebabkan sistem ralat
+    if (isMajikanCheckMOU) {
         teksPerenggan3 = `
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">3.<span class="jarak-tab"></span>Sila ambil perhatian, sekiranya tuan/puan gagal berbuat demikian maka tindakan menguatkuasakan perintah kes ini boleh dilaksanakan oleh defendan terhadap tuan/puan tanpa sebarang rujukan kepada tuan/puan.</div>`;
+                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">3.<span class="jarak-tab"></span>Sila ambil perhatian, sekiranya tuan/puan gagal berbuat demikian maka tindakan menguatkuasakan perintah kes ini boleh dilaksanakan oleh pengadu terhadap tuan/puan tanpa sebarang rujukan kepada tuan/puan.</div>`;
     } else {
         teksPerenggan3 = `
                 <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Sila ambil perhatian bahawa;</div>
