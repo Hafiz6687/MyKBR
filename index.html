@@ -14575,7 +14575,18 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
                 if (memoData.jumlah) {
                     let jumPersetujuanFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+                    
+                    // Semak jika pengguna telah membuka jadual pemantauan, kita ambil baki terkini.
+                    let bakiMOU = (window.tempBakiMOU !== undefined && window.tempBakiMOU_kesIndex === indexKesSemasa) ? window.tempBakiMOU : jumPersetujuanFormatted;
+                    
+                    // Logik Paparan Surat
+                    if (bakiMOU < jumPersetujuanFormatted && bakiMOU > 0) {
+                        jumRM = `RM ${bakiMOU.toLocaleString('en-MY', { minimumFractionDigits: 2 })} (Baki Tunggakan)`;
+                    } else if (bakiMOU === 0) {
+                        jumRM = `RM 0.00 (Telah Lunas)`;
+                    } else {
+                        jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+                    }
                 }
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
@@ -15439,7 +15450,104 @@ function renderKadPemantauan(kes) {
         if(btnMenu) btnMenu.style.display = 'none';
     }
 }
+// =========================================================================
+// FUNGSI BARU: AUTO KIRA STATUS & RUMUSAN JADUAL MOU
+// =========================================================================
+function janaRumusanDanAutoStatusMOU() {
+    const table = document.querySelector('#kandungan_jadual_pemantauan table');
+    if (!table) return;
 
+    let tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr:not(.rumusan-row)');
+
+    rows.forEach(row => {
+        let amaunCell = row.cells[2];
+        if (!amaunCell) return;
+        let amaunVal = parseFloat(amaunCell.innerText.replace(/[^0-9.]/g, '')) || 0;
+
+        let dibayarInput = row.querySelector('td:nth-child(5) input');
+        let statusSelect = row.querySelector('td:nth-child(7) select');
+
+        if (dibayarInput && statusSelect) {
+            // Bind Event Listener untuk Auto-Update Status (hanya sekali)
+            if (!dibayarInput.hasAttribute('data-auto-bind')) {
+                dibayarInput.setAttribute('data-auto-bind', 'true');
+                
+                dibayarInput.addEventListener('input', function() {
+                    let currentDibayar = parseFloat(this.value.replace(/[^0-9.]/g, '')) || 0;
+                    
+                    // Auto-Update Status dropdown tanpa mengganggu format emoji sedia ada
+                    Array.from(statusSelect.options).forEach(opt => {
+                        if (currentDibayar === 0 || this.value.trim() === '') {
+                            if (opt.value.includes('Tertunggak')) statusSelect.value = opt.value;
+                        } else if (currentDibayar > 0 && currentDibayar < amaunVal) {
+                            if (opt.value.includes('Separa')) statusSelect.value = opt.value;
+                        } else if (currentDibayar >= amaunVal) {
+                            if (opt.value.includes('Lunas')) statusSelect.value = opt.value;
+                        }
+                    });
+                    
+                    // Trigger pengiraan semula rumusan di bawah jadual
+                    kiraSemulaRumusanMOU();
+                });
+            }
+        }
+    });
+
+    // Panggilan pertama untuk kiraan awal masa modal dibuka
+    kiraSemulaRumusanMOU();
+}
+
+function kiraSemulaRumusanMOU() {
+    const table = document.querySelector('#kandungan_jadual_pemantauan table');
+    if (!table) return;
+    let tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr:not(.rumusan-row)');
+    
+    let totalAmaun = 0;
+    let totalDibayar = 0;
+
+    rows.forEach(row => {
+        let amaunCell = row.cells[2];
+        let dibayarInput = row.querySelector('td:nth-child(5) input');
+        
+        if (amaunCell) {
+            totalAmaun += parseFloat(amaunCell.innerText.replace(/[^0-9.]/g, '')) || 0;
+        }
+        if (dibayarInput) {
+            totalDibayar += parseFloat(dibayarInput.value.replace(/[^0-9.]/g, '')) || 0;
+        }
+    });
+
+    let baki = totalAmaun - totalDibayar;
+    
+    // Simpan ke memori global sementara untuk ditarik oleh Surat Peringatan
+    window.tempBakiMOU = baki; 
+    window.tempBakiMOU_kesIndex = indexKesSemasa; // Security lock: Pastikan baki untuk kes yang betul
+
+    // Buang row rumusan lama jika sudah wujud (elak duplicate)
+    let oldRumusan = tbody.querySelector('.rumusan-row');
+    if (oldRumusan) oldRumusan.remove();
+
+    // Cipta dan tambah row rumusan baru
+    let tr = document.createElement('tr');
+    tr.className = 'rumusan-row';
+    tr.style.backgroundColor = '#f1f5f9';
+    tr.style.fontWeight = 'bold';
+    tr.innerHTML = `
+        <td colspan="2" style="text-align: right; padding: 12px; border-top: 2px solid var(--border-color);">RUMUSAN KESELURUHAN:</td>
+        <td style="padding: 12px; color: var(--primary-blue); border-top: 2px solid var(--border-color);">RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+        <td style="text-align: right; padding: 12px; border-top: 2px solid var(--border-color);">JUMLAH DIBAYAR & BAKI:</td>
+        <td style="padding: 12px; color: var(--success); border-top: 2px solid var(--border-color);" id="rumusan_dibayar">RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+        <td colspan="2" style="padding: 12px; color: var(--danger); border-top: 2px solid var(--border-color);" id="rumusan_baki">BAKI: RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+    `;
+    tbody.appendChild(tr);
+}
+       
 function bukaModalPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes || !kes.pemantauanMou) return;
@@ -15504,7 +15612,17 @@ function bukaModalPemantauanMou() {
         }
     });
 
+    });
+
     document.getElementById('modalPemantauanMou').style.display = 'flex';
+    
+    // --- KODING BARU (LANGKAH 2): Panggil fungsi auto-kira selepas jadual siap di-render ---
+    setTimeout(() => { 
+        if (typeof janaRumusanDanAutoStatusMOU === 'function') {
+            janaRumusanDanAutoStatusMOU(); 
+        }
+    }, 100);
+    // --- TAMAT KODING BARU ---
 }
 
 function simpanPemantauanMou() {
