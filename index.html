@@ -14770,7 +14770,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         </div>
 
         <!-- MUKA SURAT 2 -->
-        ${(!isMajikanCheckMOU || skHTML !== '') ? `
+        ${(!isMajikanCheckMOU || skArray.length > 0) ? `
         <div class="kertas-notis" style="page-break-before: always; position: relative;">
             <div style="position: absolute; top: 1.5cm; left: 2.5cm; right: 2.5cm; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; line-height: 1.4; border-bottom: 1px solid #000; padding-bottom: 8px;">
                 Rujukan: ${noKes}<br>KETUA PENGARAH TENAGA KERJA KES SAMAN
