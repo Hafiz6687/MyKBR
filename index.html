@@ -15177,20 +15177,32 @@ function bukaPreviewPeringatanBorangC() {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // ENJIN EKSTRAK DATA BORANG C DARI SEJARAH TINDAKAN
+    // ENJIN EKSTRAK DATA BORANG C DARI SEJARAH TINDAKAN & MEMORI (KALIS-GAGAL)
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
-    let jumRM = "RM 0.00";
+    let jumRMRaw = 0;
 
-    const rekodBC = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
-    if (rekodBC && rekodBC.butiran) {
-        let dMatch = rekodBC.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
+    // 1. Tarik Tarikh dari teks Sejarah Tindakan (sebagai sandaran jika data tersembunyi tiada)
+    const rekodBCAsal = (kes.sejarahTindakan || []).slice().reverse().find(s => s.tindakan && (s.tindakan.includes("Borang C") || s.tindakan.includes("Perintah")));
+    if (rekodBCAsal && rekodBCAsal.tarikhMasa) {
+        let tParts = rekodBCAsal.tarikhMasa.split('|')[0].trim().split('/');
+        if (tParts.length === 3) {
+            tarikhDD = tParts[0];
+            tarikhMMYYYY = `${bulanMY[parseInt(tParts[1])-1]} ${tParts[2]}`;
+        }
+    }
+
+    // 2. Baca dari Input Borang (jika user baru selesai isi borang aktif)
+    let inputAmuan = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['bc_jumlah_perintah'] : "0";
+    jumRMRaw = parseFloat((inputAmuan || "0").toString().replace(/,/g, '')) || 0;
+
+    // 3. Ekstrak data tersembunyi (Base64) dari Sejarah Tindakan jika ada
+    const rekodBCBase64 = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
+    if (rekodBCBase64 && rekodBCBase64.butiran) {
+        let dMatch = rekodBCBase64.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
         if (dMatch && dMatch[1]) {
             try {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoData.jumlah) {
-                    let jumPerintahFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPerintahFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                }
+                if (memoData.jumlah) jumRMRaw = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
                     if (!isNaN(t.getTime())) {
@@ -15198,9 +15210,12 @@ function bukaPreviewPeringatanBorangC() {
                         tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
                     }
                 }
-            } catch(e) { console.error("Ralat extract Borang C:", e); }
+            } catch(e) {}
         }
     }
+
+    // 4. Bina teks paparan
+    let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
 
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
     
