@@ -665,6 +665,14 @@
                 </select>
             </div>
 
+            <!-- DROPDOWN PILIH PENANDATANGAN MOU -->
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Pihak Menandatangani <span>*</span><br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Bagi pihak pengadu)</span></label>
+                <select id="mou_penandatangan" style="width: 100%; box-sizing: border-box; background-color: #f0f9ff; border-color: var(--primary-blue);">
+                    <option value="">-Sila Pilih-</option>
+                </select>
+            </div>
+
             <!-- CHECKBOX PENERIMA NOTIS MOU -->
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
                 <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
@@ -1087,8 +1095,8 @@
                     <option value="Peguam">Peguam</option>
                     <option value="Saksi">Saksi</option>
                     <option value="Wakil Kesatuan">Wakil Kesatuan Sekerja</option>
-                    <option value="Wakil Pengadu">Wakil Pengadu</option>
-                    <option value="Wakil Defendan">Wakil Defendan</option>
+                    <option value="Wakil Pengadu" id="opt_wakil_pengadu">Wakil Pengadu</option>
+                    <option value="Wakil Defendan" id="opt_wakil_defendan">Wakil Defendan</option>
                 </select>
             </div>
 
@@ -11949,13 +11957,22 @@ function formatMyKadWakil(inputElement) {
         }
     }
 }
-
 // 2. Buka modal dan set tajuk mengikut pihak
-function bukaModalPerwakilan(pihak) {
-    pihakPerwakilanSemasa = pihak;
-    document.getElementById('pw_index').value = "-1"; 
-    const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
-    document.querySelector('#modalPerwakilan .modal-title').innerText = modalTitle;
+    function bukaModalPerwakilan(pihak) {
+        
+        // Filter pilihan dropdown berdasarkan pihak yang diklik
+        if (pihak === 'pengadu') {
+            document.getElementById('opt_wakil_pengadu').style.display = 'block';
+            document.getElementById('opt_wakil_defendan').style.display = 'none';
+        } else if (pihak === 'defendan') {
+            document.getElementById('opt_wakil_pengadu').style.display = 'none';
+            document.getElementById('opt_wakil_defendan').style.display = 'block';
+        }
+
+        pihakPerwakilanSemasa = pihak;
+        document.getElementById('pw_index').value = "-1";
+        const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
+        document.querySelector('#modalPerwakilan .modal-title').innerText = modalTitle;
     
     document.getElementById('pw_kategori').value = '';
     document.getElementById('pw_nama').value = '';
@@ -13090,8 +13107,30 @@ window.cetakDokumenBorangC = function(jenis) {
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN MOU (PERSETUJUAN BERSAMA & NOTIS)
 // =========================================================================
-
 function bukaModalMou() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    // --- MULA: KOD EKSTRAK DAN ISI NAMA PENANDATANGAN ---
+    const selectSgn = document.getElementById('mou_penandatangan');
+    if (selectSgn) {
+        selectSgn.innerHTML = '<option value="">-Sila Pilih-</option>';
+        
+        // 1. Masukkan Nama Pengadu (Default)
+        let namaP = kes.namaPengadu ? kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase() : "PENGADU";
+        selectSgn.innerHTML += `<option value="${namaP}">${namaP} (Pengadu)</option>`;
+        
+        // 2. Masukkan Nama Wakil (Jika ada)
+        if (kes.senaraiPerwakilan && kes.senaraiPerwakilan.length > 0) {
+            kes.senaraiPerwakilan.forEach(wakil => {
+                selectSgn.innerHTML += `<option value="${wakil.nama.toUpperCase()}">${wakil.nama.toUpperCase()} (${wakil.kategori})</option>`;
+            });
+        }
+        
+        // Tetapkan 'Pengadu' sebagai pilihan utama secara automatik
+        selectSgn.selectedIndex = 1;
+    }
+    // --- TAMAT: KOD EKSTRAK DAN ISI NAMA PENANDATANGAN ---
     document.getElementById('mk_tarikh_mou').value = '';
     document.getElementById('mk_jumlah_mou').value = '';
     document.getElementById('mk_kaedah_mou').value = '';
@@ -13487,6 +13526,15 @@ function semakButangMou() {
 }
 
 function tindakanMou() {
+    // --- MULA: KOD TANGKAP PENANDATANGAN MOU ---
+    const penandatangan = document.getElementById('mou_penandatangan') ? document.getElementById('mou_penandatangan').value : '';
+    
+    // Simpan ke dalam memori global Proxy Bridge
+    window.tempDataMou = window.tempDataMou || {};
+    window.tempDataMou.penandatangan = penandatangan;
+    // --- TAMAT: KOD TANGKAP PENANDATANGAN MOU ---
+
+    // Koding asal validasi & panggil preview
     if (!document.getElementById('btnTindakanMou').disabled) {
         bukaPreviewMou();
     } else {
