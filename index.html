@@ -665,14 +665,6 @@
                 </select>
             </div>
 
-            <!-- DROPDOWN PILIH PENANDATANGAN MOU -->
-            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                <label style="text-align: left;">Pihak Menandatangani <span>*</span><br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Bagi pihak pengadu)</span></label>
-                <select id="mou_penandatangan" style="width: 100%; box-sizing: border-box; background-color: #f0f9ff; border-color: var(--primary-blue);">
-                    <option value="">-Sila Pilih-</option>
-                </select>
-            </div>
-
             <!-- CHECKBOX PENERIMA NOTIS MOU -->
             <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
                 <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
@@ -1095,8 +1087,8 @@
                     <option value="Peguam">Peguam</option>
                     <option value="Saksi">Saksi</option>
                     <option value="Wakil Kesatuan">Wakil Kesatuan Sekerja</option>
-                    <option value="Wakil Pengadu" id="opt_wakil_pengadu">Wakil Pengadu</option>
-                    <option value="Wakil Defendan" id="opt_wakil_defendan">Wakil Defendan</option>
+                    <option value="Wakil Pengadu">Wakil Pengadu</option>
+                    <option value="Wakil Defendan">Wakil Defendan</option>
                 </select>
             </div>
 
@@ -1223,29 +1215,17 @@
                 </div>
             </div>
 
-            <!-- TOGGLE ALAMAT BERBEZA -->
-            <div style="margin-bottom: 15px;">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
-                    <input type="checkbox" id="tempatSebutanSemulaBerbeza" onchange="toggleTempatSebutanSemula()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
-                    <label for="tempatSebutanSemulaBerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat sebutan berbeza dengan pejabat semasa?</label>
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left; margin-bottom: 5px;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
+                <input type="text" id="ss_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="ss_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="ss_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('ss_poskod', 'ss_negeri', 'ss_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                    <input type="text" id="ss_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
                 </div>
-                <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Sebutan (Alamat Penuh) berbeza.</p>
-            </div>
-
-            <!-- WRAPPER ALAMAT SEBUTAN SEMULA (Disembunyikan secara lalai) -->
-            <div id="ruanganTempatSebutanSemula" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
-                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
-                    <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
-                    <input type="text" id="ss_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" id="ss_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" id="ss_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                    <input type="text" id="ss_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                        <input type="text" id="ss_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('ss_poskod', 'ss_negeri', 'ss_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
-                        <input type="text" id="ss_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-                    </div>
-                    <input type="text" id="ss_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-                </div>
+                <input type="text" id="ss_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
 
             <div class="modal-actions">
@@ -1683,29 +1663,17 @@ Portal rasmi : jtksm.mohr.gov.my
             </div>
         </div>
 
-        <!-- TOGGLE ALAMAT BERBEDA -->
-        <div style="margin-bottom: 15px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <input type="checkbox" id="tempatSebutanTangguhBerbeza" onchange="toggleTempatSebutanTangguh()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
-                <label for="tempatSebutanTangguhBerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat sebutan berbeza dengan pejabat semasa?</label>
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left; margin-bottom: 5px;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
+            <input type="text" id="stg_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="stg_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="stg_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('stg_poskod', 'stg_negeri', 'stg_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                <input type="text" id="stg_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
-            <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Sebutan (Alamat Penuh) berbeza.</p>
-        </div>
-
-        <!-- WRAPPER ALAMAT SEBUTAN TANGGUH (Disembunyikan secara default) -->
-        <div id="ruanganTempatSebutanTangguh" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
-            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
-                <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Sebutan (Alamat Penuh) <span>*</span></label>
-                <input type="text" id="stg_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="stg_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="stg_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="stg_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                    <input type="text" id="stg_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('stg_poskod', 'stg_negeri', 'stg_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
-                    <input type="text" id="stg_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-                </div>
-                <input type="text" id="stg_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-            </div>
+            <input type="text" id="stg_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
         </div>
 
         <div class="modal-actions">
@@ -1997,29 +1965,17 @@ Portal rasmi : jtksm.mohr.gov.my
             </div>
         </div>
 
-        <!-- TOGGLE ALAMAT BERBEZA -->
-        <div style="margin-bottom: 15px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <input type="checkbox" id="tempatSamanABerbeza" onchange="toggleTempatSamanA()" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0;"> 
-                <label for="tempatSamanABerbeza" style="font-weight:600; font-size: 0.9em; color: var(--text-main); margin:0;">Tempat saman hadir berbeza dengan pejabat semasa?</label>
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left; margin-bottom: 5px;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
+            <input type="text" id="sma_tempat_nama" placeholder="Nama Tempat (Cth: PEJABAT TENAGA KERJA KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="sma_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="sma_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('sma_poskod', 'sma_negeri', 'sma_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
+                <input type="text" id="sma_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
             </div>
-            <p style="font-size: 0.8em; color: var(--text-muted); margin: 2px 0 0 26px; font-style: italic;">*Sistem telah mengekstrak alamat semasa pejabat. Sila kemaskini jika Tempat Saman Hadir (Alamat Penuh) berbeza.</p>
-        </div>
-
-        <!-- WRAPPER ALAMAT SAMAN A (Disembunyikan secara lalai) -->
-        <div id="ruanganTempatSamanA" style="display: none; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 12px;">
-            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
-                <label style="text-align: left; margin-bottom: 5px; margin-top: 0;">Tempat Saman Hadir (Alamat Penuh) <span>*</span></label>
-                <input type="text" id="sma_tempat_nama" placeholder="Nama Tempat (Cth: MAHKAMAH BURUH KLUANG)" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="sma_alamat1" placeholder="Baris 1" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="sma_alamat2" placeholder="Baris 2" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <input type="text" id="sma_alamat3" placeholder="Baris 3" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" oninput="this.value = this.value.toUpperCase()">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                    <input type="text" id="sma_poskod" placeholder="Poskod" maxlength="5" onkeyup="cariPoskodAutomatik('sma_poskod', 'sma_negeri', 'sma_bandar')" onblur="semakPoskod(this)" style="width: 100%; box-sizing: border-box;">
-                    <input type="text" id="sma_bandar" placeholder="Bandar" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-                </div>
-                <input type="text" id="sma_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
-            </div>
+            <input type="text" id="sma_negeri" placeholder="Negeri" readonly style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
         </div>
 
         <div class="modal-actions">
@@ -3452,7 +3408,7 @@ if (menuTindakanUrus) {
     }
 }
     
-    var btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
+    const btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
     if (btnKemaskiniPendaftaran) {
         btnKemaskiniPendaftaran.style.display = 'flex';
         btnKemaskiniPendaftaran.innerHTML = '<span style="font-size: 1.2em; line-height: 1;">✏️</span> Kemaskini';
@@ -3710,7 +3666,7 @@ function bukaPreviewTarikBalik() {
     const menuCetakG1 = document.getElementById('menuCetakG1');
     menuCetakG1.style.display = 'flex';
     menuCetakG1.innerHTML = '🖨️ Cetak Akuan Penarikan';
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -3721,7 +3677,7 @@ function bukaPreviewTarikBalik() {
         }
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -3934,72 +3890,54 @@ function janaSebutanDariModal() {
 // =========================================================================
 // FUNGSI KAWALAN POP-UP SEBUTAN TANGGUH
 // =========================================================================
-function toggleTempatSebutanTangguh() {
-    const isBerbeza = document.getElementById('tempatSebutanTangguhBerbeza').checked;
-    const ruangan = document.getElementById('ruanganTempatSebutanTangguh');
-    if (isBerbeza) {
-        ruangan.style.display = 'block';
-    } else {
-        ruangan.style.display = 'none';
-        // Reset input secara otomatis jika checkbox dimatikan
-        if(document.getElementById('stg_tempat_nama')) document.getElementById('stg_tempat_nama').value = '';
-        if(document.getElementById('stg_alamat1')) document.getElementById('stg_alamat1').value = '';
-        if(document.getElementById('stg_alamat2')) document.getElementById('stg_alamat2').value = '';
-        if(document.getElementById('stg_alamat3')) document.getElementById('stg_alamat3').value = '';
-        if(document.getElementById('stg_poskod')) document.getElementById('stg_poskod').value = '';
-        if(document.getElementById('stg_bandar')) { document.getElementById('stg_bandar').value = ''; document.getElementById('stg_bandar').placeholder = 'Bandar'; }
-        if(document.getElementById('stg_negeri')) { document.getElementById('stg_negeri').value = ''; document.getElementById('stg_negeri').placeholder = 'Negeri'; }
-    }
-}
-
 function bukaModalSebutanTangguh() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // Auto-isi Tarikh Notis (Hari Ini)
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
     const td = new Date();
     document.getElementById('stg_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
 
+    // 2. Ekstrak Nama Pegawai
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('stg_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    let oldTarikh = document.getElementById('mk_tarikh_sebutan')?.value || '';
-    let oldMasa = document.getElementById('mk_masa_sebutan')?.value || '';
-    
-    // Reset checkbox & toggle
-    document.querySelectorAll('input[name="stg_penerima"]').forEach(cb => cb.checked = false);
-    document.getElementById('tempatSebutanTangguhBerbeza').checked = false;
+    // 3. Muatkan data jika sudah pernah disetup sebelumnya
+    let oldTarikh = document.getElementById('stg_tarikh_sebutan')?.value || '';
+    let oldMasa = document.getElementById('stg_masa_sebutan')?.value || '';
     
     if (window.tempDataSebutanTangguh) {
         oldTarikh = window.tempDataSebutanTangguh.tarikhSebutan;
         oldMasa = window.tempDataSebutanTangguh.masaSebutan;
-        
-        if (window.tempDataSebutanTangguh.isBerbeza) {
-            document.getElementById('tempatSebutanTangguhBerbeza').checked = true;
-            document.getElementById('stg_tempat_nama').value = window.tempDataSebutanTangguh.tempatNama;
-            document.getElementById('stg_alamat1').value = window.tempDataSebutanTangguh.a1;
-            document.getElementById('stg_alamat2').value = window.tempDataSebutanTangguh.a2;
-            document.getElementById('stg_alamat3').value = window.tempDataSebutanTangguh.a3;
-            document.getElementById('stg_poskod').value = window.tempDataSebutanTangguh.pos;
-            document.getElementById('stg_bandar').value = window.tempDataSebutanTangguh.bdr;
-            document.getElementById('stg_negeri').value = window.tempDataSebutanTangguh.ngr;
-        }
-        
-        if (window.tempDataSebutanTangguh.senaraiPenerima) {
-            window.tempDataSebutanTangguh.senaraiPenerima.forEach(val => {
-                let cb = document.querySelector(`input[name="stg_penerima"][value="${val}"]`);
-                if(cb) cb.checked = true;
-            });
-        }
+        document.getElementById('stg_tempat_nama').value = window.tempDataSebutanTangguh.tempatNama;
+        document.getElementById('stg_alamat1').value = window.tempDataSebutanTangguh.a1;
+        document.getElementById('stg_alamat2').value = window.tempDataSebutanTangguh.a2;
+        document.getElementById('stg_alamat3').value = window.tempDataSebutanTangguh.a3;
+        document.getElementById('stg_poskod').value = window.tempDataSebutanTangguh.pos;
+        document.getElementById('stg_bandar').value = window.tempDataSebutanTangguh.bdr;
+        document.getElementById('stg_negeri').value = window.tempDataSebutanTangguh.ngr;
     } else {
-        // Fallback untuk memastikan input bersih
-        if(document.getElementById('stg_tempat_nama')) document.getElementById('stg_tempat_nama').value = '';
+        // Lalai alamat penuh pejabat
+        document.getElementById('stg_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+        document.getElementById('stg_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+        document.getElementById('stg_alamat2').value = '';
+        document.getElementById('stg_alamat3').value = '';
+        document.getElementById('stg_poskod').value = '86000';
+        document.getElementById('stg_bandar').value = 'KLUANG';
+        document.getElementById('stg_negeri').value = 'JOHOR';
     }
-    
-    toggleTempatSebutanTangguh();
 
     document.getElementById('stg_tarikh_sebutan').value = oldTarikh;
     document.getElementById('stg_masa_sebutan').value = oldMasa;
+
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="stg_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSebutanTangguh && window.tempDataSebutanTangguh.senaraiPenerima) {
+        window.tempDataSebutanTangguh.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="stg_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
 
     document.getElementById('modalSebutanTangguh').style.display = 'flex';
 }
@@ -4009,40 +3947,25 @@ function janaSebutanTangguhDariModal() {
     const pegawai = document.getElementById('stg_pegawai').value.trim();
     const tarikhSebutan = document.getElementById('stg_tarikh_sebutan').value;
     const masaSebutan = document.getElementById('stg_masa_sebutan').value;
-    
-    const isBerbeza = document.getElementById('tempatSebutanTangguhBerbeza').checked;
-    
-    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
-    
-    if (isBerbeza) {
-        tempatNama = document.getElementById('stg_tempat_nama').value.trim();
-        a1 = document.getElementById('stg_alamat1').value.trim();
-        a2 = document.getElementById('stg_alamat2').value.trim();
-        a3 = document.getElementById('stg_alamat3').value.trim();
-        pos = document.getElementById('stg_poskod').value.trim();
-        bdr = document.getElementById('stg_bandar').value.trim();
-        ngr = document.getElementById('stg_negeri').value.trim();
-        
-        if (!tempatNama) {
-            alert("Sila lengkapkan Nama Tempat Sebutan.");
-            return;
-        }
-    }
+    const tempatNama = document.getElementById('stg_tempat_nama').value.trim();
 
-    if (!tarikhNotis || !pegawai || !tarikhSebutan || !masaSebutan) {
+    if (!tarikhNotis || !pegawai || !tarikhSebutan || !masaSebutan || !tempatNama) {
         alert("Sila lengkapkan maklumat wajib (*).");
         return;
     }
 
+    const a1 = document.getElementById('stg_alamat1').value.trim();
+    const a2 = document.getElementById('stg_alamat2').value.trim();
+    const a3 = document.getElementById('stg_alamat3').value.trim();
+    const pos = document.getElementById('stg_poskod').value.trim();
+    const bdr = document.getElementById('stg_bandar').value.trim();
+    const ngr = document.getElementById('stg_negeri').value.trim();
+
     const penerimaNode = document.querySelectorAll('input[name="stg_penerima"]:checked');
     let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
 
-    // Simpan ke hidden inputs jika sistem lama bergantung padanya
-    if(document.getElementById('mk_tarikh_sebutan')) document.getElementById('mk_tarikh_sebutan').value = tarikhSebutan;
-    if(document.getElementById('mk_masa_sebutan')) document.getElementById('mk_masa_sebutan').value = masaSebutan;
-
-    // Simpan data pop-up ke proxy memori
-    window.tempDataSebutanTangguh = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    // Simpan data pop-up ke memori sementara
+    window.tempDataSebutanTangguh = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     
     document.getElementById('modalSebutanTangguh').style.display = 'none';
     bukaPreviewNotisGenerik('sebutan_tangguh'); 
@@ -4713,52 +4636,16 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiSebutanTangguh = dSebutanTangguh.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSebutanTangguh);
             
-            if (dSebutanTangguh.isBerbeza) {
-                let arrTpt = [dSebutanTangguh.tempatNama, dSebutanTangguh.a1, dSebutanTangguh.a2, dSebutanTangguh.a3].filter(Boolean);
-                let posBdr = [dSebutanTangguh.pos, dSebutanTangguh.bdr].filter(Boolean).join(' ');
-                if (posBdr) arrTpt.push(posBdr);
-                if (dSebutanTangguh.ngr) arrTpt.push(dSebutanTangguh.ngr);
-                
-                lokasiPejabatCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
-            } else {
-                let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-                let ptkBandar = "KLUANG";
-                let ptkNegeri = "JOHOR DARUL TAKZIM";
-                const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-                if (statsDiv) {
-                    const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-                    if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-                    const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-                    if (poskodLineIndex !== -1) {
-                        ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                        if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                            ptkNegeri = lines[poskodLineIndex + 1].trim();
-                        }
-                    }
-                }
-                lokasiPejabatCetak = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
-            }
-        } else {
-            let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-            let ptkBandar = "KLUANG";
-            let ptkNegeri = "JOHOR DARUL TAKZIM";
-            const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-            if (statsDiv) {
-                const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-                if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-                const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-                if (poskodLineIndex !== -1) {
-                    ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                    if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                        ptkNegeri = lines[poskodLineIndex + 1].trim();
-                    }
-                }
-            }
-            lokasiPejabatCetak = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+            let arrTpt = [dSebutanTangguh.tempatNama, dSebutanTangguh.a1, dSebutanTangguh.a2, dSebutanTangguh.a3].filter(Boolean);
+            let posBdr = [dSebutanTangguh.pos, dSebutanTangguh.bdr].filter(Boolean).join(' ');
+            if (posBdr) arrTpt.push(posBdr);
+            if (dSebutanTangguh.ngr) arrTpt.push(dSebutanTangguh.ngr);
+            
+            lokasiPejabatCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
         }
 
-        let ayatDiTempatHadir = (window.tempDataSebutanTangguh && window.tempDataSebutanTangguh.isBerbeza) ? `di <strong>${lokasiPejabatCetak}</strong>` : `di pejabat ini`;
-        
+        let ayatDiTempatHadir = window.tempDataSebutanTangguh ? `di <strong>${lokasiPejabatCetak}</strong>` : `di pejabat ini`;
+
         let p2Pengadu = `<div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan, Mahkamah Buruh telah menerima suatu permohonan bagi penangguhan kes daripada pihak <strong>${namaD}</strong>. Mahkamah setelah semakan adalah dengan ini membenarkan permohonan penangguhan kes.</div>`;
         let p3Pengadu = `<div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan. Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya tiada penyelesaian kes pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>`;
         
@@ -4874,33 +4761,11 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         // INTERCEPT DATA ALAMAT & PEGAWAI DARI POP-UP SEBUTAN SEMULA
         if (window.tempDataSebutanSemula) {
             let dSemula = window.tempDataSebutanSemula;
-            
-            // Baca Alamat Penuh HANYA JIKA isBerbeza true
-            if (dSemula.isBerbeza) {
-                let arrTpt = [dSemula.tempatNama, dSemula.a1, dSemula.a2, dSemula.a3].filter(Boolean);
-                let posBdr = [dSemula.pos, dSemula.bdr].filter(Boolean).join(' ');
-                if (posBdr) arrTpt.push(posBdr);
-                if (dSemula.ngr) arrTpt.push(dSemula.ngr);
-                tempatSamanRaw = arrTpt.join(', ').toUpperCase();
-            } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
-                let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-                let ptkBandar = "KLUANG";
-                let ptkNegeri = "JOHOR DARUL TAKZIM";
-                const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-                if (statsDiv) {
-                    const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-                    if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-                    const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-                    if (poskodLineIndex !== -1) {
-                        ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                        if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                            ptkNegeri = lines[poskodLineIndex + 1].trim();
-                        }
-                    }
-                }
-                tempatSamanRaw = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`.toUpperCase();
-            }
+            let arrTpt = [dSemula.tempatNama, dSemula.a1, dSemula.a2, dSemula.a3].filter(Boolean);
+            let posBdr = [dSemula.pos, dSemula.bdr].filter(Boolean).join(' ');
+            if (posBdr) arrTpt.push(posBdr);
+            if (dSemula.ngr) arrTpt.push(dSemula.ngr);
+            tempatSamanRaw = arrTpt.join(', ').toUpperCase();
 
             // Override Tarikh Surat & Nama Pegawai
             let tN = new Date(dSemula.tarikhNotis);
@@ -5669,7 +5534,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     }
     btnNotisDefendan.onclick = function(e) { e.preventDefault(); window.cetakNotis('defendan'); };
 
-    var btnKemaskini = document.getElementById('menuKemaskini'); 
+    const btnKemaskini = document.getElementById('menuKemaskini'); 
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -5678,7 +5543,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         if (typeof toggleKadUrus === 'function') { toggleKadUrus(kunci); }
     };
 
-    var btnBatal = document.getElementById('menuBatal'); 
+    const btnBatal = document.getElementById('menuBatal'); 
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -5686,7 +5551,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         document.getElementById('modalPreview').style.display = 'none';
     };
 
-    var radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
+    const radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
     if (radON) radON.checked = true;
 
     tunjukSuisTandatangan(true);
@@ -7467,7 +7332,7 @@ function tukarView(jenisView, dariBukaKes = false) {
     const tajukHalaman = document.getElementById('tajukHalamanAtas');
     const btnCetakHeader = document.getElementById('butangCetakHeader');
     
-    var btnBatalLuar = document.getElementById('btnBatalPemfailan');
+    const btnBatalLuar = document.getElementById('btnBatalPemfailan');
 
     if ((jenisView === 'daftar' || jenisView === 'urus') && !dariBukaKes) {
         if (typeof isSelesaiDaftar !== 'undefined' && !isSelesaiDaftar) {
@@ -8387,7 +8252,7 @@ function bukaPreviewPDF(jenisBorang) {
         document.getElementById('menuCetakKenyataan').style.display = 'none';
         document.getElementById('menuDaftar').style.display = 'none';
         document.getElementById('menuCetakG1').style.display = 'flex';
-        var btnKemaskini = document.getElementById('menuKemaskini');
+        const btnKemaskini = document.getElementById('menuKemaskini');
         btnKemaskini.style.display = 'flex';
         btnKemaskini.onclick = function(e) {
             if(e) e.preventDefault();
@@ -8395,7 +8260,7 @@ function bukaPreviewPDF(jenisBorang) {
             document.getElementById('modalPreview').style.display = 'none';
         };
 
-        var btnBatal = document.getElementById('menuBatal');
+        const btnBatal = document.getElementById('menuBatal');
         btnBatal.style.display = 'flex';
         btnBatal.onclick = function(e) {
             if(e) e.preventDefault();
@@ -8559,7 +8424,7 @@ function bukaPreviewPDF(jenisBorang) {
         document.getElementById('menuCetakKenyataan').style.display = 'none';
         document.getElementById('menuDaftar').style.display = 'none';
         document.getElementById('menuCetakG1').style.display = 'flex';
-        var btnKemaskini = document.getElementById('menuKemaskini');
+        const btnKemaskini = document.getElementById('menuKemaskini');
         btnKemaskini.style.display = 'flex';
         btnKemaskini.onclick = function(e) {
             if(e) e.preventDefault();
@@ -8567,7 +8432,7 @@ function bukaPreviewPDF(jenisBorang) {
             document.getElementById('modalPreview').style.display = 'none';
         };
 
-        var btnBatal = document.getElementById('menuBatal');
+        const btnBatal = document.getElementById('menuBatal');
         btnBatal.style.display = 'flex';
         btnBatal.onclick = function(e) {
             if(e) e.preventDefault();
@@ -8609,7 +8474,7 @@ function bukaPreviewPDF(jenisBorang) {
     if(document.getElementById('menuCetakMouDefendan')) document.getElementById('menuCetakMouDefendan').style.display = 'none';
 
 // RESET BUTANG KEMASKINI KEPADA FUNGSI ASAL BORANG
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         if(e) e.preventDefault();
@@ -8617,7 +8482,7 @@ function bukaPreviewPDF(jenisBorang) {
     };
 
     // RESET BUTANG BATAL KEPADA FUNGSI ASAL BORANG
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         if(e) e.preventDefault();
@@ -8849,7 +8714,7 @@ function bukaPreviewUrus() {
     document.getElementById('menuDaftar').style.display = 'flex';
 
     // RESET BUTANG KEMASKINI KEPADA FUNGSI ASAL
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         if(e) e.preventDefault();
@@ -8857,7 +8722,7 @@ function bukaPreviewUrus() {
     };
 
     // RESET BUTANG BATAL KEPADA FUNGSI ASAL
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         if(e) e.preventDefault();
@@ -9496,7 +9361,7 @@ const htmlNotisAlamat = `
     menuCetakG1.style.display = 'flex';
     menuCetakG1.innerHTML = '🖨️ Cetak Notis Alamat Terkini';
     
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -9504,7 +9369,7 @@ const htmlNotisAlamat = `
         document.getElementById('modalPreview').style.display = 'none';
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -10015,7 +9880,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     btnSamanPengadu.onclick = function(e) { e.preventDefault(); window.cetakDokumenSamanA('pengadu'); };
 
     // KEMASKINI BUTANG
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -10029,7 +9894,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     };
 
     // BATAL BUTANG
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -10037,7 +9902,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
         document.getElementById('modalPreview').style.display = 'none';
     };
 
-    var radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
+    const radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
     if (radON) radON.checked = true;
 
     tunjukSuisTandatangan(true);
@@ -10143,69 +10008,54 @@ function janaSamanTampal() {
 // =========================================================================
 // FUNGSI KAWALAN POP-UP SAMAN HADIR (BORANG A)
 // =========================================================================
-function toggleTempatSamanA() {
-    const isBerbeza = document.getElementById('tempatSamanABerbeza').checked;
-    const ruangan = document.getElementById('ruanganTempatSamanA');
-    if (isBerbeza) {
-        ruangan.style.display = 'block';
-    } else {
-        ruangan.style.display = 'none';
-        // Reset input secara senyap bila ditutup supaya ia auto-extract dari sistem
-        if(document.getElementById('sma_tempat_nama')) document.getElementById('sma_tempat_nama').value = '';
-        if(document.getElementById('sma_alamat1')) document.getElementById('sma_alamat1').value = '';
-        if(document.getElementById('sma_alamat2')) document.getElementById('sma_alamat2').value = '';
-        if(document.getElementById('sma_alamat3')) document.getElementById('sma_alamat3').value = '';
-        if(document.getElementById('sma_poskod')) document.getElementById('sma_poskod').value = '';
-        if(document.getElementById('sma_bandar')) { document.getElementById('sma_bandar').value = ''; document.getElementById('sma_bandar').placeholder = 'Bandar'; }
-        if(document.getElementById('sma_negeri')) { document.getElementById('sma_negeri').value = ''; document.getElementById('sma_negeri').placeholder = 'Negeri'; }
-    }
-}
-
 function bukaModalSamanA() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
+    // 1. Auto-isi Tarikh Notis (Hari Ini)
     const td = new Date();
     document.getElementById('sma_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
 
+    // 2. Ekstrak Nama Pegawai
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('sma_pegawai').value = namaPegawaiRaw.toUpperCase();
 
+    // 3. Muatkan data jika sudah pernah disetup sebelumnya
     let oldTarikh = document.getElementById('mk_tarikh_saman')?.value || '';
     let oldMasa = document.getElementById('mk_masa_saman')?.value || '';
     
-    // Reset paparan checkbox & checkbox toggle
-    document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
-    document.getElementById('tempatSamanABerbeza').checked = false;
-    
     if (window.tempDataSamanA) {
-        if (window.tempDataSamanA.tarikhNotis) document.getElementById('sma_tarikh_notis').value = window.tempDataSamanA.tarikhNotis;
-        if (window.tempDataSamanA.tarikhHadir) oldTarikh = window.tempDataSamanA.tarikhHadir;
-        if (window.tempDataSamanA.masaHadir) oldMasa = window.tempDataSamanA.masaHadir;
-        
-        if (window.tempDataSamanA.isBerbeza) {
-            document.getElementById('tempatSamanABerbeza').checked = true;
-            document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
-            document.getElementById('sma_alamat1').value = window.tempDataSamanA.a1;
-            document.getElementById('sma_alamat2').value = window.tempDataSamanA.a2;
-            document.getElementById('sma_alamat3').value = window.tempDataSamanA.a3;
-            document.getElementById('sma_poskod').value = window.tempDataSamanA.pos;
-            document.getElementById('sma_bandar').value = window.tempDataSamanA.bdr;
-            document.getElementById('sma_negeri').value = window.tempDataSamanA.ngr;
-        }
-        
-        if (window.tempDataSamanA.senaraiPenerima) {
-            window.tempDataSamanA.senaraiPenerima.forEach(val => {
-                let cb = document.querySelector(`input[name="sma_penerima"][value="${val}"]`);
-                if(cb) cb.checked = true;
-            });
-        }
+        oldTarikh = window.tempDataSamanA.tarikhHadir;
+        oldMasa = window.tempDataSamanA.masaHadir;
+        document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
+        document.getElementById('sma_alamat1').value = window.tempDataSamanA.a1;
+        document.getElementById('sma_alamat2').value = window.tempDataSamanA.a2;
+        document.getElementById('sma_alamat3').value = window.tempDataSamanA.a3;
+        document.getElementById('sma_poskod').value = window.tempDataSamanA.pos;
+        document.getElementById('sma_bandar').value = window.tempDataSamanA.bdr;
+        document.getElementById('sma_negeri').value = window.tempDataSamanA.ngr;
+    } else {
+        // Lalai alamat penuh pejabat
+        document.getElementById('sma_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+        document.getElementById('sma_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+        document.getElementById('sma_alamat2').value = '';
+        document.getElementById('sma_alamat3').value = '';
+        document.getElementById('sma_poskod').value = '86000';
+        document.getElementById('sma_bandar').value = 'KLUANG';
+        document.getElementById('sma_negeri').value = 'JOHOR DARUL TAKZIM';
     }
-    
-    toggleTempatSamanA();
 
     document.getElementById('sma_tarikh_hadir').value = oldTarikh;
     document.getElementById('sma_masa_hadir').value = oldMasa;
+
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSamanA && window.tempDataSamanA.senaraiPenerima) {
+        window.tempDataSamanA.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="sma_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
 
     document.getElementById('modalSamanA').style.display = 'flex';
 }
@@ -10215,75 +10065,45 @@ function janaSamanADariModal() {
     const pegawai = document.getElementById('sma_pegawai').value.trim();
     const tarikhHadir = document.getElementById('sma_tarikh_hadir').value;
     const masaHadir = document.getElementById('sma_masa_hadir').value;
-    
-    const isBerbeza = document.getElementById('tempatSamanABerbeza').checked;
-    
-    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
-    
-    if (isBerbeza) {
-        tempatNama = document.getElementById('sma_tempat_nama').value.trim();
-        a1 = document.getElementById('sma_alamat1').value.trim();
-        a2 = document.getElementById('sma_alamat2').value.trim();
-        a3 = document.getElementById('sma_alamat3').value.trim();
-        pos = document.getElementById('sma_poskod').value.trim();
-        bdr = document.getElementById('sma_bandar').value.trim();
-        ngr = document.getElementById('sma_negeri').value.trim();
-        
-        if (!tempatNama) {
-            alert("Sila lengkapkan Nama Tempat Saman Hadir.");
-            return;
-        }
-    }
+    const tempatNama = document.getElementById('sma_tempat_nama').value.trim();
 
-    if (!tarikhNotis || !pegawai || !tarikhHadir || !masaHadir) {
+    if (!tarikhNotis || !pegawai || !tarikhHadir || !masaHadir || !tempatNama) {
         alert("Sila lengkapkan maklumat wajib (*).");
         return;
     }
 
+    const a1 = document.getElementById('sma_alamat1').value.trim();
+    const a2 = document.getElementById('sma_alamat2').value.trim();
+    const a3 = document.getElementById('sma_alamat3').value.trim();
+    const pos = document.getElementById('sma_poskod').value.trim();
+    const bdr = document.getElementById('sma_bandar').value.trim();
+    const ngr = document.getElementById('sma_negeri').value.trim();
+
     const penerimaNode = document.querySelectorAll('input[name="sma_penerima"]:checked');
     let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
 
-    // KAWALAN PROXY BRIDGE: Inject alamat ke hidden field sedia ada supaya fungsi lama tidak perlu diusik!
-    let lokasiSamanSistem = "";
-    if (!isBerbeza) {
-        let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-        let ptkBandar = "KLUANG";
-        let ptkNegeri = "JOHOR DARUL TAKZIM";
-        const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-        if (statsDiv) {
-            const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-            if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-            const poskodLineIndex = lines.findIndex(l => /^\d{5}/.test(l));
-            if (poskodLineIndex !== -1) {
-                ptkBandar = lines[poskodLineIndex].replace(/^\d{5}\s*/, '').trim();
-                if (lines[poskodLineIndex + 1] && !lines[poskodLineIndex + 1].includes('Telefon')) {
-                    ptkNegeri = lines[poskodLineIndex + 1].trim();
-                }
-            }
-        }
-        lokasiSamanSistem = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`.toUpperCase();
-    } else {
-        let arrTpt = [tempatNama, a1, a2, a3].filter(Boolean);
-        let posBdr = [pos, bdr].filter(Boolean).join(' ');
-        if (posBdr) arrTpt.push(posBdr);
-        if (ngr) arrTpt.push(ngr);
-        lokasiSamanSistem = arrTpt.join(', ').toUpperCase();
-    }
+    // Cantumkan alamat penuh untuk diisi ke dalam hidden input (untuk keserasian dengan fungsi lama)
+    let arrTpt = [tempatNama, a1, a2, a3].filter(Boolean);
+    let posBdr = [pos, bdr].filter(Boolean).join(' ');
+    if (posBdr) arrTpt.push(posBdr);
+    if (ngr) arrTpt.push(ngr);
+    const alamatPenuhGabung = arrTpt.join(', ').replace(/\b\w/g, s => s.toUpperCase());
 
-    if (document.getElementById('mk_tarikh_saman')) document.getElementById('mk_tarikh_saman').value = tarikhHadir;
-    if (document.getElementById('mk_masa_saman')) document.getElementById('mk_masa_saman').value = masaHadir;
-    if (document.getElementById('mk_tempat_saman')) document.getElementById('mk_tempat_saman').value = lokasiSamanSistem;
+    // Masukkan ke dalam hidden inputs untuk pastikan fungsi tindakanSamanA() lama tetap mendapat nilai yang betul
+    document.getElementById('mk_tarikh_saman').value = tarikhHadir;
+    document.getElementById('mk_masa_saman').value = masaHadir;
+    document.getElementById('mk_tempat_saman').value = alamatPenuhGabung;
 
-    // Simpan data pop-up ke proxy memori
-    window.tempDataSamanA = { tarikhNotis, pegawai, tarikhHadir, masaHadir, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    // Simpan data pop-up ke memori sementara (termasuk senaraiPenerima Notis untuk digunakan oleh Preview)
+    window.tempDataSamanA = { tarikhNotis, pegawai, tarikhHadir, masaHadir, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     
     document.getElementById('modalSamanA').style.display = 'none';
-    
-    // Panggil fungsi Preview asal tanpa sebarang gangguan
-    if (typeof bukaPreviewSamanA === 'function') {
+
+    // Panggil terus fungsi jana dokumen asal TANPA MENGGANGGU proses Preview dan Action Button
+    if (typeof tindakanSamanA === 'function') {
+        tindakanSamanA();
+    } else if (typeof bukaPreviewSamanA === 'function') {
         bukaPreviewSamanA();
-    } else {
-        console.warn('Fungsi bukaPreviewSamanA tidak dijumpai dalam skrip semasa.');
     }
 }
 // =========================================================================
@@ -10730,7 +10550,7 @@ function bukaPreviewSamanTampal(dataSimpanan = null) {
     }
     
     // Kembalikan Butang Asas
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -10739,7 +10559,7 @@ function bukaPreviewSamanTampal(dataSimpanan = null) {
         bukaModalSamanTampal();
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -11298,7 +11118,7 @@ const htmlSamanMemo = `
     menuCetakG1.style.display = 'flex';
     menuCetakG1.innerHTML = '🖨️ Cetak Dokumen (Saman Memo)';
     
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -11311,7 +11131,7 @@ const htmlSamanMemo = `
         }
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -11417,10 +11237,7 @@ function janaBatalKes() {
         bukaPreviewBatalKes();
     }
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP SEBUTAN SEMULA
-// =========================================================================
-// 1. Kawal paparan medan "Lain-lain" pada modal (Dikekalkan dari kod asal)
+// 1. Kawal paparan medan "Lain-lain" pada modal
 function kawalSebabSebutanSemula() {
     const sebab = document.getElementById('ss_sebab').value;
     const ruanganLain = document.getElementById('ruangan_ss_sebab_lain');
@@ -11432,142 +11249,150 @@ function kawalSebabSebutanSemula() {
     }
 }
 
-// 2. Kawal paparan alamat tempat berbeza
-function toggleTempatSebutanSemula() {
-    const isBerbeza = document.getElementById('tempatSebutanSemulaBerbeza').checked;
-    const ruangan = document.getElementById('ruanganTempatSebutanSemula');
-    if (isBerbeza) {
-        ruangan.style.display = 'block';
-    } else {
-        ruangan.style.display = 'none';
-        // Reset input secara senyap bila ditutup
-        if(document.getElementById('ss_tempat_nama')) document.getElementById('ss_tempat_nama').value = '';
-        if(document.getElementById('ss_alamat1')) document.getElementById('ss_alamat1').value = '';
-        if(document.getElementById('ss_alamat2')) document.getElementById('ss_alamat2').value = '';
-        if(document.getElementById('ss_alamat3')) document.getElementById('ss_alamat3').value = '';
-        if(document.getElementById('ss_poskod')) document.getElementById('ss_poskod').value = '';
-        if(document.getElementById('ss_bandar')) { document.getElementById('ss_bandar').value = ''; document.getElementById('ss_bandar').placeholder = 'Bandar'; }
-        if(document.getElementById('ss_negeri')) { document.getElementById('ss_negeri').value = ''; document.getElementById('ss_negeri').placeholder = 'Negeri'; }
-    }
-}
-
-// 3. Fungsi membuka Modal Sebutan Semula
+// 2. Fungsi apabila butang pada menu "Sebutan Kes (Penetapan Semula)" ditekan
 function bukaModalSebutanSemula() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
+    // 1. Auto-isi Tarikh Notis (Hari Ini) - Dipendekkan supaya tak terpotong
     const td = new Date();
-    document.getElementById('ss_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+    const yyyy = td.getFullYear();
+    const mm = String(td.getMonth() + 1).padStart(2, '0');
+    const dd = String(td.getDate()).padStart(2, '0');
+    document.getElementById('ss_tarikh_notis').value = `${yyyy}-${mm}-${dd}`;
 
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    // 2. Ekstrak Nama Pegawai - Dipendekkan supaya tak terpotong
+    const profilEdit = document.getElementById('namaProfilEdit');
+    let namaPegawaiRaw = profilEdit ? profilEdit.innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('ss_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    let oldTarikh = document.getElementById('mk_tarikh_sebutan_semula')?.value || '';
-    let oldMasa = document.getElementById('mk_masa_sebutan_semula')?.value || '';
-    
-    // Reset paparan checkbox & dropdown sebab
-    document.querySelectorAll('input[name="ss_penerima"]').forEach(cb => cb.checked = false);
-    document.getElementById('tempatSebutanSemulaBerbeza').checked = false;
     document.getElementById('ss_sebab').value = '';
+    document.getElementById('ss_sebab_lain').value = 'namun '; 
     document.getElementById('ruangan_ss_sebab_lain').style.display = 'none';
-    document.getElementById('ss_sebab_lain').value = '';
-    
-    if (window.tempDataSebutanSemula) {
-        oldTarikh = window.tempDataSebutanSemula.tarikhSebutan;
-        oldMasa = window.tempDataSebutanSemula.masaSebutan;
-        
-        if (window.tempDataSebutanSemula.isBerbeza) {
-            document.getElementById('tempatSebutanSemulaBerbeza').checked = true;
-            document.getElementById('ss_tempat_nama').value = window.tempDataSebutanSemula.tempatNama;
-            document.getElementById('ss_alamat1').value = window.tempDataSebutanSemula.a1;
-            document.getElementById('ss_alamat2').value = window.tempDataSebutanSemula.a2;
-            document.getElementById('ss_alamat3').value = window.tempDataSebutanSemula.a3;
-            document.getElementById('ss_poskod').value = window.tempDataSebutanSemula.pos;
-            document.getElementById('ss_bandar').value = window.tempDataSebutanSemula.bdr;
-            document.getElementById('ss_negeri').value = window.tempDataSebutanSemula.ngr;
-        }
-        
-        if (window.tempDataSebutanSemula.senaraiPenerima) {
-            window.tempDataSebutanSemula.senaraiPenerima.forEach(val => {
-                let cb = document.querySelector(`input[name="ss_penerima"][value="${val}"]`);
-                if(cb) cb.checked = true;
-            });
-        }
 
-        // Restore reason (Sebab)
-        if (window.tempSebabSebutanSemula) {
-            let sbb = window.tempSebabSebutanSemula;
-            if (sbb === 'defendan gagal hadir' || sbb === '') {
-                document.getElementById('ss_sebab').value = sbb;
-            } else {
-                document.getElementById('ss_sebab').value = 'Lain-lain';
-                document.getElementById('ruangan_ss_sebab_lain').style.display = 'block';
-                document.getElementById('ss_sebab_lain').value = sbb;
+    // Reset check box penerima (kosongkan semua lalai)
+    document.querySelectorAll('input[name="ss_penerima"]').forEach(cb => cb.checked = false);
+    if (window.tempDataSebutanSemula && window.tempDataSebutanSemula.senaraiPenerima) {
+        window.tempDataSebutanSemula.senaraiPenerima.forEach(val => {
+            let cb = document.querySelector(`input[name="ss_penerima"][value="${val}"]`);
+            if(cb) cb.checked = true;
+        });
+    }
+
+    // 3. Muatkan data jika sudah pernah disetup (seperti kemaskini)
+    if (window.tempDataSebutanSemula) {
+        document.getElementById('ss_tarikh_sebutan').value = window.tempDataSebutanSemula.tarikhSebutan;
+        document.getElementById('ss_masa_sebutan').value = window.tempDataSebutanSemula.masaSebutan;
+        document.getElementById('ss_tempat_nama').value = window.tempDataSebutanSemula.tempatNama;
+        document.getElementById('ss_alamat1').value = window.tempDataSebutanSemula.a1;
+        document.getElementById('ss_alamat2').value = window.tempDataSebutanSemula.a2;
+        document.getElementById('ss_alamat3').value = window.tempDataSebutanSemula.a3;
+        document.getElementById('ss_poskod').value = window.tempDataSebutanSemula.pos;
+        document.getElementById('ss_bandar').value = window.tempDataSebutanSemula.bdr;
+        document.getElementById('ss_negeri').value = window.tempDataSebutanSemula.ngr;
+    } else {
+        // Lalai alamat sebutan mengambil nilai dari Medan Saman A (jika ada) atau Lalai Pejabat
+        let tempatSamanInput = document.getElementById('mk_tempat_saman');
+        
+        document.getElementById('ss_tarikh_sebutan').value = '';
+        document.getElementById('ss_masa_sebutan').value = '';
+        
+        if (tempatSamanInput && tempatSamanInput.value.trim() !== '') {
+            // LOGIK AUTO-EKSTRAK ALAMAT KEPADA MEDAN BERASINGAN
+            let alamatRaw = tempatSamanInput.value.toUpperCase();
+            let parts = alamatRaw.split(',').map(s => s.trim());
+            
+            let nTempat = parts[0] || '';
+            let a1 = parts[1] || '';
+            let a2 = '';
+            let a3 = '';
+            let pKod = '';
+
+            // Ekstrak poskod guna regex
+            let posMatch = alamatRaw.match(/\b\d{5}\b/);
+            if (posMatch) {
+                pKod = posMatch[0];
             }
+
+            // Agihkan bahagian alamat (mengabaikan poskod, bandar, negeri di hujung)
+            if (parts.length === 5) {
+                a2 = parts[2];
+            } else if (parts.length >= 6) {
+                a2 = parts[2];
+                a3 = parts[3];
+            }
+
+            document.getElementById('ss_tempat_nama').value = nTempat;
+            document.getElementById('ss_alamat1').value = a1;
+            document.getElementById('ss_alamat2').value = a2;
+            document.getElementById('ss_alamat3').value = a3;
+            document.getElementById('ss_poskod').value = pKod;
+            
+            if (pKod !== '') {
+                // Auto-generate bandar dan negeri menggunakan API Poskod sedia ada
+                cariPoskodAutomatik('ss_poskod', 'ss_negeri', 'ss_bandar');
+            } else {
+                document.getElementById('ss_bandar').value = '';
+                document.getElementById('ss_negeri').value = '';
+            }
+            
+        } else {
+            // Lalai alamat penuh pejabat jika kosong
+            document.getElementById('ss_tempat_nama').value = "PEJABAT TENAGA KERJA KLUANG";
+            document.getElementById('ss_alamat1').value = 'JALAN PEJABAT KERAJAAN';
+            document.getElementById('ss_alamat2').value = '';
+            document.getElementById('ss_alamat3').value = '';
+            document.getElementById('ss_poskod').value = '86000';
+            document.getElementById('ss_bandar').value = 'KLUANG';
+            document.getElementById('ss_negeri').value = 'JOHOR';
         }
     }
-    
-    toggleTempatSebutanSemula();
-
-    document.getElementById('ss_tarikh_sebutan').value = oldTarikh;
-    document.getElementById('ss_masa_sebutan').value = oldMasa;
 
     document.getElementById('modalSebutanSemula').style.display = 'flex';
 }
-
-// 4. Validasi & jana dokumen selepas menekan "Teruskan"
+// 3. Validasi & teruskan penjanaan dokumen selepas menekan "Teruskan" di modal
 function janaSebutanSemulaDariModal() {
     const tarikhNotis = document.getElementById('ss_tarikh_notis').value;
     const pegawai = document.getElementById('ss_pegawai').value.trim();
+    const sebab = document.getElementById('ss_sebab').value;
+    let sebabLain = document.getElementById('ss_sebab_lain').value.trim();
     const tarikhSebutan = document.getElementById('ss_tarikh_sebutan').value;
     const masaSebutan = document.getElementById('ss_masa_sebutan').value;
-    
-    // Tangkap Sebab
-    const sebabAsas = document.getElementById('ss_sebab').value;
-    let sebabSebenar = sebabAsas;
-    if (sebabAsas === 'Lain-lain') {
-        sebabSebenar = document.getElementById('ss_sebab_lain').value.trim();
-        if (sebabSebenar === '') {
-            alert("Sila nyatakan sebab lain.");
-            return;
-        }
-    }
-    
-    const isBerbeza = document.getElementById('tempatSebutanSemulaBerbeza').checked;
-    let tempatNama = "", a1 = "", a2 = "", a3 = "", pos = "", bdr = "", ngr = "";
-    
-    if (isBerbeza) {
-        tempatNama = document.getElementById('ss_tempat_nama').value.trim();
-        a1 = document.getElementById('ss_alamat1').value.trim();
-        a2 = document.getElementById('ss_alamat2').value.trim();
-        a3 = document.getElementById('ss_alamat3').value.trim();
-        pos = document.getElementById('ss_poskod').value.trim();
-        bdr = document.getElementById('ss_bandar').value.trim();
-        ngr = document.getElementById('ss_negeri').value.trim();
-        
-        if (!tempatNama) {
-            alert("Sila lengkapkan Nama Tempat Sebutan Semula.");
-            return;
-        }
-    }
+    const tempatNama = document.getElementById('ss_tempat_nama').value.trim();
 
-    if (!tarikhNotis || !pegawai || !tarikhSebutan || !masaSebutan || !sebabAsas) {
+    sebabLain = sebabLain.replace(/^namun\s*/i, '').trim();
+    sebabLain = sebabLain.replace(/\.+$/, '');
+
+    if (!tarikhNotis || !pegawai || sebab === '' || !tarikhSebutan || !masaSebutan || !tempatNama) {
         alert("Sila lengkapkan maklumat wajib (*).");
         return;
     }
 
+    if (sebab === 'Lain-lain' && sebabLain === '') {
+        alert('Sila nyatakan sebab lain secara ringkas.');
+        return;
+    }
+
+    const a1 = document.getElementById('ss_alamat1').value.trim();
+    const a2 = document.getElementById('ss_alamat2').value.trim();
+    const a3 = document.getElementById('ss_alamat3').value.trim();
+    const pos = document.getElementById('ss_poskod').value.trim();
+    const bdr = document.getElementById('ss_bandar').value.trim();
+    const ngr = document.getElementById('ss_negeri').value.trim();
+
     const penerimaNode = document.querySelectorAll('input[name="ss_penerima"]:checked');
     let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
 
-    // Simpan data pop-up ke memori sementara (Proksi)
-    window.tempSebabSebutanSemula = sebabSebenar;
-    window.tempDataSebutanSemula = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
+    const sebabAkhir = sebab === 'Lain-lain' ? sebabLain : sebab;
     
+    // Simpan maklumat ke dalam memori
+    window.tempSebabSebutanSemula = sebabAkhir;
+    window.tempDataSebutanSemula = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     document.getElementById('modalSebutanSemula').style.display = 'none';
-    bukaPreviewNotisGenerik('sebutan_semula'); 
+
+    // Buka preview dokumen
+    bukaPreviewNotisGenerik('sebutan_semula');
 }
-
-
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN SURAT NOTIS PEMBATALAN KES
 // =========================================================================
@@ -11761,7 +11586,7 @@ const htmlNotisBatal = `
     menuCetakG1.style.display = 'flex';
     menuCetakG1.innerHTML = '🖨️ Cetak Notis Batal Kes';
     
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -11770,7 +11595,7 @@ const htmlNotisBatal = `
         document.getElementById('modalBatalKes').style.display = 'flex';
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -11796,7 +11621,7 @@ const htmlNotisBatal = `
         }, 500);
     };
 // Reset Radio Button kepada ON secara lalai
-    var radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
+    const radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
     if (radON) radON.checked = true;
 
     // Tunjukkan suis tandatangan
@@ -11957,22 +11782,13 @@ function formatMyKadWakil(inputElement) {
         }
     }
 }
-// 2. Buka modal dan set tajuk mengikut pihak
-    function bukaModalPerwakilan(pihak) {
-        
-        // Filter pilihan dropdown berdasarkan pihak yang diklik
-        if (pihak === 'pengadu') {
-            document.getElementById('opt_wakil_pengadu').style.display = 'block';
-            document.getElementById('opt_wakil_defendan').style.display = 'none';
-        } else if (pihak === 'defendan') {
-            document.getElementById('opt_wakil_pengadu').style.display = 'none';
-            document.getElementById('opt_wakil_defendan').style.display = 'block';
-        }
 
-        pihakPerwakilanSemasa = pihak;
-        document.getElementById('pw_index').value = "-1";
-        const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
-        document.querySelector('#modalPerwakilan .modal-title').innerText = modalTitle;
+// 2. Buka modal dan set tajuk mengikut pihak
+function bukaModalPerwakilan(pihak) {
+    pihakPerwakilanSemasa = pihak;
+    document.getElementById('pw_index').value = "-1"; 
+    const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
+    document.querySelector('#modalPerwakilan .modal-title').innerText = modalTitle;
     
     document.getElementById('pw_kategori').value = '';
     document.getElementById('pw_nama').value = '';
@@ -12369,7 +12185,7 @@ const htmlNotisLengkap = `
     if (btnD) btnD.style.display = 'none';
 
     // TETAPKAN BUTANG KEMASKINI SUPAYA PATAH BALIK KE POP-UP NOTIS LAIN (BUKAN MOU)
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -12379,7 +12195,7 @@ const htmlNotisLengkap = `
     };
 
     // TETAPKAN BUTANG BATAL SUPAYA TUTUP PREVIEW SAHAJA
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -13054,7 +12870,7 @@ window.cetakDokumenBorangC = function(jenis) {
     btnDefendan.style.display = 'flex'; btnDefendan.style.color = 'var(--text-main)'; btnDefendan.innerHTML = '🖨️ Cetak Notis Defendan';
     btnDefendan.onclick = function(e) { e.preventDefault(); window.cetakDokumenBorangC('defendan'); };
 
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -13092,7 +12908,7 @@ window.cetakDokumenBorangC = function(jenis) {
         }
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -13107,30 +12923,8 @@ window.cetakDokumenBorangC = function(jenis) {
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN MOU (PERSETUJUAN BERSAMA & NOTIS)
 // =========================================================================
-function bukaModalMou() {
-    const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
 
-    // --- MULA: KOD EKSTRAK DAN ISI NAMA PENANDATANGAN ---
-    const selectSgn = document.getElementById('mou_penandatangan');
-    if (selectSgn) {
-        selectSgn.innerHTML = '<option value="">-Sila Pilih-</option>';
-        
-        // 1. Masukkan Nama Pengadu (Default)
-        let namaP = kes.namaPengadu ? kes.namaPengadu.replace(/<br>.*$/g, '').toUpperCase() : "PENGADU";
-        selectSgn.innerHTML += `<option value="${namaP}">${namaP} (Pengadu)</option>`;
-        
-        // 2. Masukkan Nama Wakil (Jika ada)
-        if (kes.senaraiPerwakilan && kes.senaraiPerwakilan.length > 0) {
-            kes.senaraiPerwakilan.forEach(wakil => {
-                selectSgn.innerHTML += `<option value="${wakil.nama.toUpperCase()}">${wakil.nama.toUpperCase()} (${wakil.kategori})</option>`;
-            });
-        }
-        
-        // Tetapkan 'Pengadu' sebagai pilihan utama secara automatik
-        selectSgn.selectedIndex = 1;
-    }
-    // --- TAMAT: KOD EKSTRAK DAN ISI NAMA PENANDATANGAN ---
+function bukaModalMou() {
     document.getElementById('mk_tarikh_mou').value = '';
     document.getElementById('mk_jumlah_mou').value = '';
     document.getElementById('mk_kaedah_mou').value = '';
@@ -13526,15 +13320,6 @@ function semakButangMou() {
 }
 
 function tindakanMou() {
-    // --- MULA: KOD TANGKAP PENANDATANGAN MOU ---
-    const penandatangan = document.getElementById('mou_penandatangan') ? document.getElementById('mou_penandatangan').value : '';
-    
-    // Simpan ke dalam memori global Proxy Bridge
-    window.tempDataMou = window.tempDataMou || {};
-    window.tempDataMou.penandatangan = penandatangan;
-    // --- TAMAT: KOD TANGKAP PENANDATANGAN MOU ---
-
-    // Koding asal validasi & panggil preview
     if (!document.getElementById('btnTindakanMou').disabled) {
         bukaPreviewMou();
     } else {
@@ -14365,7 +14150,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
     btnMouDefendan.style.display = 'flex'; btnMouDefendan.style.color = 'var(--text-main)'; btnMouDefendan.innerHTML = '🖨️ Cetak Notis Defendan';
     btnMouDefendan.onclick = function(e) { e.preventDefault(); window.cetakDokumenMou('defendan'); };
 
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -14429,7 +14214,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
         }
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -14818,7 +14603,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         };
     }
     
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -14827,7 +14612,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         bukaModalPeringatanBayaran('MOU');
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -15093,7 +14878,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         };
     }
     
-    var btnKemaskini = document.getElementById('menuKemaskini');
+    const btnKemaskini = document.getElementById('menuKemaskini');
     btnKemaskini.style.display = 'flex';
     btnKemaskini.onclick = function(e) {
         e.preventDefault();
@@ -15102,7 +14887,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         bukaModalPeringatanBayaran('Borang C');
     };
 
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
@@ -15298,7 +15083,7 @@ function bukaPreviewPeringatanBorangC() {
         };
     }
     
-    var btnBatal = document.getElementById('menuBatal');
+    const btnBatal = document.getElementById('menuBatal');
     btnBatal.style.display = 'flex';
     btnBatal.onclick = function(e) {
         e.preventDefault();
