@@ -5675,7 +5675,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         e.preventDefault();
         document.getElementById('actionMenu').classList.remove('show');
         document.getElementById('modalPreview').style.display = 'none';
-        if (typeof toggleKadUrus === 'function') { toggleKadUrus(kunci); }
     };
 
     const btnBatal = document.getElementById('menuBatal'); 
@@ -5689,7 +5688,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     const radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
     if (radON) radON.checked = true;
 
-    tunjukSuisTandatangan(true);
+    if (typeof tunjukSuisTandatangan === 'function') {
+        tunjukSuisTandatangan(true);
+    }
+    
     document.getElementById('modalPreview').style.display = 'flex';
 }
         function toggleWakilMajikan() {
