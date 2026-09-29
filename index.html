@@ -14563,22 +14563,34 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // ENJIN EKSTRAK DATA MOU DARI SEJARAH TINDAKAN
+    // ENJIN EKSTRAK DATA MOU DARI SEJARAH TINDAKAN & MEMORI (KALIS-GAGAL)
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
-    let jumRM = "RM 0.00";
-    let teksTuntutanMOU = "wang berjumlah <strong>RM 0.00</strong>"; // Variabel dinamik baharu
+    let jumRMRaw = 0;
+    
+    // 1. Tarik Tarikh dari teks Sejarah Tindakan (sebagai sandaran jika data tersembunyi tiada)
+    const rekodMOUAsal = (kes.sejarahTindakan || []).slice().reverse().find(s => s.tindakan && s.tindakan.includes("MOU"));
+    if (rekodMOUAsal && rekodMOUAsal.tarikhMasa) {
+        let tParts = rekodMOUAsal.tarikhMasa.split('|')[0].trim().split('/');
+        if (tParts.length === 3) {
+            tarikhDD = tParts[0];
+            tarikhMMYYYY = `${bulanMY[parseInt(tParts[1])-1]} ${tParts[2]}`;
+        }
+    }
 
-    const rekodMOU = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
-    if (rekodMOU && rekodMOU.butiran) {
-        let dMatch = rekodMOU.butiran.match(/\[DATA_MOU:(.*?)\]/);
+    // 2. Baca dari Input Borang (jika user baru selesai isi borang aktif)
+    let kaedahMOU = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['mk_kaedah_mou'] : "Penuh";
+    let inputAmuan = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['mk_jumlah_mou'] : "0";
+    jumRMRaw = parseFloat(inputAmuan.replace(/,/g, '')) || 0;
+
+    // 3. Ekstrak data tersembunyi (Base64) jika ada
+    const rekodMOUBase64 = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
+    if (rekodMOUBase64 && rekodMOUBase64.butiran) {
+        let dMatch = rekodMOUBase64.butiran.match(/\[DATA_MOU:(.*?)\]/);
         if (dMatch && dMatch[1]) {
             try {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoData.jumlah) {
-                    let jumPersetujuanFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                    teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
-                }
+                if (memoData.jumlah) jumRMRaw = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
+                if (memoData.kaedah) kaedahMOU = memoData.kaedah;
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
                     if (!isNaN(t.getTime())) {
@@ -14586,26 +14598,40 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                         tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
                     }
                 }
-                
-                // LOGIK AUTO-DETECT ANSURAN
-                let kaedahMOU = memoData.kaedah || (kes.dataBorang && kes.dataBorang.inputs ? kes.dataBorang.inputs['mk_kaedah_mou'] : "Penuh");
-                if (kaedahMOU === "Ansuran" && kes.rekodPemantauanMou) {
-                    let ansuranTertunggak = kes.rekodPemantauanMou.find(r => r.status === "Belum Bayar");
-                    if (ansuranTertunggak) {
-                        teksTuntutanMOU = `bayaran ansuran tertunggak berjumlah <strong>RM ${ansuranTertunggak.amaun || "0.00"}</strong>`;
-                    } else {
-                        let telahDibayar = 0;
-                        let jumlahAsal = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                        kes.rekodPemantauanMou.forEach(r => {
-                            if (r.status === "Telah Bayar" || r.status === "Selesai") {
-                                telahDibayar += parseFloat((r.amaun || "0").replace(/,/g, ''));
-                            }
-                        });
-                        let baki = jumlahAsal - telahDibayar;
-                        teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
-                    }
+            } catch(e) {}
+        }
+    }
+
+    // 4. Bina teks lalai
+    let jumRMFormat = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+    let teksTuntutanMOU = `wang berjumlah <strong>${jumRMFormat}</strong>`;
+
+    // 5. AUTO-DETECT: Semak jadual pemantauan wujud atau tidak di profil kes (Override mutlak)
+    if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
+        kaedahMOU = "Ansuran";
+        
+        // Jika jumlah asal masih 0, kira secara automatik dengan menambah semua jumlah ansuran
+        if (jumRMRaw === 0) {
+            kes.rekodPemantauanMou.forEach(r => {
+                jumRMRaw += parseFloat((r.amaun || "0").replace(/,/g, ''));
+            });
+            jumRMFormat = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+            teksTuntutanMOU = `wang berjumlah <strong>${jumRMFormat}</strong>`;
+        }
+
+        // Cari status tunggakan bulan tersebut
+        let ansuranTertunggak = kes.rekodPemantauanMou.find(r => r.status === "Belum Bayar");
+        if (ansuranTertunggak) {
+            teksTuntutanMOU = `bayaran ansuran tertunggak berjumlah <strong>RM ${ansuranTertunggak.amaun || "0.00"}</strong>`;
+        } else {
+            let telahDibayar = 0;
+            kes.rekodPemantauanMou.forEach(r => {
+                if (r.status === "Telah Bayar" || r.status === "Selesai") {
+                    telahDibayar += parseFloat((r.amaun || "0").replace(/,/g, ''));
                 }
-            } catch(e) { console.error("Ralat extract MOU:", e); }
+            });
+            let baki = jumRMRaw - telahDibayar;
+            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
         }
     }
 
