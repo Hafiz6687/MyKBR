@@ -14894,6 +14894,10 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     tunjukSuisTandatangan(true);
     document.getElementById('modalPreview').style.display = 'flex';
 }
+
+// =========================================================
+// FUNGSI PREVIEW PERINGATAN BAYARAN BORANG C
+// =========================================================
 function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -14948,7 +14952,6 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
     let jumRMRaw = 0;
 
-    // 1. Tarik Tarikh dari teks Sejarah Tindakan
     const rekodBCAsal = (kes.sejarahTindakan || []).slice().reverse().find(s => s.tindakan && (s.tindakan.includes("Borang C") || s.tindakan.includes("Perintah")));
     if (rekodBCAsal && rekodBCAsal.tarikhMasa) {
         let tParts = rekodBCAsal.tarikhMasa.split('|')[0].trim().split('/');
@@ -14958,11 +14961,9 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         }
     }
 
-    // 2. Baca dari Input Borang
     let inputAmuan = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['bc_jumlah_perintah'] : "0";
     jumRMRaw = parseFloat((inputAmuan || "0").toString().replace(/,/g, '')) || 0;
 
-    // 3. Ekstrak data tersembunyi (Base64)
     const rekodBCBase64 = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
     if (rekodBCBase64 && rekodBCBase64.butiran) {
         let dMatch = rekodBCBase64.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
@@ -14983,7 +14984,6 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
 
     let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
 
-    // LOGIK PENJANAAN S.K. DAN NOTIS WAKIL BERDASARKAN CHECKBOX
     let skArray = [];
     let htmlNotisWakilDinamik = '';
 
@@ -14991,11 +14991,9 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         const penerima = dataPeringatan.senaraiPenerima;
         
         if (penerima.includes('Defendan')) {
-            // Ditukar kepada Pengadu (namaP & alamatP) sebagai s.k.
             skArray.push(`<strong>${namaP}</strong><br>${alamatP}`);
         }
         
-        // Wakil Pengadu
         if (penerima.includes('Peguam Pengadu') || penerima.includes('Wakil Kesatuan Pengadu')) {
             let wakilP = kes.senaraiPerwakilan?.find(p => p.kategori === 'Peguam' || p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
             if (wakilP) {
@@ -15014,7 +15012,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
                             <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN PERINTAH (BORANG C)</div>
                             <hr class="notis-garis-tajuk">
                             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana Persetujuan Bersama (MOU)...</div>
+                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                             <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Tuan diminta menasihati ${anak} tuan mematuhi arahan tersebut. Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil tanpa sebarang rujukan lanjut sekiranya gagal berbuat demikian.</div>
                             <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
                             <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
@@ -15030,7 +15028,6 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
             }
         }
 
-        // Wakil Defendan
         if (penerima.includes('Peguam Defendan') || penerima.includes('Wakil Kesatuan Defendan')) {
             let wakilD = kes.senaraiPerwakilanDefendan?.find(p => p.kategori === 'Peguam' || p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
             if (wakilD) {
@@ -15083,6 +15080,15 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
 
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
 
+    // Pengesanan Majikan untuk menyembunyikan Muka Surat 2 jika tiada S.K.
+    let isMajikanCheckMOU = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        isMajikanCheckMOU = (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true" || kes.dataBorang.inputs['majikan'] === "on");
+    }
+    if (kes.jenisAduan === 'Majikan') {
+        isMajikanCheckMOU = true;
+    }
+
     const htmlPeringatan = `
         <style>
             @media print { 
@@ -15123,6 +15129,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         </div>
 
         <!-- MUKA SURAT 2 -->
+        ${(!isMajikanCheckMOU || skArray.length > 0) ? `
         <div class="kertas-notis" style="page-break-before: always; position: relative;">
             <div style="position: absolute; top: 1.5cm; left: 2.5cm; right: 2.5cm; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; line-height: 1.4; border-bottom: 1px solid #000; padding-bottom: 8px;">
                 Rujukan: ${noKes}<br>KETUA PENGARAH TENAGA KERJA KES SAMAN
@@ -15137,6 +15144,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
             </div>
             <div class="notis-footer-line"></div>
         </div>
+        ` : ''}
         ${htmlNotisWakilDinamik}
     `;
     
@@ -15184,6 +15192,12 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     document.getElementById('modalPreview').style.display = 'flex';
 }
 
+// =========================================================
+// FUNGSI SORTING JADUAL SENARAI TUGASAN
+// =========================================================
+let sortCol = '';
+let sortAsc = true;
+       
 function sortSenaraiTugas(col) {
     if (sortCol === col) {
         sortAsc = !sortAsc; // Terbalikkan susunan (A-Z ke Z-A) jika klik lajur yang sama
@@ -15224,7 +15238,7 @@ function sortSenaraiTugas(col) {
         let el = document.getElementById('sort_' + c);
         if (el) {
             if (c === sortCol) {
-                el.innerHTML = sortAsc ? '⬆️' : '⬇️';
+                el.innerHTML = sortAsc ? '⬆️️' : '⬇️';
                 el.style.color = 'var(--primary-blue)';
             } else {
                 el.innerHTML = '↕️';
@@ -15232,11 +15246,11 @@ function sortSenaraiTugas(col) {
             }
         }
     });
-// Simpan susunan baharu dan paparkan semula jadual
-        simpanSenaraiKeLokal();
-        renderSenaraiTugas();
-    }
-
+    // Simpan susunan baharu dan paparkan semula jadual
+    simpanSenaraiKeLokal();
+    renderSenaraiTugas();
+}
+       
 // =========================================================
 // FUNGSI PEMANTAUAN BAYARAN MOU (NEW)
 // =========================================================
