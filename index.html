@@ -15444,7 +15444,7 @@ function bukaModalPemantauanMou() {
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">Bil.</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Persetujuan Pembayaran</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: right;">Amaun (RM)</th>
-                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Pembayaran<br><span style="font-size: 0.8em; font-weight: normal;">(tarikh bayaran dibuat oleh defendan)</span></th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 140px; line-height: 1.2;">Tarikh Pembayaran<br><span style="font-size: 0.8em; font-weight: normal;">(tarikh bayaran dibuat oleh defendan)</span></th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Dibayar (RM)</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">No. Rujukan / Resit</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Status</th>
@@ -15452,6 +15452,17 @@ function bukaModalPemantauanMou() {
         </thead><tbody>`;
 
     const bulanMY = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"];
+
+    // Pembolehubah untuk mengira jumlah keseluruhan
+    let totalAmaun = 0;
+    let totalDibayar = 0;
+
+    // KIRA GRAND TOTAL KESELURUHAN DAHULU UNTUK LOGIK BAYARAN PENUH AWAL
+    let grandTotalDue = 0, grandTotalBayar = 0;
+    kes.pemantauanMou.forEach(r => { 
+        grandTotalDue += parseFloat(r.amaunDue) || 0; 
+        grandTotalBayar += parseFloat(r.amaunBayar) || 0; 
+    });
 
     kes.pemantauanMou.forEach((item, index) => {
         let labelPengadu = item.pengadu !== 'Pukal' ? `<br><span style="font-size: 0.8em; color: var(--primary-blue); text-transform: uppercase;">${item.pengadu.replace('_', ' ')}</span>` : '';
@@ -15462,16 +15473,47 @@ function bukaModalPemantauanMou() {
             if(!isNaN(t.getTime())) tarikhCetak = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
         }
 
+        // Tambah ke jumlah keseluruhan (Dinaikkan ke atas supaya boleh diguna untuk logik status)
+        let amaunSemasa = parseFloat(item.amaunDue) || 0;
+        let dibayarSemasa = parseFloat(item.amaunBayar) || 0;
+        totalAmaun += amaunSemasa;
+        totalDibayar += dibayarSemasa;
+
+        // LOGIK AUTO-UPDATE STATUS KETIKA JADUAL DIBUKA
+        let tarikhBayarAda = item.tarikhBayar && item.tarikhBayar.trim() !== '';
+        let isPastDue = false;
+        
+        if (item.tarikhDue) {
+            let tDue = new Date(item.tarikhDue);
+            tDue.setHours(0,0,0,0);
+            let tHariIni = new Date();
+            tHariIni.setHours(0,0,0,0);
+            if (tHariIni > tDue) isPastDue = true;
+        }
+
+        // Semak jika bayaran dipukul habis lebih awal (Grand Total >= Keseluruhan)
+        if (grandTotalBayar >= grandTotalDue && grandTotalDue > 0) {
+            item.status = 'Lunas';
+        } else if (dibayarSemasa >= amaunSemasa && tarikhBayarAda) {
+            item.status = 'Lunas';
+        } else if (dibayarSemasa > 0 && dibayarSemasa < amaunSemasa) {
+            item.status = 'Separa';
+        } else if ((dibayarSemasa === 0 || !tarikhBayarAda) && isPastDue) {
+            item.status = 'Tertunggak';
+        }
+
         let bgStatus = item.status === 'Lunas' ? '#dcfce7' : (item.status === 'Separa' ? '#fef08a' : '#fee2e2');
         let clStatus = item.status === 'Lunas' ? '#166534' : (item.status === 'Separa' ? '#854d0e' : '#991b1b');
+           
+        // (BLOK PENDUA YANG MENYEBABKAN RALAT TELAH DIPADAM DI SINI)
 
         html += `<tr>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: center;">${index+1}</td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color); font-weight: bold;">${tarikhCetak}${labelPengadu}</td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: right; font-weight: bold;">${item.amaunDue.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="date" id="pm_tarikh_${index}" value="${item.tarikhBayar}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;"></td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_amaun_${index}" value="${item.amaunBayar}" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; text-align: right;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_resit_${index}" value="${item.resit}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;" placeholder="Cth: Cek 1234"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: right; font-weight: bold;">${amaunSemasa.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="date" id="pm_tarikh_${index}" value="${item.tarikhBayar || ''}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_amaun_${index}" value="${item.amaunBayar || ''}" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; text-align: right;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_resit_${index}" value="${item.resit || ''}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;" placeholder="Cth: Cek 1234"></td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">
                 <select id="pm_status_${index}" style="min-width: 150px; width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; font-weight: bold; background-color: ${bgStatus}; color: ${clStatus};">
                     <option value="Tertunggak" ${item.status==='Tertunggak'?'selected':''}>🔴 Tertunggak</option>
@@ -15482,30 +15524,119 @@ function bukaModalPemantauanMou() {
         </tr>`;
     });
 
-    html += `</tbody></table>`;
+    html += `</tbody>`;
+
+    // Pengiraan Baki dan rekaan Footer mengikut layout gambar
+    let bakiTertunggak = totalAmaun - totalDibayar;
+    
+    html += `
+        <tfoot>
+            <tr style="background-color: #f8fafc;">
+                <!-- 1. Bil. -->
+                <td style="border-top: 1px solid #cbd5e1;"></td>
+                
+                <!-- 2. Tarikh Persetujuan Pembayaran -->
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: left; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
+                    JUMLAH:
+                </td>
+                
+                <!-- 3. Amaun (RM) -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; color: #2563eb; text-align: right; font-size: 1.05em; vertical-align: middle; white-space: nowrap;">
+                    RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+                
+                <!-- 4. Tarikh Pembayaran -->
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
+                    JUMLAH DIBAYAR:
+                </td>
+                
+                <!-- 5. Dibayar (RM) -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #16a34a; white-space: nowrap;">
+                    RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+                
+                <!-- 6. No. Rujukan / Resit -->
+                <td style="border-top: 1px solid #cbd5e1;"></td>
+                
+                <!-- 7. Status -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #dc2626; white-space: nowrap;">
+                    BAKI: RM ${bakiTertunggak.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+            </tr>
+        </tfoot>
+    </table>`;
+
     tbody.innerHTML = html;
 
-    // Warna status live update
+    // Warna status live update & AUTO-KIRA STATUS APABILA MENAIP (TERMASUK BAYARAN PENUH KESELURUHAN)
+    const updateWarnaStatus = function(dropdown) {
+        if(dropdown.value === 'Lunas') { dropdown.style.backgroundColor='#dcfce7'; dropdown.style.color='#166534'; }
+        else if(dropdown.value === 'Separa') { dropdown.style.backgroundColor='#fef08a'; dropdown.style.color='#854d0e'; }
+        else { dropdown.style.backgroundColor='#fee2e2'; dropdown.style.color='#991b1b'; }
+    };
+
+    const semakSemuaStatusAuto = function() {
+        let liveGrandTotalDue = 0;
+        let liveGrandTotalBayar = 0;
+
+        // Langkah 1: Kira total keseluruhan dari semua input secara live
+        kes.pemantauanMou.forEach((_, idx) => {
+            let amaunD = parseFloat(kes.pemantauanMou[idx].amaunDue) || 0;
+            let elAmaunB = document.getElementById(`pm_amaun_${idx}`);
+            let amaunB = elAmaunB ? (parseFloat(elAmaunB.value) || 0) : 0;
+            liveGrandTotalDue += amaunD;
+            liveGrandTotalBayar += amaunB;
+        });
+
+        // Langkah 2: Terapkan logik ke atas setiap baris secara serentak
+        kes.pemantauanMou.forEach((item, idx) => {
+            let elStatus = document.getElementById(`pm_status_${idx}`);
+            let elTarikhBayar = document.getElementById(`pm_tarikh_${idx}`);
+            let elAmaunBayar = document.getElementById(`pm_amaun_${idx}`);
+            
+            if (!elStatus || !elTarikhBayar || !elAmaunBayar) return;
+
+            let amaunSemasa = parseFloat(item.amaunDue) || 0;
+            let dibayarKini = parseFloat(elAmaunBayar.value) || 0;
+            let tarikhBayarAda = elTarikhBayar.value.trim() !== '';
+
+            let isPastDue = false;
+            if (item.tarikhDue) {
+                let tDue = new Date(item.tarikhDue);
+                tDue.setHours(0,0,0,0);
+                let tHariIni = new Date();
+                tHariIni.setHours(0,0,0,0);
+                if (tHariIni > tDue) isPastDue = true;
+            }
+
+            // Jika jumlah bayaran dah lepasi baki keseluruhan (Pukul habis)
+            if (liveGrandTotalBayar >= liveGrandTotalDue && liveGrandTotalDue > 0) {
+                elStatus.value = 'Lunas';
+            } else if (dibayarKini >= amaunSemasa && tarikhBayarAda) {
+                elStatus.value = 'Lunas';
+            } else if (dibayarKini > 0 && dibayarKini < amaunSemasa) {
+                elStatus.value = 'Separa';
+            } else if ((dibayarKini === 0 || !tarikhBayarAda) && isPastDue) {
+                elStatus.value = 'Tertunggak';
+            }
+            
+            updateWarnaStatus(elStatus); // Kemaskini warna dropdown secara live
+        });
+    };
+
     kes.pemantauanMou.forEach((item, index) => {
         const elStatus = document.getElementById(`pm_status_${index}`);
+        const elTarikhBayar = document.getElementById(`pm_tarikh_${index}`);
+        const elAmaunBayar = document.getElementById(`pm_amaun_${index}`);
+        
         if(elStatus) {
-            elStatus.addEventListener('change', function() {
-                if(this.value === 'Lunas') { this.style.backgroundColor='#dcfce7'; this.style.color='#166534'; }
-                else if(this.value === 'Separa') { this.style.backgroundColor='#fef08a'; this.style.color='#854d0e'; }
-                else { this.style.backgroundColor='#fee2e2'; this.style.color='#991b1b'; }
-            });
+            elStatus.addEventListener('change', function() { updateWarnaStatus(this); });
+            if (elAmaunBayar) elAmaunBayar.addEventListener('input', semakSemuaStatusAuto);
+            if (elTarikhBayar) elTarikhBayar.addEventListener('change', semakSemuaStatusAuto);
         }
     });
 
     document.getElementById('modalPemantauanMou').style.display = 'flex';
-    
-    // --- KODING BARU (LANGKAH 2): Panggil fungsi auto-kira selepas jadual siap di-render ---
-    setTimeout(() => { 
-        if (typeof janaRumusanDanAutoStatusMOU === 'function') {
-            janaRumusanDanAutoStatusMOU(); 
-        }
-    }, 100);
-    // --- TAMAT KODING BARU ---
 }
 
 function simpanPemantauanMou() {
