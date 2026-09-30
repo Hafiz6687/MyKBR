@@ -15314,20 +15314,39 @@ function renderKadPemantauan(kes) {
         });
 
         let baki = totalDue - totalBayar;
-        let percent = totalDue > 0 ? Math.min(100, Math.round((totalBayar / totalDue) * 100)) : 0;
-        let colorStr = percent === 100 ? 'var(--success)' : 'var(--primary-blue)';
+        let percent = totalDue > 0 ? Math.round((totalBayar / totalDue) * 100) : 0;
+        
+        let warnaBar = '';
+        let teksIndikator = '';
+
+        if (percent === 100) {
+            warnaBar = '#16a34a'; // HIJAU (Lunas Sepenuhnya)
+            teksIndikator = `<span style="color: #16a34a; font-weight: bold; font-size: 0.9em;">100% Selesai</span>`;
+        } else if (percent > 100) {
+            warnaBar = '#06b6d4'; // TURQUOISE (Lebihan bayaran)
+            teksIndikator = `<span style="color: #06b6d4; font-weight: bold; font-size: 0.9em;">${percent}% Selesai</span>`;
+        } else if (percent > 0 && percent < 100) {
+            warnaBar = '#eab308'; // KUNING (Separa / Ada baki)
+            let peratusBaki = 100 - percent;
+            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #334155;">${percent}% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">${peratusBaki}% Baki</span>`;
+        } else {
+            warnaBar = '#cbd5e1'; // KELABU (Tiada bayaran)
+            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #334155;">0% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">100% Baki</span>`;
+        }
 
         if(body) {
             body.innerHTML = `
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Jumlah Perlu Dibayar:</span><br><strong style="font-size: 1.1em;">RM ${totalDue.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
-                    <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Telah Dibayar:</span><br><strong style="font-size: 1.1em; color: ${colorStr};">RM ${totalBayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
+                    <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Telah Dibayar:</span><br><strong style="font-size: 1.1em; color: ${warnaBar};">RM ${totalBayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
                     <div style="text-align: right;"><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Baki Tertunggak:</span><br><strong style="font-size: 1.1em; color: var(--danger);">RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
                 </div>
                 <div style="width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 5px;">
-                    <div style="width: ${percent}%; background-color: ${colorStr}; height: 100%; transition: width 0.3s ease;"></div>
+                    <div style="width: ${percent > 100 ? 100 : percent}%; background-color: ${warnaBar}; height: 100%; transition: width 0.3s ease;"></div>
                 </div>
-                <div style="text-align: right; font-size: 0.8em; font-weight: bold; color: ${colorStr};">${percent}% Selesai</div>
+                <div style="text-align: right; margin-top: 5px;">
+                    ${teksIndikator}
+                </div>
             `;
         }
     } else {
@@ -15494,10 +15513,8 @@ function bukaModalPemantauanMou() {
         // Semak jika bayaran dipukul habis lebih awal (Grand Total >= Keseluruhan)
         if (grandTotalBayar >= grandTotalDue && grandTotalDue > 0) {
             item.status = 'Lunas';
-        } else if (dibayarSemasa >= amaunSemasa && tarikhBayarAda) {
-            item.status = 'Lunas';
-        } else if (dibayarSemasa > 0 && dibayarSemasa < amaunSemasa) {
-            item.status = 'Separa';
+        } else if (dibayarSemasa > 0 && tarikhBayarAda) {
+            item.status = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
         } else if ((dibayarSemasa === 0 || !tarikhBayarAda) && isPastDue) {
             item.status = 'Tertunggak';
         }
@@ -15612,10 +15629,8 @@ function bukaModalPemantauanMou() {
             // Jika jumlah bayaran dah lepasi baki keseluruhan (Pukul habis)
             if (liveGrandTotalBayar >= liveGrandTotalDue && liveGrandTotalDue > 0) {
                 elStatus.value = 'Lunas';
-            } else if (dibayarKini >= amaunSemasa && tarikhBayarAda) {
-                elStatus.value = 'Lunas';
-            } else if (dibayarKini > 0 && dibayarKini < amaunSemasa) {
-                elStatus.value = 'Separa';
+            } else if (dibayarKini > 0 && tarikhBayarAda) {
+                elStatus.value = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
             } else if ((dibayarKini === 0 || !tarikhBayarAda) && isPastDue) {
                 elStatus.value = 'Tertunggak';
             }
