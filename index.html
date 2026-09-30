@@ -15442,9 +15442,9 @@ function bukaModalPemantauanMou() {
         <thead style="background-color: var(--card-header-bg); position: sticky; top: 0; z-index: 1;">
             <tr>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">Bil.</th>
-                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Due</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Persetujuan Pembayaran</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: right;">Amaun (RM)</th>
-                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Bayar</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Pembayaran<br><span style="font-size: 0.8em; font-weight: normal;">(tarikh bayaran dibuat oleh defendan)</span></th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Dibayar (RM)</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">No. Rujukan / Resit</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Status</th>
@@ -15473,7 +15473,7 @@ function bukaModalPemantauanMou() {
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_amaun_${index}" value="${item.amaunBayar}" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; text-align: right;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_resit_${index}" value="${item.resit}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;" placeholder="Cth: Cek 1234"></td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">
-                <select id="pm_status_${index}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; font-weight: bold; background-color: ${bgStatus}; color: ${clStatus};">
+                <select id="pm_status_${index}" style="min-width: 150px; width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; font-weight: bold; background-color: ${bgStatus}; color: ${clStatus};">
                     <option value="Tertunggak" ${item.status==='Tertunggak'?'selected':''}>🔴 Tertunggak</option>
                     <option value="Separa" ${item.status==='Separa'?'selected':''}>🟡 Separa</option>
                     <option value="Lunas" ${item.status==='Lunas'?'selected':''}>🟢 Lunas</option>
