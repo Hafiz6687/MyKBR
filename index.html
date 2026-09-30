@@ -14607,6 +14607,8 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     let teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
 
     // 5. PENYEDUT BAKI ANSURAN (KALIS-GAGAL)
+    let adaTunggakanDikesan = false; // PEMBETULAN: Isytihar pembolehubah ini
+    
     // Curi baca terus dari kotak 'Baki Tertunggak' yang wujud di skrin profil sistem
     const teksSkrin = document.body.innerText;
     const perlawananBaki = teksSkrin.match(/Baki Tertunggak:\s*RM\s*([\d,]+\.\d{2})/i);
@@ -14616,6 +14618,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         let bakiSemasa = parseFloat(perlawananBaki[1].replace(/,/g, ''));
         if (bakiSemasa > 0 && bakiSemasa < jumRMRaw) {
             teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBaki[1]}</strong>`;
+            adaTunggakanDikesan = true; // Tandakan dah jumpa
         }
     } else if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
         // Sandaran: Jika skrin gagal dibaca, kira dari memori jadual
@@ -14628,6 +14631,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         let baki = jumRMRaw - telahDibayar;
         if (baki > 0 && baki < jumRMRaw) {
             teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
+            adaTunggakanDikesan = true; // Tandakan dah jumpa
         }
     }
 
@@ -14642,9 +14646,9 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
 
         if (rekodTunggakanSejarah) {
             // Tangkap RM yang berada dekat dengan perkataan Baki/Tunggakan
-            let perlawananBaki = rekodTunggakanSejarah.butiran.match(/(?:baki|tunggak).*?RM\s*([\d,]+\.\d{2})/i);
-            if (perlawananBaki && perlawananBaki[1]) {
-                teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBaki[1]}</strong>`;
+            let perlawananBakiSejarah = rekodTunggakanSejarah.butiran.match(/(?:baki|tunggak).*?RM\s*([\d,]+\.\d{2})/i);
+            if (perlawananBakiSejarah && perlawananBakiSejarah[1]) {
+                teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBakiSejarah[1]}</strong>`;
             } else {
                 // Jika tiada perkataan khusus, ambil sahaja RM terakhir yang dipaparkan dalam rekod update tersebut
                 let semuaRM = [...rekodTunggakanSejarah.butiran.matchAll(/RM\s*([\d,]+\.\d{2})/gi)];
@@ -14796,14 +14800,14 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                 <div style="display: grid; grid-template-columns: 1fr auto; align-items: end; margin-top: 10px; margin-bottom: 20px;">
                     <div style="font-size: 17.5pt; font-weight: bold; text-decoration: underline; text-align: left; padding-bottom: 2px;">PERINGATAN</div>
-                    <div style="text-align: right; font-size: 10pt; line-height: 1.4;">Rujukan Kami : ${noKes}<br>Tarikh :${tarikhSurat}</div>
+                    <div style="text-align: right; font-size: 10pt; line-height: 1.4;">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
                 </div>
                 <div class="notis-alamat"><strong>${namaD}</strong><br>${alamatD}</div>
                 <div style="margin-bottom: 15px;">Tuan/Puan,</div>
-                <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN :${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
+                <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
                 <hr class="notis-garis-tajuk">
                 <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Tuan dengan ini diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana PERSETUJUAN BERSAMA dan BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan${tarikhMMYYYY} dengan mendepositkan bank draf atau kiriman wang pos atas nama pengadu. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Tuan dengan ini diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana PERSETUJUAN BERSAMA dan BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY} dengan mendepositkan bank draf atau kiriman wang pos atas nama pengadu. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                 
                 ${teksPerenggan3}
                 
