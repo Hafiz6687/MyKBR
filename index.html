@@ -15328,7 +15328,7 @@ function renderKadPemantauan(kes) {
         } else if (percent > 0 && percent < 100) {
             warnaBar = '#eab308'; // KUNING (Separa / Ada baki)
             let peratusBaki = 100 - percent;
-            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #334155;">${percent}% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">${peratusBaki}% Baki</span>`;
+            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #ca8a04;">${percent}% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">${peratusBaki}% Baki</span>`;
         } else {
             warnaBar = '#cbd5e1'; // KELABU (Tiada bayaran)
             teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #334155;">0% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">100% Baki</span>`;
