@@ -12005,6 +12005,21 @@ function formatMyKadWakil(inputElement) {
 
 // 2. Buka modal dan set tajuk mengikut pihak
 function bukaModalPerwakilan(pihak) {
+    // =========================================================================
+    // KOD BARU: KAWALAN PAPARAN DROPDOWN KATEGORI WAKIL (PENGADU / DEFENDAN)
+    // =========================================================================
+    const optPengadu = document.querySelector('#pw_kategori option[value="Wakil Pengadu"]');
+    const optDefendan = document.querySelector('#pw_kategori option[value="Wakil Defendan"]');
+    
+    if (optPengadu && optDefendan) {
+        if (pihak === 'pengadu') {
+            optPengadu.style.display = 'block';
+            optDefendan.style.display = 'none';
+        } else if (pihak === 'defendan') {
+            optPengadu.style.display = 'none';
+            optDefendan.style.display = 'block';
+        }
+    }
     pihakPerwakilanSemasa = pihak;
     document.getElementById('pw_index').value = "-1"; 
     const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
