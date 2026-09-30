@@ -14606,32 +14606,28 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
     let teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
 
-    // 5. PENYEDUT BAKI DARI SEJARAH TINDAKAN & JADUAL PEMANTAUAN (OVERRIDE)
-    let adaTunggakanDikesan = false;
-
-    // Langkah 5A: Cuba baca dari memori jadual pemantauan (jika ada)
-    if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
+    // 5. PENYEDUT BAKI ANSURAN (KALIS-GAGAL)
+    // Curi baca terus dari kotak 'Baki Tertunggak' yang wujud di skrin profil sistem
+    const teksSkrin = document.body.innerText;
+    const perlawananBaki = teksSkrin.match(/Baki Tertunggak:\s*RM\s*([\d,]+\.\d{2})/i);
+    
+    if (perlawananBaki && perlawananBaki[1]) {
+        // Jika teks Baki Tertunggak wujud di skrin, terus override teks surat
+        let bakiSemasa = parseFloat(perlawananBaki[1].replace(/,/g, ''));
+        if (bakiSemasa > 0 && bakiSemasa < jumRMRaw) {
+            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBaki[1]}</strong>`;
+        }
+    } else if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
+        // Sandaran: Jika skrin gagal dibaca, kira dari memori jadual
         let telahDibayar = 0;
-        let bakiSemasa = 0;
-        
         kes.rekodPemantauanMou.forEach(r => {
             if (r.status === "Telah Bayar" || r.status === "Selesai") {
                 telahDibayar += parseFloat((r.amaun || "0").toString().replace(/,/g, ''));
             }
         });
-        
-        let jumlahKeseluruhanMOU = jumRMRaw;
-        if (jumlahKeseluruhanMOU === 0) {
-            kes.rekodPemantauanMou.forEach(r => {
-                jumlahKeseluruhanMOU += parseFloat((r.amaun || "0").toString().replace(/,/g, ''));
-            });
-        }
-        
-        bakiSemasa = jumlahKeseluruhanMOU - telahDibayar;
-
-        if (bakiSemasa > 0) {
-            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${bakiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
-            adaTunggakanDikesan = true;
+        let baki = jumRMRaw - telahDibayar;
+        if (baki > 0 && baki < jumRMRaw) {
+            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
         }
     }
 
