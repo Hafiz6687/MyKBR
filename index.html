@@ -12666,6 +12666,7 @@ function semakButangBorangC() {
         btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed';
     }
 }
+
 function tindakanBorangC() {
     if (!document.getElementById('btnTindakanBorangC').disabled) {
         
@@ -12675,6 +12676,19 @@ function tindakanBorangC() {
         
         // Simpan senarai penerima ke memori global untuk ditarik oleh enjin preview Borang C
         window.tempDataBorangC = { senaraiPenerima: senaraiPenerimaBC };
+
+        // --- TAMBAH KODING INI DI DALAM function tindakanBorangC() ---
+        const kes = memoriSenaraiKes[indexKesSemasa];
+        if (!kes.borangC) kes.borangC = {};
+        
+        // Tangkap data dari Borang C
+        kes.borangC.jenisPerintah = document.getElementById('bc_jenis_perintah').value;
+        kes.borangC.jumlahPerintah = document.getElementById('bc_jumlah_perintah').value.replace(/,/g, ''); 
+        
+        // Simpan ke memori dan paksa kad pemantauan muncul
+        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
+        // -------------------------------------------------------------
 
         bukaPreviewBorangC();
     }
@@ -13642,6 +13656,19 @@ function tindakanMou() {
             // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini (cth: tarikh, jumlah, dll)
             senaraiPenerima: senaraiPenerimaMou 
         };
+
+        // --- TAMBAH KODING INI DI DALAM function tindakanMou() ---
+        const kes = memoriSenaraiKes[indexKesSemasa];
+        if (!kes.mou) kes.mou = {};
+        
+        // Tangkap data dari borang MOU
+        kes.mou.kaedah = document.getElementById('mk_kaedah_mou').value;
+        kes.mou.jumlahMou = document.getElementById('mk_jumlah_mou').value.replace(/,/g, ''); // Buang koma jika ada
+        
+        // Simpan ke memori dan paksa kad pemantauan muncul
+        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
+        // ---------------------------------------------------------
 
         bukaPreviewMou();
     } else {
