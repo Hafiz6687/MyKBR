@@ -15900,14 +15900,13 @@ function semakJenisPemantauan(kes) {
     let jumlah = 0;
     let tajuk = 'Pemantauan Bayaran';
     
-    // Cek jika ada Borang C (Perintah Bayar)
+    // 1. Cek Ciri Baharu (Sudah ada data rasmi dalam memori)
     if (kes.borangC && kes.borangC.jenisPerintah === 'Bayar') {
         aktif = true;
         jenis = 'borang_c';
         jumlah = parseFloat(kes.borangC.jumlahPerintah) || 0;
         tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
     } 
-    // Cek jika ada MOU
     else if (kes.mou && kes.mou.jumlahMou) {
         aktif = true;
         jumlah = parseFloat(kes.mou.jumlahMou) || 0;
@@ -15919,8 +15918,69 @@ function semakJenisPemantauan(kes) {
             tajuk = 'Pemantauan Bayaran (MOU Penuh)';
         }
     }
+    // 2. BACKWARD COMPATIBILITY (Pengekstrakan Automatik Data Lama)
+    else if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
+        // Semak rekod sejarah dari yang paling terkini ke paling lama
+        const sejarahReverse = [...kes.sejarahTindakan].reverse();
+
+        // Cari rekod Borang C dahulu
+        let adaBorangC = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('borang c') || s.tindakan.toLowerCase().includes('perintah')));
+        
+        if (adaBorangC) {
+            aktif = true;
+            jenis = 'borang_c';
+            tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+            
+            // Ekstrak jumlah dari Draf Input atau Jumlah Tuntutan Asal
+            let drafJumlah = kes.dataBorang?.inputs?.bc_jumlah_perintah;
+            if (drafJumlah && parseFloat(drafJumlah.toString().replace(/,/g, '')) > 0) {
+                jumlah = parseFloat(drafJumlah.toString().replace(/,/g, ''));
+            } else {
+                jumlah = kiraJumlahTuntutanLegacy(kes);
+            }
+        } else {
+            // Jika tiada Borang C, cari rekod MOU
+            let adaMou = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('mou') || s.tindakan.toLowerCase().includes('persetujuan')));
+            if (adaMou) {
+                aktif = true;
+                let isAnsuran = adaMou.butiran && adaMou.butiran.toLowerCase().includes('ansuran');
+                jenis = isAnsuran ? 'ansuran' : 'penuh';
+                tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
+
+                let drafJumlah = kes.dataBorang?.inputs?.mk_jumlah_mou;
+                if (drafJumlah && parseFloat(drafJumlah.toString().replace(/,/g, '')) > 0) {
+                    jumlah = parseFloat(drafJumlah.toString().replace(/,/g, ''));
+                } else {
+                    jumlah = kiraJumlahTuntutanLegacy(kes);
+                }
+            }
+        }
+    }
     
     return { aktif, jenis, jumlah, tajuk };
+}
+
+// Fungsi Bantuan Pengekstrakan Jumlah Legacy
+function kiraJumlahTuntutanLegacy(kes) {
+    let total = 0;
+    if (kes.dataBorang) {
+        let senarai = [];
+        if (kes.jenisAduan === 'Berkumpulan') {
+            if (kes.dataBorang.tuntutanKetua) senarai = senarai.concat(kes.dataBorang.tuntutanKetua);
+            if (kes.dataBorang.tuntutanTambahan) {
+                for (let key in kes.dataBorang.tuntutanTambahan) {
+                    senarai = senarai.concat(kes.dataBorang.tuntutanTambahan[key]);
+                }
+            }
+        } else {
+            if (kes.dataBorang.tuntutanBiasa) senarai = kes.dataBorang.tuntutanBiasa;
+        }
+        senarai.forEach(item => {
+            let jum = parseFloat(item.jumlah);
+            if (!isNaN(jum)) total += jum;
+        });
+    }
+    return total;
 }
 
 window.renderKadPemantauan = function(kes) {
