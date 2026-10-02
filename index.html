@@ -3976,8 +3976,7 @@ function bukaPreviewTarikBalik() {
         }, 500);
     };
 
-    // Bersihkan memori Pop-Up supaya kes lain yang ditarik balik akan sentiasa ditanya maklumat terkini
-    window.tempDataWakil = null;
+    // (Kod window.tempDataWakil = null; telah dibuang dari sini supaya fungsi kemaskini tidak ralat)
 
     alert("Dokumen Akuan Penarikan Balik Kes sedia untuk dijana dan dicetak.");
     document.getElementById('modalPreview').style.display = 'flex';
@@ -4090,6 +4089,10 @@ function bukaModalSebutan() {
     if (window.tempDataSebutan) {
         oldTarikh = window.tempDataSebutan.tarikhSebutan;
         oldMasa = window.tempDataSebutan.masaSebutan;
+        
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataSebutan.tarikhNotis) document.getElementById('seb_tarikh_notis').value = window.tempDataSebutan.tarikhNotis;
+        if (window.tempDataSebutan.pegawai) document.getElementById('seb_pegawai').value = window.tempDataSebutan.pegawai;
         
         if (window.tempDataSebutan.isBerbeza) {
             document.getElementById('tempatSebutanBerbeza').checked = true;
@@ -4238,6 +4241,10 @@ function bukaModalSebutanTangguh() {
         oldTarikh = window.tempDataSebutanTangguh.tarikhSebutan;
         oldMasa = window.tempDataSebutanTangguh.masaSebutan;
         
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataSebutanTangguh.tarikhNotis) document.getElementById('stg_tarikh_notis').value = window.tempDataSebutanTangguh.tarikhNotis;
+        if (window.tempDataSebutanTangguh.pegawai) document.getElementById('stg_pegawai').value = window.tempDataSebutanTangguh.pegawai;
+        
         // Load data alamat jika checkbox pernah ditanda
         if (window.tempDataSebutanTangguh.isBerbeza) {
             document.getElementById('tempatSebutanTangguhBerbeza').checked = true;
@@ -4382,6 +4389,10 @@ function bukaModalBicara() {
         oldTarikh = window.tempDataBicara.tarikhBicara;
         oldMasa = window.tempDataBicara.masaBicara;
         
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataBicara.tarikhNotis) document.getElementById('bic_tarikh_notis').value = window.tempDataBicara.tarikhNotis;
+        if (window.tempDataBicara.pegawai) document.getElementById('bic_pegawai').value = window.tempDataBicara.pegawai;
+        
         if (window.tempDataBicara.isBerbeza) {
             document.getElementById('tempatBicaraBerbeza').checked = true;
             document.getElementById('bic_tempat_nama').value = window.tempDataBicara.tempatNama;
@@ -4488,6 +4499,10 @@ function bukaModalBicaraTangguh() {
     if (window.tempDataBicaraTangguh) {
         oldTarikh = window.tempDataBicaraTangguh.tarikhBicara;
         oldMasa = window.tempDataBicaraTangguh.masaBicara;
+        
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataBicaraTangguh.tarikhNotis) document.getElementById('btg_tarikh_notis').value = window.tempDataBicaraTangguh.tarikhNotis;
+        if (window.tempDataBicaraTangguh.pegawai) document.getElementById('btg_pegawai').value = window.tempDataBicaraTangguh.pegawai;
         
         if (window.tempDataBicaraTangguh.isBerbeza) {
             document.getElementById('tempatBicaraTangguhBerbeza').checked = true;
@@ -4600,6 +4615,10 @@ function bukaModalBicaraSambung() {
         oldTarikh = window.tempDataBicaraSambung.tarikhBicara;
         oldMasa = window.tempDataBicaraSambung.masaBicara;
         
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataBicaraSambung.tarikhNotis) document.getElementById('bsc_tarikh_notis').value = window.tempDataBicaraSambung.tarikhNotis;
+        if (window.tempDataBicaraSambung.pegawai) document.getElementById('bsc_pegawai').value = window.tempDataBicaraSambung.pegawai;
+        
         if (window.tempDataBicaraSambung.isBerbeza) {
             document.getElementById('tempatBicaraSambungBerbeza').checked = true;
             document.getElementById('bsc_tempat_nama').value = window.tempDataBicaraSambung.tempatNama;
@@ -4710,6 +4729,10 @@ function bukaModalKeputusan() {
     if (window.tempDataKeputusan) {
         oldTarikh = window.tempDataKeputusan.tarikhKeputusan;
         oldMasa = window.tempDataKeputusan.masaKeputusan;
+        
+        // Pulihkan nilai Tarikh Notis dan Nama Pegawai jika pernah diisi
+        if (window.tempDataKeputusan.tarikhNotis) document.getElementById('kpt_tarikh_notis').value = window.tempDataKeputusan.tarikhNotis;
+        if (window.tempDataKeputusan.pegawai) document.getElementById('kpt_pegawai').value = window.tempDataKeputusan.pegawai;
         
         if (window.tempDataKeputusan.isBerbeza) {
             document.getElementById('tempatKeputusanBerbeza').checked = true;
