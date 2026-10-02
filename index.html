@@ -3230,15 +3230,36 @@ async function simpanSenaraiKeLokal() {
     }
 }
 function bukaMaklumatKes(index) {
-    isSelesaiDaftar = false;
-    isEditMode = true; 
-    indexKesSemasa = index;
-    
-    const kes = memoriSenaraiKes[index];
-    const isMajikan = kes.jenisAduan === 'Majikan';
-    const isBerkumpulan = kes.jenisAduan === 'Berkumpulan';
-    
-    document.getElementById('mk_header_kes').innerHTML = `Maklumat Kes (${kes.noKes})`;
+        isSelesaiDaftar = false;
+        isEditMode = true; 
+        indexKesSemasa = index;
+        
+        const kes = memoriSenaraiKes[index];
+
+        // =========================================================================
+        // MIGRATION & NORMALISASI DATA (PINDAH KE ATAS UNTUK KESTABILAN 100%)
+        // =========================================================================
+        if (!kes.noKes) kes.noKes = ""; 
+        if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
+        if (!kes.dataBorang) kes.dataBorang = { inputs: {}, tuntutanBiasa: [], tuntutanKetua: [], tuntutanTambahan: {} };
+        if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+        if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
+        if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
+        
+        // Rawatan Khas 1: Kes lama tiada parameter 'jenisAduan'
+        if (!kes.jenisAduan && kes.dataBorang.inputs) {
+            kes.jenisAduan = (kes.dataBorang.inputs['aduan'] === 'Berkumpulan') ? 'Berkumpulan' : 'Individu';
+        }
+
+        // Rawatan Khas 2: Kes lama Aduan Berkumpulan guna 'tuntutanBiasa'. Kita salin ke 'tuntutanKetua'.
+        if (kes.jenisAduan === 'Berkumpulan' && kes.dataBorang.tuntutanKetua.length === 0 && kes.dataBorang.tuntutanBiasa.length > 0) {
+            kes.dataBorang.tuntutanKetua = [...kes.dataBorang.tuntutanBiasa];
+        }
+
+        const isMajikan = kes.jenisAduan === 'Majikan';
+        const isBerkumpulan = kes.jenisAduan === 'Berkumpulan';
+        
+        document.getElementById('mk_header_kes').innerHTML = `Maklumat Kes (${kes.noKes})`;
     document.getElementById('mk_tarikh_daftar').innerText = kes.tarikh;
     document.getElementById('mk_tarikh_sah').innerText = kes.tarikh; 
     document.getElementById('mk_tarikh_tugas').innerText = kes.tarikh; 
@@ -3722,20 +3743,6 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         if (typeof toggleTempatHadirMemo === 'function') toggleTempatHadirMemo();
     }
     
-    // Pelindung ralat: Jika noKes tiada dalam data lama, ia tidak akan crash
-    const noKesSemasa = kes.noKes || ""; 
-    // =========================================================================
-    // MIGRATION & NORMALISASI DATA LAMA (BACKWARD COMPATIBILITY)
-    // =========================================================================
-    // Menjamin data dari versi lama dinaik taraf formatnya secara automatik 
-    // dalam memori. Ini mengekalkan kebolehan membaca tanpa ralat (crash).
-    if (!kes.noKes) kes.noKes = ""; 
-    if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
-    if (!kes.dataBorang) kes.dataBorang = { inputs: {}, tuntutanBiasa: [], tuntutanKetua: [], tuntutanTambahan: {} };
-    if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
-    if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
-    if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
-
     const isDraf = kes.noKes.includes('DRAF');
 
     // KAWALAN KAD PEMANTAUAN MOU
