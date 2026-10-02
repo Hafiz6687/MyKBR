@@ -3371,10 +3371,15 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                         </td>
                     </tr>
                 `;
-                let indexBil = 1; // RESET NOMBOR DI SINI
+                let indexBil = 1;
+                let jumlahKetua = 0; // Simpan subtotal ketua
+                
                 kes.dataBorang.tuntutanKetua.forEach(t => {
                     const jumlahNum = parseFloat(t.jumlah);
-                    jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
+                    const nilai = isNaN(jumlahNum) ? 0 : jumlahNum;
+                    jumlahKetua += nilai;
+                    jumlahKeseluruhan += nilai;
+                    
                     tbodyTuntutan.innerHTML += `
                         <tr>
                             <td style="text-align:center; padding: 10px; border-bottom: 1px solid var(--border-color);">${indexBil++}</td>
@@ -3384,6 +3389,14 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                         </tr>
                     `;
                 });
+                
+                // BARIS SUBTOTAL KETUA PENGADU
+                tbodyTuntutan.innerHTML += `
+                    <tr style="background-color: #f1f5f9;">
+                        <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN KETUA PENGADU</td>
+                        <td style="text-align: right; padding: 8px 10px; font-weight: 600; font-size: 0.9em; border-bottom: 1px solid var(--border-color);">RM ${jumlahKetua.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
             }
             
             // --- TUNTUTAN PENGADU TAMBAHAN ---
@@ -3398,10 +3411,15 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                                 </td>
                             </tr>
                         `;
-                        let indexBil = 1; // RESET NOMBOR DI SINI
+                        let indexBil = 1;
+                        let jumlahPengadu = 0; // Simpan subtotal pengadu tambahan
+                        
                         senaraiTambahan.forEach(t => {
                             const jumlahNum = parseFloat(t.jumlah);
-                            jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
+                            const nilai = isNaN(jumlahNum) ? 0 : jumlahNum;
+                            jumlahPengadu += nilai;
+                            jumlahKeseluruhan += nilai;
+                            
                             tbodyTuntutan.innerHTML += `
                                 <tr>
                                     <td style="text-align:center; padding: 10px; border-bottom: 1px solid var(--border-color);">${indexBil++}</td>
@@ -3411,13 +3429,21 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                                 </tr>
                             `;
                         });
+                        
+                        // BARIS SUBTOTAL PENGADU TAMBAHAN
+                        tbodyTuntutan.innerHTML += `
+                            <tr style="background-color: #f1f5f9;">
+                                <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN PENGADU ${key}</td>
+                                <td style="text-align: right; padding: 8px 10px; font-weight: 600; font-size: 0.9em; border-bottom: 1px solid var(--border-color);">RM ${jumlahPengadu.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </tr>
+                        `;
                     }
                 }
             }
         } else {
             // --- TUNTUTAN BIASA / INDIVIDU / MAJIKAN ---
             let senaraiTuntutanSemasa = kes.dataBorang.tuntutanBiasa || [];
-            let indexBil = 1; // RESET NOMBOR DI SINI
+            let indexBil = 1;
             senaraiTuntutanSemasa.forEach((item) => {
                 const jumlahNum = parseFloat(item.jumlah);
                 jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3438,7 +3464,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
             {jenis: "Baki Gaji", keterangan: "(MEI 2026)", jumlah: "2645.00"},
             {jenis: "Baki Gaji", keterangan: "(JUN 2026)", jumlah: "1600.00"}
         ];
-        let indexBil = 1; // RESET NOMBOR DI SINI
+        let indexBil = 1;
         senaraiTuntutanSemasa.forEach((item) => {
             const jumlahNum = parseFloat(item.jumlah);
             jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3455,9 +3481,9 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     }
     
     tbodyTuntutan.innerHTML += `
-        <tr style="background-color: #f1f5f9; font-weight: bold;">
-            <td colspan="3" style="text-align:right; padding: 12px 15px;">JUMLAH KESELURUHAN</td>
-            <td style="text-align: right; padding: 12px;">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <tr style="background-color: #e2e8f0; font-weight: bold;">
+            <td colspan="3" style="text-align:right; padding: 12px 15px; font-size: 1.05em; color: var(--text-main);">JUMLAH KESELURUHAN</td>
+            <td style="text-align: right; padding: 12px; font-size: 1.05em; color: var(--primary-blue);">RM ${jumlahKeseluruhan.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         </tr>
     `;
 
