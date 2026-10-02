@@ -3418,10 +3418,20 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                     const senaraiTambahan = kes.dataBorang.tuntutanTambahan[key];
                     if (senaraiTambahan && senaraiTambahan.length > 0) {
                         
-                        // Dapatkan nama Pengadu Tambahan
+                        // Dapatkan nama Pengadu Tambahan secara dinamik dan meluas
                         let namaPengaduTambahan = "";
-                        if (kes.dataBorang.inputs && kes.dataBorang.inputs['namaPengadu' + key]) {
-                            namaPengaduTambahan = kes.dataBorang.inputs['namaPengadu' + key].toUpperCase();
+                        let namaDitemui = null;
+                        
+                        if (kes.dataBorang && kes.dataBorang.inputs) {
+                            // Imbas pelbagai format ID yang biasa digunakan
+                            namaDitemui = kes.dataBorang.inputs['namaPengadu' + key] || 
+                                          kes.dataBorang.inputs['namaPengadu_' + key] || 
+                                          kes.dataBorang.inputs['namaTambahan' + key] ||
+                                          kes.dataBorang.inputs['namaPengaduTambahan' + key];
+                        }
+                        
+                        if (namaDitemui && namaDitemui.trim() !== "") {
+                            namaPengaduTambahan = namaDitemui.trim().toUpperCase();
                         } else {
                             namaPengaduTambahan = "PENGADU " + key;
                         }
