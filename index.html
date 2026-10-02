@@ -2695,8 +2695,8 @@ Portal rasmi : jtksm.mohr.gov.my
         <!-- BUNGKUSAN MAKLUMAT KETUA PENGADU (FORMAT SAMA SEPERTI PENGADU TAMBAHAN) -->
         <div style="margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background-color: #ffffff;">
             
-            <!-- Fungsi Togol Dipanggil Melalui JS Bersih -->
-            <div class="togol-header" style="background: #f0f9ff; padding: 12px 15px; margin-bottom: 0; border-bottom: 1px solid var(--border-color);" onclick="togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua')">
+            <!-- Fungsi Togol Inline untuk Buka/Tutup -->
+            <div class="togol-header" style="background: #f0f9ff; padding: 12px 15px; margin-bottom: 0; border-bottom: 1px solid var(--border-color);" onclick="const k = document.getElementById('kandunganKetuaBungkus'); const l = document.getElementById('labelTogolKetua'); if(k.style.display==='none'){ k.style.display='block'; l.innerHTML='▲ Sembunyi'; l.style.backgroundColor='#eff6ff'; l.style.color='var(--primary-blue)'; } else { k.style.display='none'; l.innerHTML='▼ Buka'; l.style.backgroundColor='#e2e8f0'; l.style.color='var(--text-muted)'; }">
                 <h5 style="margin: 0; color: var(--primary-blue); font-size: 1.05em;">Maklumat Ketua Pengadu</h5>
                 <span id="labelTogolKetua" style="color: var(--primary-blue); font-size: 0.85em; font-weight: 600; background: #eff6ff; padding: 4px 12px; border-radius: 20px;">▲ Sembunyi</span>
             </div>
@@ -7955,7 +7955,7 @@ function bukaKesDidaftar(index) {
             if (el.type === 'radio' || el.type === 'checkbox') el.checked = false;
         });
 
-        for (const key in formData) {
+for (const key in formData) {
             // --- TAMBAHAN BARU: Jika ia adalah array (seperti subSeksyen), tick semua kotak yang berkenaan ---
             if (Array.isArray(formData[key])) {
                 formData[key].forEach(val => {
@@ -8019,7 +8019,7 @@ function bukaKesDidaftar(index) {
         toggleAlamatKerja();
         janaKenyataanAwal();
         
-        // LANGKAH 4: Load semula Jadual Tuntutan Kewangan
+// LANGKAH 4: Load semula Jadual Tuntutan Kewangan
         memoriTuntutan = kes.dataBorang.tuntutanBiasa ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanBiasa)) : [];
         memoriTuntutanKetua = kes.dataBorang.tuntutanKetua ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanKetua)) : [];
         memoriTuntutanTambahan = kes.dataBorang.tuntutanTambahan ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanTambahan)) : {};
@@ -8056,7 +8056,7 @@ function bukaKesDidaftar(index) {
         toggleAduan(); tukarPeranan();
     }
     
-    // --- LOGIK BARU: Kenal pasti dari mana asal borang ini dan buka flow yang tepat ---
+// --- LOGIK BARU: Kenal pasti dari mana asal borang ini dan buka flow yang tepat ---
     const flowTujuan = kes.sumberFlow === 'urus' ? 'urus' : 'daftar';
     tukarView(flowTujuan, true); 
     
@@ -8065,22 +8065,6 @@ function bukaKesDidaftar(index) {
     
     // PEMBETULAN: Paksa sistem semak kelayakan jadual SELEPAS mod Pengurusan disahkan
     kawalJenisAduanTuntutan(); 
-
-    // KOD BARU: Auto-buka Ketua Pengadu dan Pengadu Tambahan semasa Kemaskini
-    if (isEditMode) {
-        // Buka Ketua Pengadu
-        if (typeof togolPengadu === 'function') {
-            togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua', true);
-        }
-        
-        // Buka Pengadu Tambahan (Cari berapa banyak pengadu tambahan wujud)
-        if (kes.dataBorang && kes.dataBorang.tuntutanTambahan) {
-            const senaraiIndex = Object.keys(kes.dataBorang.tuntutanTambahan);
-            if (senaraiIndex.length > 0 && typeof paparPengaduSatuPersatu === 'function') {
-                paparPengaduSatuPersatu(senaraiIndex);
-            }
-        }
-    }
 } // <--- penutup fungsi bukaKesDidaftar
 
         function toTitleCase(str) { if (!str || str === '-') return '-'; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
@@ -16285,36 +16269,7 @@ window.selesaiPemfailanLuarPreview = function() {
         if (typeof tukarView === 'function') tukarView('senarai');
     }
 };
-
-// FUNGSI KHAS UNTUK TOGOL PENGADU (BERKUMPULAN)
-function togolPengadu(kandunganId, labelId, paksaBuka = false) {
-    const k = document.getElementById(kandunganId);
-    const l = document.getElementById(labelId);
-    if (!k || !l) return;
-
-    if (paksaBuka || k.style.display === 'none') {
-        k.style.display = 'block';
-        l.innerHTML = '▲ Sembunyi';
-        l.style.backgroundColor = '#eff6ff';
-        l.style.color = 'var(--primary-blue)';
-    } else {
-        k.style.display = 'none';
-        l.innerHTML = '▼ Buka';
-        l.style.backgroundColor = '#e2e8f0';
-        l.style.color = 'var(--text-muted)';
-    }
-}
-
-// FUNGSI ANIMASI PAPAR SATU PERSATU (HANYA AKTIF WAKTU PENGURUSAN KES)
-function paparPengaduSatuPersatu(senaraiIndexPengadu) {
-    if (isEditMode) {
-        senaraiIndexPengadu.forEach((index, i) => {
-            setTimeout(() => {
-                togolPengadu('kandunganPengadu' + index, 'labelTogolPengadu' + index, true);
-            }, i * 300);
-        });
-    }
-}
+     
 </script>
 
 <!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
