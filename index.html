@@ -2695,8 +2695,8 @@ Portal rasmi : jtksm.mohr.gov.my
         <!-- BUNGKUSAN MAKLUMAT KETUA PENGADU (FORMAT SAMA SEPERTI PENGADU TAMBAHAN) -->
         <div style="margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background-color: #ffffff;">
             
-            <!-- Fungsi Togol Inline untuk Buka/Tutup -->
-            <div class="togol-header" style="background: #f0f9ff; padding: 12px 15px; margin-bottom: 0; border-bottom: 1px solid var(--border-color);" onclick="const k = document.getElementById('kandunganKetuaBungkus'); const l = document.getElementById('labelTogolKetua'); if(k.style.display==='none'){ k.style.display='block'; l.innerHTML='▲ Sembunyi'; l.style.backgroundColor='#eff6ff'; l.style.color='var(--primary-blue)'; } else { k.style.display='none'; l.innerHTML='▼ Buka'; l.style.backgroundColor='#e2e8f0'; l.style.color='var(--text-muted)'; }">
+            <!-- Fungsi Togol Dipanggil Melalui JS Bersih -->
+            <div class="togol-header" style="background: #f0f9ff; padding: 12px 15px; margin-bottom: 0; border-bottom: 1px solid var(--border-color);" onclick="togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua')">
                 <h5 style="margin: 0; color: var(--primary-blue); font-size: 1.05em;">Maklumat Ketua Pengadu</h5>
                 <span id="labelTogolKetua" style="color: var(--primary-blue); font-size: 0.85em; font-weight: 600; background: #eff6ff; padding: 4px 12px; border-radius: 20px;">▲ Sembunyi</span>
             </div>
@@ -3615,6 +3615,13 @@ if (menuTindakanUrus) {
         }
     }
     
+    // Buka Ketua Pengadu secara automatik HANYA di Pengurusan Kes
+    if (isEditMode) {
+        if (typeof togolPengadu === 'function') {
+            togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua', true);
+        }
+    }
+
     // Auto-scroll ke atas skrin untuk kekemasan UI
     window.scrollTo(0, 0);
 }
@@ -16269,7 +16276,36 @@ window.selesaiPemfailanLuarPreview = function() {
         if (typeof tukarView === 'function') tukarView('senarai');
     }
 };
-     
+
+// FUNGSI KHAS UNTUK TOGOL PENGADU (BERKUMPULAN)
+function togolPengadu(kandunganId, labelId, paksaBuka = false) {
+    const k = document.getElementById(kandunganId);
+    const l = document.getElementById(labelId);
+    if (!k || !l) return;
+
+    if (paksaBuka || k.style.display === 'none') {
+        k.style.display = 'block';
+        l.innerHTML = '▲ Sembunyi';
+        l.style.backgroundColor = '#eff6ff';
+        l.style.color = 'var(--primary-blue)';
+    } else {
+        k.style.display = 'none';
+        l.innerHTML = '▼ Buka';
+        l.style.backgroundColor = '#e2e8f0';
+        l.style.color = 'var(--text-muted)';
+    }
+}
+
+// FUNGSI ANIMASI PAPAR SATU PERSATU (HANYA AKTIF WAKTU PENGURUSAN KES)
+function paparPengaduSatuPersatu(senaraiIndexPengadu) {
+    if (isEditMode) {
+        senaraiIndexPengadu.forEach((index, i) => {
+            setTimeout(() => {
+                togolPengadu('kandunganPengadu' + index, 'labelTogolPengadu' + index, true);
+            }, i * 300);
+        });
+    }
+}
 </script>
 
 <!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
