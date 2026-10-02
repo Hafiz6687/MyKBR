@@ -9161,8 +9161,35 @@ function bukaPreviewUrus() {
     document.getElementById('modalPreview').style.display = 'flex';
 }
        
-        function kemaskiniDariPreview() { document.getElementById('modalPreview').style.display = 'none'; }
+// 1. FUNGSI KEMASKINI DARI PREVIEW (ROUTER)
+function kemaskiniDariPreview() {
+    document.getElementById('actionMenu').classList.remove('show');
+    document.getElementById('modalPreview').style.display = 'none';
 
+    // Dapatkan kunci pop-up semasa dari memori notis
+    const kunci = window.dataNotisSemasa ? window.dataNotisSemasa.kunci : null;
+
+    // Halakan pengguna semula ke pop-up yang betul tanpa memadam memori
+    if (kunci === 'sebutan') bukaModalSebutan();
+    else if (kunci === 'sebutan_tangguh') bukaModalSebutanTangguh();
+    else if (kunci === 'sebutan_semula') bukaModalSebutanSemula();
+    else if (kunci === 'bicara') bukaModalBicara();
+    else if (kunci === 'bicara_tangguh') bukaModalBicaraTangguh();
+    else if (kunci === 'bicara_sambung') bukaModalBicaraSambung();
+    else if (kunci === 'keputusan') bukaModalKeputusan();
+    else if (kunci === 'saman_a') bukaModalSamanA();
+    else if (kunci === 'saman_memo') bukaModalSamanMemo();
+    else if (kunci === 'saman_tampal') bukaModalSamanTampal();
+    else if (kunci === 'borang_c') bukaModalBorangC();
+    else if (kunci === 'mou') bukaModalMou();
+    else if (kunci === 'peringatan_bayaran') {
+        let jp = document.getElementById('jenisPeringatan') ? document.getElementById('jenisPeringatan').value : 'MOU';
+        bukaModalPeringatanBayaran(jp);
+    }
+    else if (kunci === 'alamat_terkini') bukaModalAlamatTerkini();
+    else if (kunci === 'notis_lain') bukaModalNotisLain();
+    else if (kunci === 'tarik_balik_majikan') document.getElementById('modalTarikBalikMajikan').style.display = 'flex';
+}
         function cetakKhusus(bahagian) {
             document.getElementById('actionMenu').classList.remove('show');
             if (bahagian === 'akuan') { document.body.classList.add('print-only-akuan'); document.body.classList.remove('print-only-kenyataan'); isAkuanPrinted = true; } 
@@ -10334,71 +10361,6 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     document.getElementById('modalPreview').style.display = 'flex';
 }
        
-// =========================================================================
-// FUNGSI KAWALAN POP-UP SAMAN TAMPAL
-// =========================================================================
-function bukaModalSamanTampal() {
-    const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
-
-    // 1. Auto-isi Tarikh Notis (Hari Ini)
-    const td = new Date();
-    document.getElementById('st_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
-
-    // 2. Ekstrak Nama Pejabat untuk Papan Kenyataan
-    let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
-    const statsDiv = document.querySelector('.stats div[contenteditable="true"]');
-    if (statsDiv) {
-        const lines = statsDiv.innerText.split('\n').map(l => l.trim()).filter(l => l !== '');
-        if (lines.length > 0) ptkNamaPenuh = lines[0]; 
-    }
-    document.getElementById('st_tempat_tampal').value = ptkNamaPenuh.toUpperCase();
-    document.getElementById('st_tempat_nama').value = ptkNamaPenuh.toUpperCase();
-
-    // 3. Ekstrak Nama Pegawai
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
-    document.getElementById('st_pegawai').value = namaPegawaiRaw.toUpperCase();
-
-    // 4. EKSTRAK TARIKH & MASA DARI SAMAN BORANG A SEBELUMNYA
-    let tarikhHadirLama = '';
-    let masaHadirLama = '';
-
-    const sejarah = kes.sejarahTindakan || [];
-    // Cari rekod Saman (Borang A) yang paling terkini dalam sejarah kes
-    const rekodSaman = [...sejarah].reverse().find(s => s.butiran && s.butiran.includes("[DATA_SAMANA:"));
-    
-    if (rekodSaman) {
-        let dMatch = rekodSaman.butiran.match(/\[DATA_SAMANA:(.*?)\]/);
-        if (dMatch && dMatch[1]) {
-            try {
-                let memoSaman = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoSaman.tarikh) tarikhHadirLama = memoSaman.tarikh;
-                if (memoSaman.masa) masaHadirLama = memoSaman.masa;
-            } catch(e) { console.error("Ralat extract Saman A:", e); }
-        }
-    } else {
-        // Fallback jika saman belum dicetak tetapi data ada ditaip di kotak input pengurusan utama
-        let inputTarikh = document.getElementById('mk_tarikh_saman');
-        let inputMasa = document.getElementById('mk_masa_saman');
-        if (inputTarikh && inputTarikh.value) tarikhHadirLama = inputTarikh.value;
-        if (inputMasa && inputMasa.value) masaHadirLama = inputMasa.value;
-    }
-
-    // Masukkan tarikh dan masa asal, sedia untuk diedit secara manual jika perlu
-    document.getElementById('st_tarikh_hadir').value = tarikhHadirLama;
-    document.getElementById('st_masa_hadir').value = masaHadirLama;
-
-    // 5. Kosongkan / Tetapkan Medan Alamat Penuh Pejabat
-    document.getElementById('st_alamat1').value = 'JALAN PEJABAT KERAJAAN';
-    document.getElementById('st_alamat2').value = '';
-    document.getElementById('st_alamat3').value = '';
-    document.getElementById('st_poskod').value = '86000';
-    document.getElementById('st_bandar').value = 'KLUANG';
-    document.getElementById('st_negeri').value = 'JOHOR';
-
-    document.getElementById('modalSamanTampal').style.display = 'flex';
-}
-
 function janaSamanTampal() {
     const tarikhNotis = document.getElementById('st_tarikh_notis').value;
     const tempatTampal = document.getElementById('st_tempat_tampal').value.trim();
@@ -10461,27 +10423,22 @@ function bukaModalSamanA() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // 1. Auto-isi Tarikh Notis (Hari Ini)
     const td = new Date();
     document.getElementById('sma_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
 
-    // 2. Ekstrak Nama Pegawai
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('sma_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    // 3. Muatkan data jika sudah pernah disetup sebelumnya
-    let oldTarikh = document.getElementById('mk_tarikh_saman')?.value || '';
-    let oldMasa = document.getElementById('mk_masa_saman')?.value || '';
-    
-    // Reset check box penerima & tempat berbeza
     document.querySelectorAll('input[name="sma_penerima"]').forEach(cb => cb.checked = false);
     document.getElementById('tempatSamanABerbeza').checked = false;
-    
+
     if (window.tempDataSamanA) {
-        oldTarikh = window.tempDataSamanA.tarikhHadir;
-        oldMasa = window.tempDataSamanA.masaHadir;
-        
-        // Load data alamat jika checkbox pernah ditanda
+        // PEMULIHAN DATA
+        if (window.tempDataSamanA.tarikhNotis) document.getElementById('sma_tarikh_notis').value = window.tempDataSamanA.tarikhNotis;
+        if (window.tempDataSamanA.pegawai) document.getElementById('sma_pegawai').value = window.tempDataSamanA.pegawai;
+        if (window.tempDataSamanA.tarikhHadir) document.getElementById('sma_tarikh_hadir').value = window.tempDataSamanA.tarikhHadir;
+        if (window.tempDataSamanA.masaHadir) document.getElementById('sma_masa_hadir').value = window.tempDataSamanA.masaHadir;
+
         if (window.tempDataSamanA.isBerbeza) {
             document.getElementById('tempatSamanABerbeza').checked = true;
             document.getElementById('sma_tempat_nama').value = window.tempDataSamanA.tempatNama;
@@ -10499,17 +10456,9 @@ function bukaModalSamanA() {
                 if(cb) cb.checked = true;
             });
         }
-    } else {
-        document.getElementById('sma_tarikh_hadir').value = '';
-        document.getElementById('sma_masa_hadir').value = '';
     }
 
-    // Panggil fungsi toggle untuk papar/sembunyi ruangan alamat berdasarkan checkbox
     toggleTempatSamanA();
-
-    document.getElementById('sma_tarikh_hadir').value = oldTarikh;
-    document.getElementById('sma_masa_hadir').value = oldMasa;
-
     document.getElementById('modalSamanA').style.display = 'flex';
 }
 
@@ -10598,25 +10547,72 @@ function bukaModalSamanMemo() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // Pastikan checkbox "Alamat serahan berbeza" ditutup secara lalai apabila pop-up ini baru dibuka
-    const cbAlamat = document.getElementById('alamatSerahanBerbeza_memo');
-    if (cbAlamat) {
-        cbAlamat.checked = false;
-        toggleAlamatSerahanMemo();
-    }
-
-    // Reset check box penerima (kosongkan semua lalai)
+    // Reset check box penerima
     document.querySelectorAll('input[name="smm_penerima"]').forEach(cb => cb.checked = false);
-    // Tarik data check box yang telah disimpan ke dalam memori
-    if (window.tempDataSamanMemo && window.tempDataSamanMemo.senaraiPenerima) {
-        window.tempDataSamanMemo.senaraiPenerima.forEach(val => {
-            let cb = document.querySelector(`input[name="smm_penerima"][value="${val}"]`);
-            if (cb) cb.checked = true;
-        });
-    }
+    
+    if (window.tempDataSamanMemo) {
+        // PEMULIHAN DATA PEJABAT MEMO
+        if (window.tempDataSamanMemo.pejabatMemo) document.getElementById('mk_pejabat_memo').value = window.tempDataSamanMemo.pejabatMemo;
+        if (window.tempDataSamanMemo.tarikhSaman) document.getElementById('mk_tarikh_saman_memo').value = window.tempDataSamanMemo.tarikhSaman;
+        if (window.tempDataSamanMemo.a1Memo) document.getElementById('mk_alamat1_memo').value = window.tempDataSamanMemo.a1Memo;
+        if (window.tempDataSamanMemo.a2Memo) document.getElementById('mk_alamat2_memo').value = window.tempDataSamanMemo.a2Memo;
+        if (window.tempDataSamanMemo.a3Memo) document.getElementById('mk_alamat3_memo').value = window.tempDataSamanMemo.a3Memo;
+        if (window.tempDataSamanMemo.posMemo) document.getElementById('mk_poskod_memo').value = window.tempDataSamanMemo.posMemo;
+        if (window.tempDataSamanMemo.bdrMemo) {
+            document.getElementById('mk_bandar_memo').value = window.tempDataSamanMemo.bdrMemo;
+            document.getElementById('mk_bandar_memo').readOnly = false;
+        }
+        if (window.tempDataSamanMemo.ngrMemo) {
+            document.getElementById('mk_negeri_memo').value = window.tempDataSamanMemo.ngrMemo;
+            document.getElementById('mk_negeri_memo').readOnly = false;
+        }
 
+        // PEMULIHAN DATA SEBUTAN (BORANG A)
+        if (window.tempDataSamanMemo.tarikhHadir) document.getElementById('mk_tarikh_hadir_memo').value = window.tempDataSamanMemo.tarikhHadir;
+        if (window.tempDataSamanMemo.masaHadir) document.getElementById('mk_masa_hadir_memo').value = window.tempDataSamanMemo.masaHadir;
+
+        if (window.tempDataSamanMemo.isHadirBerbeza) {
+            document.getElementById('tempatHadirBerbeza_memo').checked = true;
+            document.getElementById('mk_tempat_hadir_nama').value = window.tempDataSamanMemo.tempatHadirNama;
+            document.getElementById('mk_tempat_hadir_a1').value = window.tempDataSamanMemo.tempatHadirA1;
+            document.getElementById('mk_tempat_hadir_a2').value = window.tempDataSamanMemo.tempatHadirA2;
+            document.getElementById('mk_tempat_hadir_a3').value = window.tempDataSamanMemo.tempatHadirA3;
+            document.getElementById('mk_tempat_hadir_pos').value = window.tempDataSamanMemo.tempatHadirPos;
+            document.getElementById('mk_tempat_hadir_bdr').value = window.tempDataSamanMemo.tempatHadirBdr;
+            document.getElementById('mk_tempat_hadir_ngr').value = window.tempDataSamanMemo.tempatHadirNgr;
+        } else {
+            document.getElementById('tempatHadirBerbeza_memo').checked = false;
+        }
+
+        // PEMULIHAN DATA SERAHAN TERKINI
+        if (window.tempDataSamanMemo.isSerahanBerbeza) {
+            document.getElementById('alamatSerahanBerbeza_memo').checked = true;
+            document.getElementById('mk_nama_defendan_memo').value = window.tempDataSamanMemo.namaDef;
+            document.getElementById('mk_alamat1_def_memo').value = window.tempDataSamanMemo.a1Def;
+            document.getElementById('mk_alamat2_def_memo').value = window.tempDataSamanMemo.a2Def;
+            document.getElementById('mk_alamat3_def_memo').value = window.tempDataSamanMemo.a3Def;
+            document.getElementById('mk_poskod_def_memo').value = window.tempDataSamanMemo.posDef;
+            document.getElementById('mk_bandar_def_memo').value = window.tempDataSamanMemo.bdrDef;
+            document.getElementById('mk_negeri_def_memo').value = window.tempDataSamanMemo.ngrDef;
+        } else {
+            document.getElementById('alamatSerahanBerbeza_memo').checked = false;
+        }
+
+        // PEMULIHAN PENERIMA NOTIS
+        if (window.tempDataSamanMemo.senaraiPenerima) {
+            window.tempDataSamanMemo.senaraiPenerima.forEach(val => {
+                let cb = document.querySelector(`input[name="smm_penerima"][value="${val}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+    }
+    
+    toggleTempatHadirMemo();
+    toggleAlamatSerahanMemo();
+    if(typeof semakButangSamanMemo === 'function') semakButangSamanMemo();
     document.getElementById('modalSamanMemo').style.display = 'flex';
 }
+       
 // FUNGSI TOGOL ALAMAT SERAHAN MEMO LUAR KAWASAN
 function toggleAlamatSerahanMemo() {
     const isBerbeza = document.getElementById('alamatSerahanBerbeza_memo').checked;
@@ -10694,19 +10690,17 @@ function bukaModalSamanTampal() {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('st_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    let oldTarikh = document.getElementById('mk_tarikh_saman_tampal')?.value || '';
-    let oldMasa = document.getElementById('mk_masa_saman_tampal')?.value || '';
-    
-    // Reset paparan checkbox & tempat
     document.querySelectorAll('input[name="st_penerima"]').forEach(cb => cb.checked = false);
     document.getElementById('tempatSamanTampalBerbeza').checked = false;
-    if(document.getElementById('st_tempat_tampal')) document.getElementById('st_tempat_tampal').value = '';
-    
+
     if (window.tempDataSamanTampal) {
-        if (window.tempDataSamanTampal.tarikhHadir) oldTarikh = window.tempDataSamanTampal.tarikhHadir;
-        if (window.tempDataSamanTampal.masaHadir) oldMasa = window.tempDataSamanTampal.masaHadir;
+        // PEMULIHAN DATA
+        if (window.tempDataSamanTampal.tarikhNotis) document.getElementById('st_tarikh_notis').value = window.tempDataSamanTampal.tarikhNotis;
+        if (window.tempDataSamanTampal.pegawai) document.getElementById('st_pegawai').value = window.tempDataSamanTampal.pegawai;
         if (window.tempDataSamanTampal.tempatTampal) document.getElementById('st_tempat_tampal').value = window.tempDataSamanTampal.tempatTampal;
-        
+        if (window.tempDataSamanTampal.tarikhHadir) document.getElementById('st_tarikh_hadir').value = window.tempDataSamanTampal.tarikhHadir;
+        if (window.tempDataSamanTampal.masaHadir) document.getElementById('st_masa_hadir').value = window.tempDataSamanTampal.masaHadir;
+
         if (window.tempDataSamanTampal.isBerbeza) {
             document.getElementById('tempatSamanTampalBerbeza').checked = true;
             document.getElementById('st_tempat_nama').value = window.tempDataSamanTampal.tempatNama;
@@ -10717,7 +10711,7 @@ function bukaModalSamanTampal() {
             document.getElementById('st_bandar').value = window.tempDataSamanTampal.bdr;
             document.getElementById('st_negeri').value = window.tempDataSamanTampal.ngr;
         }
-        
+
         if (window.tempDataSamanTampal.senaraiPenerima) {
             window.tempDataSamanTampal.senaraiPenerima.forEach(val => {
                 let cb = document.querySelector(`input[name="st_penerima"][value="${val}"]`);
@@ -10725,12 +10719,8 @@ function bukaModalSamanTampal() {
             });
         }
     }
-    
+
     toggleTempatSamanTampal();
-
-    document.getElementById('st_tarikh_hadir').value = oldTarikh;
-    document.getElementById('st_masa_hadir').value = oldMasa;
-
     document.getElementById('modalSamanTampal').style.display = 'flex';
 }
 
@@ -11739,32 +11729,42 @@ function bukaModalSebutanSemula() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // 1. Auto-isi Tarikh Notis (Hari Ini) - Dipendekkan supaya tak terpotong
     const td = new Date();
-    const yyyy = td.getFullYear();
-    const mm = String(td.getMonth() + 1).padStart(2, '0');
-    const dd = String(td.getDate()).padStart(2, '0');
-    document.getElementById('ss_tarikh_notis').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('ss_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
 
-    // 2. Ekstrak Nama Pegawai - Dipendekkan supaya tak terpotong
-    const profilEdit = document.getElementById('namaProfilEdit');
-    let namaPegawaiRaw = profilEdit ? profilEdit.innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     document.getElementById('ss_pegawai').value = namaPegawaiRaw.toUpperCase();
 
-    document.getElementById('ss_sebab').value = '';
-    document.getElementById('ss_sebab_lain').value = 'namun '; 
-    document.getElementById('ruangan_ss_sebab_lain').style.display = 'none';
-
-    // Reset check box penerima & tempat berbeza
+    let oldTarikh = document.getElementById('mk_tarikh_sebutan_semula')?.value || '';
+    let oldMasa = document.getElementById('mk_masa_sebutan_semula')?.value || '';
+    
+    // Reset paparan checkbox
     document.querySelectorAll('input[name="ss_penerima"]').forEach(cb => cb.checked = false);
     document.getElementById('tempatSebutanSemulaBerbeza').checked = false;
-
-    // 3. Muatkan data jika sudah pernah disetup (seperti kemaskini)
+    
     if (window.tempDataSebutanSemula) {
-        document.getElementById('ss_tarikh_sebutan').value = window.tempDataSebutanSemula.tarikhSebutan;
-        document.getElementById('ss_masa_sebutan').value = window.tempDataSebutanSemula.masaSebutan;
+        oldTarikh = window.tempDataSebutanSemula.tarikhSebutan;
+        oldMasa = window.tempDataSebutanSemula.masaSebutan;
         
-        // Load data alamat jika checkbox pernah ditanda
+        // PEMULIHAN DATA
+        if (window.tempDataSebutanSemula.tarikhNotis) document.getElementById('ss_tarikh_notis').value = window.tempDataSebutanSemula.tarikhNotis;
+        if (window.tempDataSebutanSemula.pegawai) document.getElementById('ss_pegawai').value = window.tempDataSebutanSemula.pegawai;
+        
+        if (window.tempDataSebutanSemula.sebabTeks) {
+            const selSebab = document.getElementById('ss_sebab');
+            if (selSebab) {
+                let optionExists = Array.from(selSebab.options).some(opt => opt.value === window.tempDataSebutanSemula.sebabTeks);
+                if (optionExists) {
+                    selSebab.value = window.tempDataSebutanSemula.sebabTeks;
+                    kawalSebabSebutanSemula();
+                } else {
+                    selSebab.value = "Lain-lain";
+                    kawalSebabSebutanSemula();
+                    document.getElementById('ss_sebab_lain').value = window.tempDataSebutanSemula.sebabTeks;
+                }
+            }
+        }
+        
         if (window.tempDataSebutanSemula.isBerbeza) {
             document.getElementById('tempatSebutanSemulaBerbeza').checked = true;
             document.getElementById('ss_tempat_nama').value = window.tempDataSebutanSemula.tempatNama;
@@ -11775,20 +11775,19 @@ function bukaModalSebutanSemula() {
             document.getElementById('ss_bandar').value = window.tempDataSebutanSemula.bdr;
             document.getElementById('ss_negeri').value = window.tempDataSebutanSemula.ngr;
         }
-
+        
         if (window.tempDataSebutanSemula.senaraiPenerima) {
             window.tempDataSebutanSemula.senaraiPenerima.forEach(val => {
                 let cb = document.querySelector(`input[name="ss_penerima"][value="${val}"]`);
                 if(cb) cb.checked = true;
             });
         }
-    } else {
-        document.getElementById('ss_tarikh_sebutan').value = '';
-        document.getElementById('ss_masa_sebutan').value = '';
     }
-
-    // Panggil fungsi toggle untuk papar/sembunyi ruangan alamat berdasarkan checkbox
+    
     toggleTempatSebutanSemula();
+
+    document.getElementById('ss_tarikh_sebutan').value = oldTarikh;
+    document.getElementById('ss_masa_sebutan').value = oldMasa;
 
     document.getElementById('modalSebutanSemula').style.display = 'flex';
 }
