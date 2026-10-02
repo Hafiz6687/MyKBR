@@ -3597,7 +3597,8 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
 
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
-        renderKadPemantauan(kes);
+        // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
+        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
     }
 
     // =========================================================================
@@ -3610,12 +3611,16 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
 if (kadSejarah) {
     if (!isDraf) {
         kadSejarah.style.display = 'flex';
-        try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error(e); }
+        
+        // FIX: Pastikan struktur data wujud untuk elak fungsi luaran crash bagi Aduan Berkumpulan
+        if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
+        if (kes.dataBorang && !kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+        
+        try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat pada sejarah tindakan:", e); }
     } else {
         kadSejarah.style.display = 'none';
     }
 }
-
 // 2. Kawal Menu Butang Tindakan Secara Berasingan
 if (menuTindakanUrus) {
     if (!isDraf) {
