@@ -2919,6 +2919,149 @@ Portal rasmi : jtksm.mohr.gov.my
         let isSelesaiDaftar = false; 
         let isEditMode = false; // Penanda untuk check jika kita sedang edit draf lama
 
+        // =========================================================================
+        // KODING BARU DITAMBAH DI SINI: MENGHIDUPKAN FUNGSI YANG HILANG
+        // =========================================================================
+
+        // 1. FUNGSI NAVIGASI MENU (Senarai, Daftar, Urus)
+        function tukarView(paparan) {
+            // Sembunyikan semua skrin utama
+            document.getElementById('viewSenaraiTugas').style.display = 'none';
+            document.getElementById('viewPendaftaranKes').style.display = 'none';
+            document.getElementById('viewMaklumatKes').style.display = 'none';
+
+            // Padam status aktif pada semua menu
+            document.getElementById('navSenarai').classList.remove('active');
+            document.getElementById('navDaftar').classList.remove('active');
+            document.getElementById('navUrus').classList.remove('active');
+
+            // Buka skrin berdasarkan pilihan menu
+            if (paparan === 'senarai' || paparan === 'urus') {
+                document.getElementById('viewSenaraiTugas').style.display = 'block';
+                document.getElementById('tajukHalamanAtas').innerHTML = paparan === 'senarai' ? 'Senarai Tugasan' : 'Pengurusan Kes';
+                document.getElementById(paparan === 'senarai' ? 'navSenarai' : 'navUrus').classList.add('active');
+                renderSenaraiTugas(); // Lukis semula jadual senarai tugasan
+            } else if (paparan === 'daftar') {
+                document.getElementById('viewPendaftaranKes').style.display = 'block';
+                document.getElementById('tajukHalamanAtas').innerHTML = 'Pendaftaran Kes Buruh';
+                document.getElementById('navDaftar').classList.add('active');
+            }
+        }
+
+        // 2. FUNGSI MENJANA JADUAL SENARAI TUGASAN
+        function renderSenaraiTugas() {
+            const tbody = document.getElementById('bodySenaraiTugas');
+            if (!tbody) return;
+            tbody.innerHTML = ''; 
+
+            if (!memoriSenaraiKes || memoriSenaraiKes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Tiada kes didaftarkan setakat ini.</td></tr>';
+                return;
+            }
+
+            memoriSenaraiKes.forEach((kes, index) => {
+                // Buang tag <br> jika ada dalam rentetan nama
+                let namaP = kes.namaPengadu ? kes.namaPengadu.replace(/<br>.*$/g, '') : '-';
+                let namaD = kes.namaDefendan ? kes.namaDefendan.replace(/<br>.*$/g, '') : '-';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${kes.noKes || '-'}</strong></td>
+                    <td>${namaP}</td>
+                    <td>${namaD}</td>
+                    <td>${kes.tarikh || '-'}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-edit-tbl" onclick="bukaMaklumatKes(${index})">👁️ Lihat / Urus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 3. FUNGSI TOGOL ADUAN BERKUMPULAN / INDIVIDU
+        function toggleAduan() {
+            const isBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
+            const ruanganBilangan = document.getElementById('ruanganBilanganPengadu');
+            const kad3Ketua = document.getElementById('kad3_ketua');
+            const kad4Biasa = document.getElementById('kad4_biasa');
+
+            if (isBerkumpulan) {
+                if (ruanganBilangan) ruanganBilangan.style.display = 'grid';
+                if (kad3Ketua) kad3Ketua.style.display = 'flex';
+                if (kad4Biasa) kad4Biasa.style.display = 'none';
+            } else {
+                if (ruanganBilangan) ruanganBilangan.style.display = 'none';
+                if (kad3Ketua) kad3Ketua.style.display = 'none';
+                if (kad4Biasa) kad4Biasa.style.display = 'flex';
+            }
+        }
+
+        // 4. FUNGSI MENJANA JADUAL SEJARAH TINDAKAN
+        function renderJadualSejarah(index) {
+            const tbody = document.getElementById('mk_body_sejarah');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const kes = memoriSenaraiKes[index];
+            if (!kes || !kes.sejarahTindakan || kes.sejarahTindakan.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row" style="padding: 15px;">Tiada rekod sejarah tindakan.</td></tr>';
+                return;
+            }
+
+            kes.sejarahTindakan.forEach((rekod, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align:center; padding: 12px; border-bottom: 1px solid var(--border-color);">${i + 1}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">${rekod.tarikh || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color); font-weight: 600; color: var(--primary-blue);">${rekod.tindakan || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color); line-height: 1.4;">${rekod.butiran || '-'}</td>
+                        <td style="text-align:center; padding: 12px; border-bottom: 1px solid var(--border-color);">-</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 5. FUNGSI-FUNGSI BANTUAN UNTUK MENGELAKKAN RALAT (CRASH)
+        function renderSemuaJadualPerwakilan() {
+            // Stub fungsi: Dipanggil ketika bukaMaklumatKes jika ada senarai saksi/peguam
+            console.log("Jadual Perwakilan dimuatkan.");
+        }
+        function renderKadPemantauan(kes) {
+            // Stub fungsi: Dipanggil untuk memaparkan status bayaran MOU
+            console.log("Kad Pemantauan MOU dimuatkan.");
+        }
+        function rekodSejarahTindakan(index, tindakan, butiran) {
+            if(!memoriSenaraiKes[index]) return;
+            if(!memoriSenaraiKes[index].sejarahTindakan) memoriSenaraiKes[index].sejarahTindakan = [];
+            
+            let td = new Date();
+            let hh = String(td.getHours()).padStart(2, '0');
+            let mm = String(td.getMinutes()).padStart(2, '0');
+            let formatTarikh = `${td.getDate()}/${td.getMonth()+1}/${td.getFullYear()} ${hh}:${mm}`;
+            
+            memoriSenaraiKes[index].sejarahTindakan.push({ tarikh: formatTarikh, tindakan: tindakan, butiran: butiran });
+            renderJadualSejarah(index);
+        }
+
+        // FUNGSI NAVIGASI TAB (Sebab ia juga tiada dalam fail dan diperlukan untuk navigasi borang pendaftaran)
+        function bukaTab(tabId, element) {
+            document.querySelectorAll('.content-area').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).style.display = 'grid';
+            if(element) element.classList.add('active');
+        }
+        function pergiKeTabBorang(tabId) {
+            let tabs = document.querySelectorAll('.tab');
+            if(tabId === 'tab1') bukaTab(tabId, tabs[0]);
+            if(tabId === 'tab2') bukaTab(tabId, tabs[1]);
+            if(tabId === 'tab3') bukaTab(tabId, tabs[2]);
+            window.scrollTo(0,0);
+        }
+
+        // =========================================================================
+        // TAMAT KODING BARU
+        // =========================================================================
+
         document.addEventListener('DOMContentLoaded', function() {
             kemaskiniDropdownPendaftaran();
             semakWakilLengkap();
