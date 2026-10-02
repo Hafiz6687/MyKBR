@@ -3722,11 +3722,12 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         if (typeof toggleTempatHadirMemo === 'function') toggleTempatHadirMemo();
     }
     
-    const isDraf = kes.noKes.includes('DRAF');
+    // Pelindung ralat: Jika noKes tiada dalam data lama, ia tidak akan crash
+    const noKesSemasa = kes.noKes || ""; 
+    const isDraf = noKesSemasa.includes('DRAF');
 
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
-        // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
         try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
     }
 
@@ -3739,11 +3740,12 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     // 1. Kawal Kotak Sejarah
     if (kadSejarah) {
         if (!isDraf) {
-            kadSejarah.style.display = 'flex';
+            kadSejarah.style.display = 'block'; 
             
-            // FIX: Pastikan struktur data wujud untuk elak fungsi luaran crash bagi Aduan Berkumpulan
+            // Pelindung ralat format data lama (Aduan Berkumpulan)
             if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
-            if (kes.dataBorang && !kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+            if (!kes.dataBorang) kes.dataBorang = {}; // Pastikan dataBorang wujud
+            if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
             
             try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat pada sejarah tindakan:", e); }
         } else {
