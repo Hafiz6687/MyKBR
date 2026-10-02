@@ -3615,13 +3615,6 @@ if (menuTindakanUrus) {
         }
     }
     
-    // Buka Ketua Pengadu secara automatik HANYA di Pengurusan Kes
-    if (isEditMode) {
-        if (typeof togolPengadu === 'function') {
-            togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua', true);
-        }
-    }
-
     // Auto-scroll ke atas skrin untuk kekemasan UI
     window.scrollTo(0, 0);
 }
@@ -7962,7 +7955,7 @@ function bukaKesDidaftar(index) {
             if (el.type === 'radio' || el.type === 'checkbox') el.checked = false;
         });
 
-for (const key in formData) {
+        for (const key in formData) {
             // --- TAMBAHAN BARU: Jika ia adalah array (seperti subSeksyen), tick semua kotak yang berkenaan ---
             if (Array.isArray(formData[key])) {
                 formData[key].forEach(val => {
@@ -8026,7 +8019,7 @@ for (const key in formData) {
         toggleAlamatKerja();
         janaKenyataanAwal();
         
-// LANGKAH 4: Load semula Jadual Tuntutan Kewangan
+        // LANGKAH 4: Load semula Jadual Tuntutan Kewangan
         memoriTuntutan = kes.dataBorang.tuntutanBiasa ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanBiasa)) : [];
         memoriTuntutanKetua = kes.dataBorang.tuntutanKetua ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanKetua)) : [];
         memoriTuntutanTambahan = kes.dataBorang.tuntutanTambahan ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanTambahan)) : {};
@@ -8063,7 +8056,7 @@ for (const key in formData) {
         toggleAduan(); tukarPeranan();
     }
     
-// --- LOGIK BARU: Kenal pasti dari mana asal borang ini dan buka flow yang tepat ---
+    // --- LOGIK BARU: Kenal pasti dari mana asal borang ini dan buka flow yang tepat ---
     const flowTujuan = kes.sumberFlow === 'urus' ? 'urus' : 'daftar';
     tukarView(flowTujuan, true); 
     
@@ -8072,6 +8065,22 @@ for (const key in formData) {
     
     // PEMBETULAN: Paksa sistem semak kelayakan jadual SELEPAS mod Pengurusan disahkan
     kawalJenisAduanTuntutan(); 
+
+    // KOD BARU: Auto-buka Ketua Pengadu dan Pengadu Tambahan semasa Kemaskini
+    if (isEditMode) {
+        // Buka Ketua Pengadu
+        if (typeof togolPengadu === 'function') {
+            togolPengadu('kandunganKetuaBungkus', 'labelTogolKetua', true);
+        }
+        
+        // Buka Pengadu Tambahan (Cari berapa banyak pengadu tambahan wujud)
+        if (kes.dataBorang && kes.dataBorang.tuntutanTambahan) {
+            const senaraiIndex = Object.keys(kes.dataBorang.tuntutanTambahan);
+            if (senaraiIndex.length > 0 && typeof paparPengaduSatuPersatu === 'function') {
+                paparPengaduSatuPersatu(senaraiIndex);
+            }
+        }
+    }
 } // <--- penutup fungsi bukaKesDidaftar
 
         function toTitleCase(str) { if (!str || str === '-') return '-'; return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase()); }
