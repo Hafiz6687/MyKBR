@@ -3359,7 +3359,6 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     tbodyTuntutan.innerHTML = '';
     
     let jumlahKeseluruhan = 0;
-    let indexBil = 1;
 
     if (kes.dataBorang) {
         if (isBerkumpulan && !isMajikan) {
@@ -3372,6 +3371,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                         </td>
                     </tr>
                 `;
+                let indexBil = 1; // RESET NOMBOR DI SINI
                 kes.dataBorang.tuntutanKetua.forEach(t => {
                     const jumlahNum = parseFloat(t.jumlah);
                     jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3398,6 +3398,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                                 </td>
                             </tr>
                         `;
+                        let indexBil = 1; // RESET NOMBOR DI SINI
                         senaraiTambahan.forEach(t => {
                             const jumlahNum = parseFloat(t.jumlah);
                             jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3416,6 +3417,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         } else {
             // --- TUNTUTAN BIASA / INDIVIDU / MAJIKAN ---
             let senaraiTuntutanSemasa = kes.dataBorang.tuntutanBiasa || [];
+            let indexBil = 1; // RESET NOMBOR DI SINI
             senaraiTuntutanSemasa.forEach((item) => {
                 const jumlahNum = parseFloat(item.jumlah);
                 jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
@@ -3436,6 +3438,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
             {jenis: "Baki Gaji", keterangan: "(MEI 2026)", jumlah: "2645.00"},
             {jenis: "Baki Gaji", keterangan: "(JUN 2026)", jumlah: "1600.00"}
         ];
+        let indexBil = 1; // RESET NOMBOR DI SINI
         senaraiTuntutanSemasa.forEach((item) => {
             const jumlahNum = parseFloat(item.jumlah);
             jumlahKeseluruhan += isNaN(jumlahNum) ? 0 : jumlahNum;
