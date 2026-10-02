@@ -2920,27 +2920,23 @@ Portal rasmi : jtksm.mohr.gov.my
         let isEditMode = false; // Penanda untuk check jika kita sedang edit draf lama
 
         // =========================================================================
-        // KODING BARU DITAMBAH DI SINI: MENGHIDUPKAN FUNGSI YANG HILANG
+        // FUNGSI GLOBAL (Mesti berada di luar DOMContentLoaded supaya butang HTML berfungsi)
         // =========================================================================
 
-        // 1. FUNGSI NAVIGASI MENU (Senarai, Daftar, Urus)
         function tukarView(paparan) {
-            // Sembunyikan semua skrin utama
             document.getElementById('viewSenaraiTugas').style.display = 'none';
             document.getElementById('viewPendaftaranKes').style.display = 'none';
             document.getElementById('viewMaklumatKes').style.display = 'none';
 
-            // Padam status aktif pada semua menu
             document.getElementById('navSenarai').classList.remove('active');
             document.getElementById('navDaftar').classList.remove('active');
             document.getElementById('navUrus').classList.remove('active');
 
-            // Buka skrin berdasarkan pilihan menu
             if (paparan === 'senarai' || paparan === 'urus') {
                 document.getElementById('viewSenaraiTugas').style.display = 'block';
                 document.getElementById('tajukHalamanAtas').innerHTML = paparan === 'senarai' ? 'Senarai Tugasan' : 'Pengurusan Kes';
                 document.getElementById(paparan === 'senarai' ? 'navSenarai' : 'navUrus').classList.add('active');
-                renderSenaraiTugas(); // Lukis semula jadual senarai tugasan
+                if (typeof renderSenaraiTugas === 'function') renderSenaraiTugas();
             } else if (paparan === 'daftar') {
                 document.getElementById('viewPendaftaranKes').style.display = 'block';
                 document.getElementById('tajukHalamanAtas').innerHTML = 'Pendaftaran Kes Buruh';
@@ -2948,7 +2944,6 @@ Portal rasmi : jtksm.mohr.gov.my
             }
         }
 
-        // 2. FUNGSI MENJANA JADUAL SENARAI TUGASAN
         function renderSenaraiTugas() {
             const tbody = document.getElementById('bodySenaraiTugas');
             if (!tbody) return;
@@ -2960,7 +2955,6 @@ Portal rasmi : jtksm.mohr.gov.my
             }
 
             memoriSenaraiKes.forEach((kes, index) => {
-                // Buang tag <br> jika ada dalam rentetan nama
                 let namaP = kes.namaPengadu ? kes.namaPengadu.replace(/<br>.*$/g, '') : '-';
                 let namaD = kes.namaDefendan ? kes.namaDefendan.replace(/<br>.*$/g, '') : '-';
                 
@@ -2978,7 +2972,6 @@ Portal rasmi : jtksm.mohr.gov.my
             });
         }
 
-        // 3. FUNGSI TOGOL ADUAN BERKUMPULAN / INDIVIDU
         function toggleAduan() {
             const isBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
             const ruanganBilangan = document.getElementById('ruanganBilanganPengadu');
@@ -2996,7 +2989,6 @@ Portal rasmi : jtksm.mohr.gov.my
             }
         }
 
-        // 4. FUNGSI MENJANA JADUAL SEJARAH TINDAKAN
         function renderJadualSejarah(index) {
             const tbody = document.getElementById('mk_body_sejarah');
             if (!tbody) return;
@@ -3021,35 +3013,13 @@ Portal rasmi : jtksm.mohr.gov.my
             });
         }
 
-        // 5. FUNGSI-FUNGSI BANTUAN UNTUK MENGELAKKAN RALAT (CRASH)
-        function renderSemuaJadualPerwakilan() {
-            // Stub fungsi: Dipanggil ketika bukaMaklumatKes jika ada senarai saksi/peguam
-            console.log("Jadual Perwakilan dimuatkan.");
-        }
-        function renderKadPemantauan(kes) {
-            // Stub fungsi: Dipanggil untuk memaparkan status bayaran MOU
-            console.log("Kad Pemantauan MOU dimuatkan.");
-        }
-        function rekodSejarahTindakan(index, tindakan, butiran) {
-            if(!memoriSenaraiKes[index]) return;
-            if(!memoriSenaraiKes[index].sejarahTindakan) memoriSenaraiKes[index].sejarahTindakan = [];
-            
-            let td = new Date();
-            let hh = String(td.getHours()).padStart(2, '0');
-            let mm = String(td.getMinutes()).padStart(2, '0');
-            let formatTarikh = `${td.getDate()}/${td.getMonth()+1}/${td.getFullYear()} ${hh}:${mm}`;
-            
-            memoriSenaraiKes[index].sejarahTindakan.push({ tarikh: formatTarikh, tindakan: tindakan, butiran: butiran });
-            renderJadualSejarah(index);
-        }
-
-        // FUNGSI NAVIGASI TAB (Sebab ia juga tiada dalam fail dan diperlukan untuk navigasi borang pendaftaran)
         function bukaTab(tabId, element) {
             document.querySelectorAll('.content-area').forEach(tab => tab.style.display = 'none');
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).style.display = 'grid';
             if(element) element.classList.add('active');
         }
+
         function pergiKeTabBorang(tabId) {
             let tabs = document.querySelectorAll('.tab');
             if(tabId === 'tab1') bukaTab(tabId, tabs[0]);
@@ -3058,8 +3028,20 @@ Portal rasmi : jtksm.mohr.gov.my
             window.scrollTo(0,0);
         }
 
-        // =========================================================================
-        // TAMAT KODING BARU
+        // Fungsi Bantuan untuk halang ralat "undefined" pada modul lain
+        window.renderSemuaJadualPerwakilan = function() { console.log("Jadual Perwakilan dimuatkan."); };
+        window.renderKadPemantauan = function(kes) { console.log("Kad Pemantauan MOU dimuatkan."); };
+        window.rekodSejarahTindakan = function(index, tindakan, butiran) {
+            if(!memoriSenaraiKes[index]) return;
+            if(!memoriSenaraiKes[index].sejarahTindakan) memoriSenaraiKes[index].sejarahTindakan = [];
+            
+            let td = new Date();
+            let formatTarikh = `${td.getDate()}/${td.getMonth()+1}/${td.getFullYear()} ${String(td.getHours()).padStart(2, '0')}:${String(td.getMinutes()).padStart(2, '0')}`;
+            
+            memoriSenaraiKes[index].sejarahTindakan.push({ tarikh: formatTarikh, tindakan: tindakan, butiran: butiran });
+            renderJadualSejarah(index);
+        };
+
         // =========================================================================
 
         document.addEventListener('DOMContentLoaded', function() {
