@@ -3395,7 +3395,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                     `;
                 });
 
-                // Jana Header Ketua & masukkan jumlah ke dalam Header
+                // Jana Header Ketua (Butang Togol Sahaja di Sebelah Kanan)
                 tbodyTuntutan.innerHTML += `
                     <tr style="background-color: #eff6ff; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="const rows = document.querySelectorAll('.tuntutan-item-ketua'); const btn = document.getElementById('btnTogolTuntutan_ketua'); let isHidden = rows[0].style.display === 'none'; rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none'); btn.innerHTML = isHidden ? '▲ Sembunyi' : '▼ Buka';">
                         <td colspan="2" style="padding: 12px 15px; font-weight: 700; color: var(--primary-blue); border-bottom: 1px solid var(--border-color);">
@@ -3405,16 +3405,21 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                             ${namaKetua}
                         </td>
                         <td style="padding: 12px 15px; text-align: right; border-bottom: 1px solid var(--border-color);">
-                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
-                                <span style="font-weight: 700; color: var(--text-main); font-size: 1.05em;">RM ${jumlahKetua.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                <span id="btnTogolTuntutan_ketua" style="font-size: 0.85em; font-weight: 600; background: #bfdbfe; color: #1e40af; padding: 4px 10px; border-radius: 20px; min-width: 80px; text-align: center; display: inline-block;">▼ Buka</span>
-                            </div>
+                            <span id="btnTogolTuntutan_ketua" style="font-size: 0.85em; font-weight: 600; background: #bfdbfe; color: #1e40af; padding: 4px 10px; border-radius: 20px; min-width: 80px; text-align: center; display: inline-block;">▼ Buka</span>
                         </td>
                     </tr>
                 `;
                 
-                // Tambah baris tuntutan yang disembunyikan
+                // Masukkan baris tuntutan yang boleh ditogol
                 tbodyTuntutan.innerHTML += htmlKetuaRows;
+
+                // Masukkan BARIS SUBTOTAL (Sentiasa Kelihatan, tiada kelas togol)
+                tbodyTuntutan.innerHTML += `
+                    <tr style="background-color: #f1f5f9;">
+                        <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN KETUA PENGADU</td>
+                        <td style="text-align: right; padding: 8px 10px; font-weight: 600; font-size: 0.9em; border-bottom: 1px solid var(--border-color);">RM ${jumlahKetua.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
+                `;
             }
             
             // --- TUNTUTAN PENGADU TAMBAHAN ---
@@ -3423,7 +3428,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                     const senaraiTambahan = kes.dataBorang.tuntutanTambahan[key];
                     if (senaraiTambahan && senaraiTambahan.length > 0) {
                         
-                        // Dapatkan nama Pengadu Tambahan secara dinamik dan meluas
+                        // Dapatkan nama Pengadu Tambahan
                         let namaPengaduTambahan = "";
                         let namaDitemui = null;
                         
@@ -3461,7 +3466,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                             `;
                         });
 
-                        // Jana Header Tambahan & masukkan jumlah ke dalam Header
+                        // Jana Header Tambahan (Butang Togol Sahaja di Sebelah Kanan)
                         tbodyTuntutan.innerHTML += `
                             <tr style="background-color: #f8fafc; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="const rows = document.querySelectorAll('.tuntutan-item-pengadu-${key}'); const btn = document.getElementById('btnTogolTuntutan_pengadu_${key}'); let isHidden = rows[0].style.display === 'none'; rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none'); btn.innerHTML = isHidden ? '▲ Sembunyi' : '▼ Buka';">
                                 <td colspan="2" style="padding: 12px 15px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border-color); border-top: 2px solid var(--border-color);">
@@ -3471,16 +3476,21 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                                     ${namaPengaduTambahan}
                                 </td>
                                 <td style="padding: 12px 15px; text-align: right; border-bottom: 1px solid var(--border-color); border-top: 2px solid var(--border-color);">
-                                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
-                                        <span style="font-weight: 700; color: var(--text-main); font-size: 1.05em;">RM ${jumlahPengadu.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                        <span id="btnTogolTuntutan_pengadu_${key}" style="font-size: 0.85em; font-weight: 600; background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 20px; min-width: 80px; text-align: center; display: inline-block;">▼ Buka</span>
-                                    </div>
+                                    <span id="btnTogolTuntutan_pengadu_${key}" style="font-size: 0.85em; font-weight: 600; background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 20px; min-width: 80px; text-align: center; display: inline-block;">▼ Buka</span>
                                 </td>
                             </tr>
                         `;
                         
-                        // Tambah baris tuntutan yang disembunyikan
+                        // Masukkan baris tuntutan yang boleh ditogol
                         tbodyTuntutan.innerHTML += htmlPengaduRows;
+
+                        // Masukkan BARIS SUBTOTAL (Sentiasa Kelihatan, tiada kelas togol)
+                        tbodyTuntutan.innerHTML += `
+                            <tr style="background-color: #f1f5f9;">
+                                <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN PENGADU ${key}</td>
+                                <td style="text-align: right; padding: 8px 10px; font-weight: 600; font-size: 0.9em; border-bottom: 1px solid var(--border-color);">RM ${jumlahPengadu.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </tr>
+                        `;
                     }
                 }
             }
