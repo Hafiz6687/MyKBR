@@ -3724,11 +3724,23 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     
     // Pelindung ralat: Jika noKes tiada dalam data lama, ia tidak akan crash
     const noKesSemasa = kes.noKes || ""; 
-    const isDraf = noKesSemasa.includes('DRAF');
+    // =========================================================================
+    // MIGRATION & NORMALISASI DATA LAMA (BACKWARD COMPATIBILITY)
+    // =========================================================================
+    // Menjamin data dari versi lama dinaik taraf formatnya secara automatik 
+    // dalam memori. Ini mengekalkan kebolehan membaca tanpa ralat (crash).
+    if (!kes.noKes) kes.noKes = ""; 
+    if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
+    if (!kes.dataBorang) kes.dataBorang = { inputs: {}, tuntutanBiasa: [], tuntutanKetua: [], tuntutanTambahan: {} };
+    if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+    if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
+    if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
+
+    const isDraf = kes.noKes.includes('DRAF');
 
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
-        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
+        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pemantauan MOU:", e); }
     }
 
     // =========================================================================
@@ -3740,14 +3752,8 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     // 1. Kawal Kotak Sejarah
     if (kadSejarah) {
         if (!isDraf) {
-            kadSejarah.style.display = 'block'; 
-            
-            // Pelindung ralat format data lama (Aduan Berkumpulan)
-            if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
-            if (!kes.dataBorang) kes.dataBorang = {}; // Pastikan dataBorang wujud
-            if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
-            
-            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat pada sejarah tindakan:", e); }
+            kadSejarah.style.display = 'block';
+            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat sejarah tindakan:", e); }
         } else {
             kadSejarah.style.display = 'none';
         }
