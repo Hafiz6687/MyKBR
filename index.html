@@ -14791,26 +14791,53 @@ function janaSemulaNotisLain(dataSimpanan) {
     }
 }
 // =========================================================================
-// MODUL PEMANTAUAN BAYARAN MOU
+// MODUL PEMANTAUAN BAYARAN MOU (DENGAN SOKONGAN DATA LAMA & KESINAMBUNGAN)
 // =========================================================================
 
 function bukaPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // Ambil data MOU dari memori kes (window.tempDataMou atau dataBorang)
-    const dataMou = kes.dataMou || window.tempDataMou || null;
+    // 1. KESERASIAN KE BELAKANG: Semak pelbagai sumber data MOU (Data Baru, Data Lama, atau memori sementara)
+    let dataMou = kes.dataMou || window.tempDataMou || null;
+
+    // Jika tiada dalam struktur rasmi, cuba cari dalam Sejarah Tindakan atau data borang terdahulu
+    if (!dataMou && kes.sejarahTindakan) {
+        const jejakMou = kes.sejarahTindakan.find(s => s.tindakan && s.tindakan.includes("MOU"));
+        if (jejakMou) {
+            // Wujudkan struktur lalai berdasarkan maklumat kes jika struktur lama tidak lengkap
+            dataMou = {
+                tarikhMou: kes.tarikh || '-',
+                kaedahMou: 'Penuh', // Lalai sekiranya data tersembunyi
+                jumlahMou: 0,
+                statusBayaranPenuh: 'Belum Selesai',
+                senaraiAnsuran: []
+            };
+        }
+    }
 
     if (!dataMou) {
-        alert("Tiada rekod MOU / Persetujuan Bersama dijumpai bagi kes ini. Sila jana MOU terlebih dahulu.");
+        alert("Tiada rekod MOU / Persetujuan Bersama dijumpai bagi kes ini. Sila jana dokumen MOU terlebih dahulu.");
         return;
     }
 
-    // Papar maklumat ringkas
+    // Simpan semula ke dalam objek kes supaya kesinambungan data terjamin untuk sesi seterusnya
+    kes.dataMou = dataMou;
+
+    // Papar maklumat ringkas pada paparan antara muka modal
     document.getElementById('pm_tarikh_mou').innerText = dataMou.tarikhMou || '-';
-    document.getElementById('pm_kaedah_mou').innerText = dataMou.kaedahMou || '-';
+    document.getElementById('pm_kaedah_mou').innerText = dataMou.kaedahMou || 'Penuh';
     
-    const jumlahMou = parseFloat(dataMou.jumlahMou || 0);
+    // Auto-hitung jumlah keseluruhan tuntutan jika jumlahMou belum disetkan dalam rekod lama
+    let jumlahMou = parseFloat(dataMou.jumlahMou || 0);
+    if (jumlahMou === 0 && kes.dataBorang && kes.dataBorang.tuntutanBiasa) {
+        kes.dataBorang.tuntutanBiasa.forEach(t => {
+            let val = parseFloat(t.jumlah);
+            if (!isNaN(val)) jumlahMou += val;
+        });
+        dataMou.jumlahMou = jumlahMou;
+    }
+
     document.getElementById('pm_jumlah_mou').innerText = `RM ${jumlahMou.toFixed(2)}`;
 
     const bekasDinamik = document.getElementById('pm_kandungan_dinamik');
@@ -14819,7 +14846,7 @@ function bukaPemantauanMou() {
     // ==========================================
     // KES 1: KAEDAH BAYARAN PENUH
     // ==========================================
-    if (dataMou.kaedahMou === 'Penuh') {
+    if (dataMou.kaedahMou === 'Penuh' || !dataMou.kaedahMou) {
         const isSelesai = dataMou.statusBayaranPenuh === 'Selesai';
         const baki = isSelesai ? 0 : jumlahMou;
         document.getElementById('pm_baki_mou').innerText = `RM ${baki.toFixed(2)}`;
@@ -14855,7 +14882,7 @@ function bukaPemantauanMou() {
                 <h5 style="margin-top:0; color:var(--primary-blue); margin-bottom: 10px;">Jadual & Rekod Pembayaran Ansuran</h5>
                 <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
-                        <thead style="background: var(--card-header-bg); sticky; top: 0;">
+                        <thead style="background: var(--card-header-bg); position: sticky; top: 0;">
                             <tr>
                                 <th style="padding: 8px; text-align: center;">Bil.</th>
                                 <th style="padding: 8px;">Tarikh Patut Bayar</th>
@@ -14866,12 +14893,8 @@ function bukaPemantauanMou() {
                         <tbody>
             `;
 
-            let totalDibayar = 0;
-
             senaraiAnsuran.forEach((ans, idx) => {
                 const isPaid = ans.status === 'Selesai';
-                if (isPaid) totalDibayar += parseFloat(ans.amaun || 0);
-
                 htmlJadual += `
                     <tr>
                         <td style="padding: 8px; text-align: center;">${idx + 1}</td>
@@ -14896,25 +14919,22 @@ function bukaPemantauanMou() {
         }
     }
 
-    // Tampilkan modal
+    // Paparkan modal pop-up pemantauan
     document.getElementById('modalPemantauanMou').style.display = 'flex';
 }
 
-// Fungsi Pengira Baki Bayaran Penuh
 function kemaskiniBakiPenuh(jumlahTotal) {
     const st = document.getElementById('pm_status_penuh').value;
     const baki = (st === 'Selesai') ? 0 : jumlahTotal;
     document.getElementById('pm_baki_mou').innerText = `RM ${baki.toFixed(2)}`;
 }
 
-// Fungsi Pengira Baki Bayaran Ansuran
 function kiraBakiAnsuran(jumlahTotal) {
     const kes = memoriSenaraiKes[indexKesSemasa];
-    const dataMou = kes.dataMou || window.tempDataMou;
-    if (!dataMou || !dataMou.senaraiAnsuran) return;
+    if (!kes || !kes.dataMou || !kes.dataMou.senaraiAnsuran) return;
 
     let totalDibayar = 0;
-    dataMou.senaraiAnsuran.forEach((ans, idx) => {
+    kes.dataMou.senaraiAnsuran.forEach((ans, idx) => {
         const chk = document.getElementById(`ans_chk_${idx}`);
         if (chk && chk.checked) {
             totalDibayar += parseFloat(ans.amaun || 0);
@@ -14925,13 +14945,11 @@ function kiraBakiAnsuran(jumlahTotal) {
     document.getElementById('pm_baki_mou').innerText = `RM ${Math.max(0, baki).toFixed(2)}`;
 }
 
-// Fungsi Simpan Rekod Pemantauan
 function simpanPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
+    if (!kes || !kes.dataMou) return;
 
-    if (!kes.dataMou) kes.dataMou = window.tempDataMou || {};
-    const kaedah = kes.dataMou.kaedahMou;
+    const kaedah = kes.dataMou.kaedahMou || 'Penuh';
 
     if (kaedah === 'Penuh') {
         kes.dataMou.statusBayaranPenuh = document.getElementById('pm_status_penuh').value;
@@ -14945,11 +14963,21 @@ function simpanPemantauanMou() {
         });
     }
 
-    // Simpan ke memori & kemaskini
+    // KESINAMBUNGAN DATA (DATA PERSISTENCE): Simpan perubahan ke pangkalan data / local storage pelayar
     simpanSenaraiKeLokal();
-    alert("Rekod Pemantauan Bayaran MOU telah berjaya dikemaskini.");
+    
+    // Rekodkan aktiviti kemas kini ke dalam Sejarah Tindakan secara automatik
+    if (typeof rekodSejarahTindakan === 'function') {
+        rekodSejarahTindakan(indexKesSemasa, "Pemantauan Bayaran MOU", "Maklumat status bayaran MOU telah dikemaskini oleh pegawai.");
+    }
+
+    alert("Rekod Pemantauan Bayaran MOU telah berjaya dikemaskini dan disimpan.");
     document.getElementById('modalPemantauanMou').style.display = 'none';
+    
+    // Muat semula paparan maklumat kes untuk memaparkan sejarah terkini
+    bukaMaklumatKes(indexKesSemasa);
 }
+
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
 // =========================================================
