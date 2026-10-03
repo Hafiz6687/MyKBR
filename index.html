@@ -15860,8 +15860,8 @@ function bukaModalPemantauanMou() {
     if (!kes) return;
 
     // KAWALAN DATA: Pindahkan data ansuran dari tindakanMou() ke pemantauanMou jika ia belum wujud
-    if (!kes.pemantauanMou && kes.mou && kes.mou.ansuran) {
-        kes.pemantauanMou = kes.mou.ansuran.map(a => ({
+    if ((!kes.pemantauanMou || kes.pemantauanMou.length === 0) && kes.mou && kes.mou.ansuran) {
+    kes.pemantauanMou = kes.mou.ansuran.map(a => ({
             tarikhDue: a.tarikh,
             amaunDue: a.amaun,
             tarikhBayar: a.tarikhBayar || '',
