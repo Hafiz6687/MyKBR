@@ -1453,9 +1453,9 @@ Portal rasmi : jtksm.mohr.gov.my
             <div class="card full-width" id="kad_kehadiran_perwakilan">
                 <div class="card-header">
                     Maklumat Kehadiran / Perwakilan (Pengadu)
-                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="bukaModalPerwakilan('pengadu')">+ Tambah Wakil / Saksi</button>
+                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="document.getElementById('body_kehadiran_pengadu').style.display='block'; bukaModalPerwakilan('pengadu');">+ Tambah Wakil / Saksi</button>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="body_kehadiran_pengadu" style="display: none;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
                         <thead style="background-color: var(--card-header-bg);">
                             <tr>
@@ -1486,9 +1486,9 @@ Portal rasmi : jtksm.mohr.gov.my
             <div class="card full-width" id="kad_kehadiran_perwakilan_defendan">
                 <div class="card-header">
                     Maklumat Kehadiran / Perwakilan (Defendan)
-                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="bukaModalPerwakilan('defendan')">+ Tambah Wakil / Saksi</button>
+                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="document.getElementById('body_kehadiran_defendan').style.display='block'; bukaModalPerwakilan('defendan');">+ Tambah Wakil / Saksi</button>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="body_kehadiran_defendan" style="display: none;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
                         <thead style="background-color: var(--card-header-bg);">
                             <tr>
