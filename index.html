@@ -3212,11 +3212,45 @@ function bukaMaklumatKes(index) {
         
         const kes = memoriSenaraiKes[index];
 
-        // MIGRATION & NORMALISASI DATA
+        // MIGRATION & NORMALISASI DATA (PULIH SEJARAH LENGKAP & SIMPAN SEMULA)
         if (!kes.noKes) kes.noKes = ""; 
-        if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
+        
+        // 1. Pastikan dataBorang wujud dahulu
         if (!kes.dataBorang) kes.dataBorang = {};
         if (!kes.dataBorang.inputs) kes.dataBorang.inputs = {};
+
+        // 2. Cuba pulihkan sejarah dari pelbagai sumber legacy
+        let adaMigrasiBaru = false;
+        if (!Array.isArray(kes.sejarahTindakan) || kes.sejarahTindakan.length === 0) {
+            const sumberLegacy = [
+                kes.sejarah,
+                kes.history,
+                kes.historyTindakan,
+                kes.tindakanSejarah,
+                kes.dataBorang.sejarahTindakan,
+                kes.dataBorang.sejarah,
+                kes.dataBorang.historyTindakan
+            ];
+
+            const sejarahDitemui = sumberLegacy.find(
+                x => Array.isArray(x) && x.length > 0
+            );
+
+            if (sejarahDitemui) {
+                kes.sejarahTindakan = sejarahDitemui;
+                adaMigrasiBaru = true;
+            }
+        }
+
+        // 3. Jika langsung tiada sejarah, cipta array kosong
+        if (!Array.isArray(kes.sejarahTindakan)) {
+            kes.sejarahTindakan = [];
+        }
+
+        // 4. Simpan semula (persist) ke storan sekiranya data sejarah berjaya dipulihkan
+        if (adaMigrasiBaru && typeof simpanSenaraiKeLokal === 'function') {
+            simpanSenaraiKeLokal();
+        }
         if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
         if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
         if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
