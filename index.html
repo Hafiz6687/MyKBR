@@ -3753,9 +3753,12 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     const kadSejarah = document.getElementById('kad_sejarah_tindakan');
     const menuTindakanUrus = document.getElementById('menu_tindakan_urus');
     
-    // 1. Kawal Kotak Sejarah
+    // --- KODING BARU PENGGANTI ---
+
+// 1. Koding baru untuk kad sejarah tindakan:
     if (kadSejarah) {
-        if (!isDraf) {
+        // Paparkan sejarah jika ia bukan draf ATAU jika sudah mempunyai rekod sejarah tindakan
+        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
             kadSejarah.style.display = 'block';
             try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat sejarah tindakan:", e); }
         } else {
@@ -3763,9 +3766,9 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         }
     }
 
-    // 2. Kawal Menu Butang Tindakan Secara Berasingan
+// 2. Koding baru untuk menu tindakan urus:
     if (menuTindakanUrus) {
-        if (!isDraf) {
+        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
             menuTindakanUrus.style.display = 'flex';
         } else {
             menuTindakanUrus.style.display = 'none';
