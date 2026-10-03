@@ -3650,6 +3650,9 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     // Render senarai perwakilan/kehadiran jika ada
     if (typeof renderSemuaJadualPerwakilan === 'function') renderSemuaJadualPerwakilan();
 
+    // ⬇️ TAMBAHKAN BARIS INI UNTUK MENGAKTIFKAN PEMANTAUAN MOU ⬇️️
+    if (typeof paparPemantauanMOU === 'function') paparPemantauanMOU(kes);
+    
     // =========================================================================
     // KAWALAN PINTAR CHECKBOX PERWAKILAN DI SEMUA POP-UP (KOD BARU)
     // =========================================================================
@@ -9358,7 +9361,54 @@ function rekodSejarahTindakan(index, tindakan, butiran) {
         renderJadualSejarah(index);
     }
 }
+<!-- KAD PEMANTAUAN BAYARAN MOU -->
+<div class="card full-width" id="kad_pemantauan_mou" style="display: none;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Pemantauan Bayaran Persetujuan Bersama (MOU)</span>
+        <span id="status_mou_badge" style="font-size: 0.8em; padding: 4px 12px; border-radius: 20px; font-weight: 600;">-</span>
+    </div>
+    <div class="card-body">
+        <div class="grid-2" style="margin-bottom: 20px;">
+            <div>
+                <div class="info-label">Tarikh Persetujuan MOU</div>
+                <div class="info-value" id="mou_tarikh_papar">-</div>
+                <div class="info-label">Kaedah Bayaran</div>
+                <div class="info-value" id="mou_kaedah_papar">-</div>
+            </div>
+            <div>
+                <div class="info-label">Jumlah Dipersetujui</div>
+                <div class="info-value" id="mou_jumlah_papar" style="font-weight: bold; color: var(--primary-blue);">-</div>
+                <div class="info-label">Jumlah Dibayar di Pejabat</div>
+                <div class="info-value" id="mou_dibayar_pejabat_papar">-</div>
+            </div>
+        </div>
 
+        <!-- Jadual Ansuran Dinamik -->
+        <div id="ruangan_tabel_ansuran_pemantauan" style="display: none;">
+            <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; color: var(--primary-blue); font-size: 0.95em;">Jadual Bayaran Ansuran & Status</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
+                <thead style="background-color: var(--card-header-bg);">
+                    <tr>
+                        <th style="width: 10%; text-align: center; padding: 10px;">Bil.</th>
+                        <th style="width: 30%; padding: 10px;">Tarikh Ansuran</th>
+                        <th style="width: 30%; text-align: right; padding: 10px;">Amaun (RM)</th>
+                        <th style="width: 30%; text-align: center; padding: 10px;">Status Bayaran</th>
+                    </tr>
+                </thead>
+                <tbody id="body_pemantauan_ansuran">
+                    <!-- Disuntik melalui JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button class="btn-save btn-terapung" onclick="bukaModalKemaskiniBayaranMOU()" style="background-color: #0ea5e9; font-size: 0.85em; padding: 8px 16px;">
+                💰 Kemaskini Status Bayaran
+            </button>
+        </div>
+    </div>
+</div>
 // =========================================================
 // JANA TERUS DARI SEJARAH TINDAKAN
 // =========================================================
@@ -16135,7 +16185,61 @@ window.selesaiPemfailanLuarPreview = function() {
         if (typeof tukarView === 'function') tukarView('senarai');
     }
 };
-     
+
+       function paparPemantauanMOU(kes) {
+    const kadPemantauan = document.getElementById('kad_pemantauan_mou');
+    const dataMou = kes.dataMou; 
+
+    if (!dataMou) {
+        kadPemantauan.style.display = 'none';
+        return;
+    }
+
+    kadPemantauan.style.display = 'flex';
+    document.getElementById('mou_tarikh_papar').innerText = dataMou.tarikh || '-';
+    document.getElementById('mou_kaedah_papar').innerText = dataMou.kaedah || '-';
+    document.getElementById('mou_jumlah_papar').innerText = `RM ${Number(dataMou.jumlahKeseluruhan || 0).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+    document.getElementById('mou_dibayar_pejabat_papar').innerText = `RM ${Number(dataMou.dibayarPejabat || 0).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+
+    const badgeStatus = document.getElementById('status_mou_badge');
+    const tabelAnsuran = document.getElementById('ruangan_tabel_ansuran_pemantauan');
+
+    if (dataMou.kaedah === 'Ansuran') {
+        tabelAnsuran.style.display = 'block';
+        let tbodyAnsuran = document.getElementById('body_pemantauan_ansuran');
+        tbodyAnsuran.innerHTML = '';
+
+        let semuaLunas = true;
+        (dataMou.senaraiAnsuran || []).forEach((ins, idx) => {
+            let statusBadge = ins.status === 'Lunas' 
+                ? '<span style="color: #10b981; font-weight: 600;">Lunas</span>' 
+                : '<span style="color: #ef4444; font-weight: 600;">Belum Bayar</span>';
+            
+            if (ins.status !== 'Lunas') semuaLunas = false;
+
+            tbodyAnsuran.innerHTML += `
+                <tr>
+                    <td style="text-align: center; padding: 10px; border-bottom: 1px solid var(--border-color);">${idx + 1}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">${ins.tarikh}</td>
+                    <td style="text-align: right; padding: 10px; border-bottom: 1px solid var(--border-color);">RM ${Number(ins.amaun).toLocaleString('en-MY', { minimumFractionDigits: 2 })}</td>
+                    <td style="text-align: center; padding: 10px; border-bottom: 1px solid var(--border-color);">${statusBadge}</td>
+                </tr>
+            `;
+        });
+
+        badgeStatus.innerText = semuaLunas ? "SELESAI (LUNAS)" : "DALAM PEMANTAUAN (ANSURAN)";
+        badgeStatus.style.backgroundColor = semuaLunas ? "#d1fae5" : "#fee2e2";
+        badgeStatus.style.color = semuaLunas ? "#065f46" : "#991b1b";
+
+    } else {
+        tabelAnsuran.style.display = 'none';
+        let lunasPenuh = (parseFloat(dataMou.dibayarPejabat || 0) >= parseFloat(dataMou.jumlahKeseluruhan || 0));
+        
+        badgeStatus.innerText = lunasPenuh ? "SELESAI (PENUH)" : "DALAM PEMANTAUAN (MENUNGGU BAYARAN)";
+        badgeStatus.style.backgroundColor = lunasPenuh ? "#d1fae5" : "#fef3c7";
+        badgeStatus.style.color = lunasPenuh ? "#065f46" : "#b45309";
+    }
+}
 </script>
 
 <!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
