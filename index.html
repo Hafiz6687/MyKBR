@@ -15857,17 +15857,36 @@ function kiraSemulaRumusanMOU() {
        
 function bukaModalPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes || !kes.pemantauanMou) return;
+    if (!kes) return;
+
+    // KAWALAN DATA: Pindahkan data ansuran dari tindakanMou() ke pemantauanMou jika ia belum wujud
+    if (!kes.pemantauanMou && kes.mou && kes.mou.ansuran) {
+        kes.pemantauanMou = kes.mou.ansuran.map(a => ({
+            tarikhDue: a.tarikh,
+            amaunDue: a.amaun,
+            tarikhBayar: a.tarikhBayar || '',
+            amaunBayar: a.amaunBayar || '',
+            resit: a.catatan || '',
+            status: a.status || 'Tertunggak',
+            pengadu: 'Pukal'
+        }));
+    }
+
+    // Jika masih tiada jadual selepas disemak, paparkan amaran
+    if (!kes.pemantauanMou || kes.pemantauanMou.length === 0) {
+        alert("Tiada jadual ansuran dijumpai. Sila pastikan anda telah menjana jadual di menu MOU (Persetujuan Bersama) dan klik Jana Dokumen.");
+        return;
+    }
 
     const tbody = document.getElementById('kandungan_jadual_pemantauan');
     
-    // --- KEMASKINI: TAMBAH KOTAK PANDUAN ---
+    // MASUKKAN KOTAK PANDUAN DI SINI
     let html = `
     <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; font-size: 0.85em; color: #334155; line-height: 1.5; text-align: left;">
         <strong>Panduan Kemaskini Ansuran:</strong>
         <ul style="margin: 5px 0 0 20px; padding: 0;">
-            <li><strong>Papar Jadual Automatik:</strong> Kotak dialog ini memaparkan senarai baris tarikh matang ansuran yang telah ditetapkan (contohnya Ansuran Bulan 1, Bulan 2, dan seterusnya).</li>
-            <li><strong>Kemaskini Status Baris:</strong> Pengguna hanya perlu mengemas kini ruangan status, tarikh bayaran, atau memasukkan catatan/nombor resit pada baris ansuran yang berkaitan di dalam jadual tersebut.</li>
+            <li><strong>Papar Jadual Automatik:</strong> Kotak dialog ini memaparkan senarai baris tarikh matang ansuran yang telah ditetapkan.</li>
+            <li><strong>Kemaskini Status Baris:</strong> Pengguna hanya perlu mengemas kini ruangan status, tarikh bayaran, amaun dibayar, atau memasukkan catatan/nombor resit pada baris ansuran yang berkaitan di dalam jadual tersebut.</li>
             <li><strong>Simpan Perubahan:</strong> Selepas selesai mengemas kini maklumat pembayaran pada lajur yang disediakan, klik butang <strong>✔ Simpan Rekod</strong> di bahagian bawah untuk mengemaskini baki keseluruhan dan peratusan kemajuan bayaran secara automatik.</li>
         </ul>
     </div>`;
@@ -15887,7 +15906,6 @@ function bukaModalPemantauanMou() {
 
     const bulanMY = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"];
 
-    // Pembolehubah untuk mengira jumlah keseluruhan
     let totalAmaun = 0;
     let totalDibayar = 0;
 
@@ -15907,13 +15925,11 @@ function bukaModalPemantauanMou() {
             if(!isNaN(t.getTime())) tarikhCetak = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
         }
 
-        // Tambah ke jumlah keseluruhan (Dinaikkan ke atas supaya boleh diguna untuk logik status)
         let amaunSemasa = parseFloat(item.amaunDue) || 0;
         let dibayarSemasa = parseFloat(item.amaunBayar) || 0;
         totalAmaun += amaunSemasa;
         totalDibayar += dibayarSemasa;
 
-        // LOGIK AUTO-UPDATE STATUS KETIKA JADUAL DIBUKA
         let tarikhBayarAda = item.tarikhBayar && item.tarikhBayar.trim() !== '';
         let isPastDue = false;
         
@@ -15925,11 +15941,10 @@ function bukaModalPemantauanMou() {
             if (tHariIni > tDue) isPastDue = true;
         }
 
-        // Semak jika bayaran dipukul habis lebih awal (Grand Total >= Keseluruhan)
         if (grandTotalBayar >= grandTotalDue && grandTotalDue > 0) {
             item.status = 'Lunas';
         } else if (dibayarSemasa > 0 && tarikhBayarAda) {
-            item.status = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
+            item.status = 'Separa';
         } else if ((dibayarSemasa === 0 || !tarikhBayarAda) && isPastDue) {
             item.status = 'Tertunggak';
         }
@@ -15956,49 +15971,24 @@ function bukaModalPemantauanMou() {
 
     html += `</tbody>`;
 
-    // Pengiraan Baki dan rekaan Footer mengikut layout gambar
     let bakiTertunggak = totalAmaun - totalDibayar;
     
     html += `
         <tfoot>
             <tr style="background-color: #f8fafc;">
-                <!-- 1. Bil. -->
                 <td style="border-top: 1px solid #cbd5e1;"></td>
-                
-                <!-- 2. Tarikh Persetujuan Pembayaran -->
-                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: left; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
-                    JUMLAH:
-                </td>
-                
-                <!-- 3. Amaun (RM) -->
-                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; color: #2563eb; text-align: right; font-size: 1.05em; vertical-align: middle; white-space: nowrap;">
-                    RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}
-                </td>
-                
-                <!-- 4. Tarikh Pembayaran -->
-                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
-                    JUMLAH DIBAYAR:
-                </td>
-                
-                <!-- 5. Dibayar (RM) -->
-                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #16a34a; white-space: nowrap;">
-                    RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}
-                </td>
-                
-                <!-- 6. No. Rujukan / Resit -->
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: left; font-weight: bold; font-size: 0.95em; vertical-align: middle;">JUMLAH:</td>
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; color: #2563eb; text-align: right; font-size: 1.05em; vertical-align: middle; white-space: nowrap;">RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 0.95em; vertical-align: middle;">JUMLAH DIBAYAR:</td>
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #16a34a; white-space: nowrap;">RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
                 <td style="border-top: 1px solid #cbd5e1;"></td>
-                
-                <!-- 7. Status -->
-                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #dc2626; white-space: nowrap;">
-                    BAKI: RM ${bakiTertunggak.toLocaleString('en-MY', {minimumFractionDigits:2})}
-                </td>
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #dc2626; white-space: nowrap;">BAKI: RM ${bakiTertunggak.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
             </tr>
         </tfoot>
     </table>`;
 
     tbody.innerHTML = html;
 
-    // Warna status live update & AUTO-KIRA STATUS APABILA MENAIP (TERMASUK BAYARAN PENUH KESELURUHAN)
     const updateWarnaStatus = function(dropdown) {
         if(dropdown.value === 'Lunas') { dropdown.style.backgroundColor='#dcfce7'; dropdown.style.color='#166534'; }
         else if(dropdown.value === 'Separa') { dropdown.style.backgroundColor='#fef08a'; dropdown.style.color='#854d0e'; }
@@ -16009,7 +15999,6 @@ function bukaModalPemantauanMou() {
         let liveGrandTotalDue = 0;
         let liveGrandTotalBayar = 0;
 
-        // Langkah 1: Kira total keseluruhan dari semua input secara live
         kes.pemantauanMou.forEach((_, idx) => {
             let amaunD = parseFloat(kes.pemantauanMou[idx].amaunDue) || 0;
             let elAmaunB = document.getElementById(`pm_amaun_${idx}`);
@@ -16018,7 +16007,6 @@ function bukaModalPemantauanMou() {
             liveGrandTotalBayar += amaunB;
         });
 
-        // Langkah 2: Terapkan logik ke atas setiap baris secara serentak
         kes.pemantauanMou.forEach((item, idx) => {
             let elStatus = document.getElementById(`pm_status_${idx}`);
             let elTarikhBayar = document.getElementById(`pm_tarikh_${idx}`);
@@ -16026,7 +16014,6 @@ function bukaModalPemantauanMou() {
             
             if (!elStatus || !elTarikhBayar || !elAmaunBayar) return;
 
-            let amaunSemasa = parseFloat(item.amaunDue) || 0;
             let dibayarKini = parseFloat(elAmaunBayar.value) || 0;
             let tarikhBayarAda = elTarikhBayar.value.trim() !== '';
 
@@ -16039,16 +16026,15 @@ function bukaModalPemantauanMou() {
                 if (tHariIni > tDue) isPastDue = true;
             }
 
-            // Jika jumlah bayaran dah lepasi baki keseluruhan (Pukul habis)
             if (liveGrandTotalBayar >= liveGrandTotalDue && liveGrandTotalDue > 0) {
                 elStatus.value = 'Lunas';
             } else if (dibayarKini > 0 && tarikhBayarAda) {
-                elStatus.value = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
+                elStatus.value = 'Separa';
             } else if ((dibayarKini === 0 || !tarikhBayarAda) && isPastDue) {
                 elStatus.value = 'Tertunggak';
             }
             
-            updateWarnaStatus(elStatus); // Kemaskini warna dropdown secara live
+            updateWarnaStatus(elStatus);
         });
     };
 
