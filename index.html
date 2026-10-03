@@ -1532,6 +1532,9 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalMou()">
                             <span>🤝 MOU</span>
                         </button>
+                        <button class="btn-terapung" style="background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaPemantauanMou()">
+                            <span>📊 Pemantauan<br>Bayaran MOU</span>
+                        </button>
                         <button class="btn-terapung" style="background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPeringatanBayaran('MOU')">
                             <span>⚠️ Peringatan<br>Bayaran MOU</span>
                         </button>
@@ -14762,7 +14765,13 @@ function janaSemulaNotisLain(dataSimpanan) {
         bukaModalNotisLain();
     }
 }
-
+function bukaPemantauanMou() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+    
+    // Kod atau paparan modal untuk Pemantauan Bayaran MOU boleh diletakkan di sini
+    alert("Modul Pemantauan Bayaran MOU bagi kes " + kes.noKes + " dibuka.");
+}
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
 // =========================================================
