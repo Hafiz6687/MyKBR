@@ -16186,8 +16186,14 @@ window.selesaiPemfailanLuarPreview = function() {
     }
 };
 
-       function paparPemantauanMOU(kes) {
+// =========================================================================
+// MODUL PEMANTAUAN & KEMASKINI BAYARAN MOU
+// =========================================================================
+
+function paparPemantauanMOU(kes) {
     const kadPemantauan = document.getElementById('kad_pemantauan_mou');
+    if (!kadPemantauan) return;
+
     const dataMou = kes.dataMou; 
 
     if (!dataMou) {
@@ -16238,6 +16244,38 @@ window.selesaiPemfailanLuarPreview = function() {
         badgeStatus.innerText = lunasPenuh ? "SELESAI (PENUH)" : "DALAM PEMANTAUAN (MENUNGGU BAYARAN)";
         badgeStatus.style.backgroundColor = lunasPenuh ? "#d1fae5" : "#fef3c7";
         badgeStatus.style.color = lunasPenuh ? "#065f46" : "#b45309";
+    }
+}
+
+function bukaModalKemaskiniBayaranMOU() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes || !kes.dataMou) {
+        alert("Tiada maklumat MOU direkodkan untuk kes ini.");
+        return;
+    }
+    
+    let amaunBaru = prompt("Masukkan jumlah bayaran terkini diterima di pejabat (RM):", kes.dataMou.dibayarPejabat || "0.00");
+    if (amaunBaru !== null) {
+        kes.dataMou.dibayarPejabat = parseFloat(amaunBaru) || 0;
+        
+        // Jika kaedah ansuran, semak kemaskini status ansuran secara automatik
+        if (kes.dataMou.kaedah === 'Ansuran' && kes.dataMou.senaraiAnsuran) {
+            let bakiBayar = kes.dataMou.dibayarPejabat;
+            kes.dataMou.senaraiAnsuran.forEach(ins => {
+                let nilaiIns = parseFloat(ins.amaun) || 0;
+                if (bakiBayar >= nilaiIns) {
+                    ins.status = 'Lunas';
+                    bakiBayar -= nilaiIns;
+                } else {
+                    ins.status = 'Belum Bayar';
+                }
+            });
+        }
+
+        simpanSenaraiKeLokal();
+        paparPemantauanMOU(kes);
+        rekodSejarahTindakan(indexKesSemasa, "Kemaskini Bayaran MOU", `Jumlah bayaran dikemaskini kepada RM ${Number(kes.dataMou.dibayarPejabat).toLocaleString('en-MY', { minimumFractionDigits: 2 })}.`);
+        alert("Status bayaran MOU berjaya dikemaskini.");
     }
 }
 </script>
