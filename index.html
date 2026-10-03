@@ -3236,22 +3236,19 @@ function bukaMaklumatKes(index) {
         
         const kes = memoriSenaraiKes[index];
 
-        // =========================================================================
-        // MIGRATION & NORMALISASI DATA (PINDAH KE ATAS UNTUK KESTABILAN 100%)
-        // =========================================================================
+        // MIGRATION & NORMALISASI DATA
         if (!kes.noKes) kes.noKes = ""; 
         if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
-        if (!kes.dataBorang) kes.dataBorang = { inputs: {}, tuntutanBiasa: [], tuntutanKetua: [], tuntutanTambahan: {} };
+        if (!kes.dataBorang) kes.dataBorang = {};
+        if (!kes.dataBorang.inputs) kes.dataBorang.inputs = {};
         if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
         if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
         if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
         
-        // Rawatan Khas 1: Kes lama tiada parameter 'jenisAduan'
-        if (!kes.jenisAduan && kes.dataBorang.inputs) {
-            kes.jenisAduan = (kes.dataBorang.inputs['aduan'] === 'Berkumpulan') ? 'Berkumpulan' : 'Individu';
+        // Pulihkan parameter jenisAduan & tuntutanKetua untuk kes lama
+        if (!kes.jenisAduan && kes.dataBorang.inputs && kes.dataBorang.inputs['aduan']) {
+            kes.jenisAduan = kes.dataBorang.inputs['aduan'];
         }
-
-        // Rawatan Khas 2: Kes lama Aduan Berkumpulan guna 'tuntutanBiasa'. Kita salin ke 'tuntutanKetua'.
         if (kes.jenisAduan === 'Berkumpulan' && kes.dataBorang.tuntutanKetua.length === 0 && kes.dataBorang.tuntutanBiasa.length > 0) {
             kes.dataBorang.tuntutanKetua = [...kes.dataBorang.tuntutanBiasa];
         }
