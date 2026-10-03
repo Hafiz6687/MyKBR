@@ -13821,29 +13821,46 @@ function tindakanMou() {
         
         // Simpan ke dalam memori global untuk dibaca oleh fungsi Preview MOU
         window.tempDataMou = { 
-            // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini (cth: tarikh, jumlah, dll)
             senaraiPenerima: senaraiPenerimaMou 
         };
 
-        // --- TAMBAH KODING INI DI DALAM function tindakanMou() ---
+        // --- KEMASKINI KODING PENGIKATAN DATA (DATA-BINDING) ---
         const kes = memoriSenaraiKes[indexKesSemasa];
         if (!kes.mou) kes.mou = {};
         
-        // Tangkap data dari borang MOU
+        // Tangkap data asas dari borang MOU
         kes.mou.kaedah = document.getElementById('mk_kaedah_mou').value;
-        kes.mou.jumlahMou = document.getElementById('mk_jumlah_mou').value.replace(/,/g, ''); // Buang koma jika ada
+        kes.mou.jumlahMou = document.getElementById('mk_jumlah_mou').value.replace(/,/g, '');
         
-        // Simpan ke memori dan paksa kad pemantauan muncul
+        // Tangkap senarai jadual ansuran berdasarkan kelas input sebenar
+        kes.mou.ansuran = [];
+        const senaraiTarikh = document.querySelectorAll('#mou_senarai_ansuran .input-ansuran-tarikh');
+        const senaraiAmaun = document.querySelectorAll('#mou_senarai_ansuran .input-ansuran-amaun');
+        
+        for (let i = 0; i < senaraiTarikh.length; i++) {
+            const tarikh = senaraiTarikh[i].value;
+            const amaun = senaraiAmaun[i].value.replace(/,/g, '');
+            if (tarikh && amaun) {
+                kes.mou.ansuran.push({ 
+                    tarikh: tarikh, 
+                    amaun: amaun, 
+                    status: 'Belum Dibayar',
+                    tarikhBayar: '',
+                    catatan: ''
+                });
+            }
+        }
+        // ---------------------------------------------------------
+        
+        // Simpan ke memori/lokal dan paksa kad pemantauan muncul
         if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
         if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
-        // ---------------------------------------------------------
 
         bukaPreviewMou();
     } else {
         alert("Sila lengkapkan semua maklumat Persetujuan Bersama & Jadual Ansuran (jika ada).");
     }
 }
-
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN MOU (PERSETUJUAN BERSAMA & NOTIS)
 // =========================================================================
