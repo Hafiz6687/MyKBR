@@ -1453,9 +1453,9 @@ Portal rasmi : jtksm.mohr.gov.my
             <div class="card full-width" id="kad_kehadiran_perwakilan">
                 <div class="card-header">
                     Maklumat Kehadiran / Perwakilan (Pengadu)
-                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="bukaModalPerwakilan('pengadu')">+ Tambah Wakil / Saksi</button>
+                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="document.getElementById('body_kehadiran_pengadu').style.display='block'; bukaModalPerwakilan('pengadu');">+ Tambah Wakil / Saksi</button>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="body_kehadiran_pengadu" style="display: none;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
                         <thead style="background-color: var(--card-header-bg);">
                             <tr>
@@ -1486,9 +1486,9 @@ Portal rasmi : jtksm.mohr.gov.my
             <div class="card full-width" id="kad_kehadiran_perwakilan_defendan">
                 <div class="card-header">
                     Maklumat Kehadiran / Perwakilan (Defendan)
-                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="bukaModalPerwakilan('defendan')">+ Tambah Wakil / Saksi</button>
+                    <button class="btn-add btn-terapung" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em;" onclick="document.getElementById('body_kehadiran_defendan').style.display='block'; bukaModalPerwakilan('defendan');">+ Tambah Wakil / Saksi</button>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="body_kehadiran_defendan" style="display: none;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: 1px solid var(--border-color);">
                         <thead style="background-color: var(--card-header-bg);">
                             <tr>
@@ -2919,6 +2919,107 @@ Portal rasmi : jtksm.mohr.gov.my
         let isSelesaiDaftar = false; 
         let isEditMode = false; // Penanda untuk check jika kita sedang edit draf lama
 
+        // =========================================================================
+        // FUNGSI GLOBAL (Mesti berada di luar DOMContentLoaded supaya butang HTML berfungsi)
+        // =========================================================================
+
+        function tukarView(paparan) {
+            document.getElementById('viewSenaraiTugas').style.display = 'none';
+            document.getElementById('viewPendaftaranKes').style.display = 'none';
+            document.getElementById('viewMaklumatKes').style.display = 'none';
+
+            document.getElementById('navSenarai').classList.remove('active');
+            document.getElementById('navDaftar').classList.remove('active');
+            document.getElementById('navUrus').classList.remove('active');
+
+            if (paparan === 'senarai' || paparan === 'urus') {
+                document.getElementById('viewSenaraiTugas').style.display = 'block';
+                document.getElementById('tajukHalamanAtas').innerHTML = paparan === 'senarai' ? 'Senarai Tugasan' : 'Pengurusan Kes';
+                document.getElementById(paparan === 'senarai' ? 'navSenarai' : 'navUrus').classList.add('active');
+                if (typeof renderSenaraiTugas === 'function') renderSenaraiTugas();
+            } else if (paparan === 'daftar') {
+                document.getElementById('viewPendaftaranKes').style.display = 'block';
+                document.getElementById('tajukHalamanAtas').innerHTML = 'Pendaftaran Kes Buruh';
+                document.getElementById('navDaftar').classList.add('active');
+            }
+        }
+
+        function renderSenaraiTugas() {
+            const tbody = document.getElementById('bodySenaraiTugas');
+            if (!tbody) return;
+            tbody.innerHTML = ''; 
+
+            if (!memoriSenaraiKes || memoriSenaraiKes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Tiada kes didaftarkan setakat ini.</td></tr>';
+                return;
+            }
+
+            memoriSenaraiKes.forEach((kes, index) => {
+                let namaP = kes.namaPengadu ? kes.namaPengadu.replace(/<br>.*$/g, '') : '-';
+                let namaD = kes.namaDefendan ? kes.namaDefendan.replace(/<br>.*$/g, '') : '-';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${kes.noKes || '-'}</strong></td>
+                    <td>${namaP}</td>
+                    <td>${namaD}</td>
+                    <td>${kes.tarikh || '-'}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-edit-tbl" onclick="bukaMaklumatKes(${index})">👁️ Lihat / Urus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleAduan() {
+            const isBerkumpulan = document.getElementById('aduanBerkumpulan').checked;
+            const ruanganBilangan = document.getElementById('ruanganBilanganPengadu');
+            const kad3Ketua = document.getElementById('kad3_ketua');
+            const kad4Biasa = document.getElementById('kad4_biasa');
+
+            if (isBerkumpulan) {
+                if (ruanganBilangan) ruanganBilangan.style.display = 'grid';
+                if (kad3Ketua) kad3Ketua.style.display = 'flex';
+                if (kad4Biasa) kad4Biasa.style.display = 'none';
+            } else {
+                if (ruanganBilangan) ruanganBilangan.style.display = 'none';
+                if (kad3Ketua) kad3Ketua.style.display = 'none';
+                if (kad4Biasa) kad4Biasa.style.display = 'flex';
+            }
+        }
+
+        function bukaTab(tabId, element) {
+            document.querySelectorAll('.content-area').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).style.display = 'grid';
+            if(element) element.classList.add('active');
+        }
+
+        function pergiKeTabBorang(tabId) {
+            let tabs = document.querySelectorAll('.tab');
+            if(tabId === 'tab1') bukaTab(tabId, tabs[0]);
+            if(tabId === 'tab2') bukaTab(tabId, tabs[1]);
+            if(tabId === 'tab3') bukaTab(tabId, tabs[2]);
+            window.scrollTo(0,0);
+        }
+
+        // Fungsi Bantuan untuk halang ralat "undefined" pada modul lain
+        window.renderSemuaJadualPerwakilan = function() { console.log("Jadual Perwakilan dimuatkan."); };
+        window.renderKadPemantauan = function(kes) { console.log("Kad Pemantauan MOU dimuatkan."); };
+        window.rekodSejarahTindakan = function(index, tindakan, butiran) {
+            if(!memoriSenaraiKes[index]) return;
+            if(!memoriSenaraiKes[index].sejarahTindakan) memoriSenaraiKes[index].sejarahTindakan = [];
+            
+            let td = new Date();
+            let formatTarikh = `${td.getDate()}/${td.getMonth()+1}/${td.getFullYear()} ${String(td.getHours()).padStart(2, '0')}:${String(td.getMinutes()).padStart(2, '0')}`;
+            
+            memoriSenaraiKes[index].sejarahTindakan.push({ tarikh: formatTarikh, tindakan: tindakan, butiran: butiran });
+            renderJadualSejarah(index);
+        };
+
+        // =========================================================================
+
         document.addEventListener('DOMContentLoaded', function() {
             kemaskiniDropdownPendaftaran();
             semakWakilLengkap();
@@ -3105,15 +3206,67 @@ async function simpanSenaraiKeLokal() {
     }
 }
 function bukaMaklumatKes(index) {
-    isSelesaiDaftar = false;
-    isEditMode = true; 
-    indexKesSemasa = index;
-    
-    const kes = memoriSenaraiKes[index];
-    const isMajikan = kes.jenisAduan === 'Majikan';
-    const isBerkumpulan = kes.jenisAduan === 'Berkumpulan';
-    
-    document.getElementById('mk_header_kes').innerHTML = `Maklumat Kes (${kes.noKes})`;
+        isSelesaiDaftar = false;
+        isEditMode = true; 
+        indexKesSemasa = index;
+        
+        const kes = memoriSenaraiKes[index];
+
+        // MIGRATION & NORMALISASI DATA (PULIH SEJARAH LENGKAP & SIMPAN SEMULA)
+        if (!kes.noKes) kes.noKes = ""; 
+        
+        // 1. Pastikan dataBorang wujud dahulu
+        if (!kes.dataBorang) kes.dataBorang = {};
+        if (!kes.dataBorang.inputs) kes.dataBorang.inputs = {};
+
+        // 2. Cuba pulihkan sejarah dari pelbagai sumber legacy
+        let adaMigrasiBaru = false;
+        if (!Array.isArray(kes.sejarahTindakan) || kes.sejarahTindakan.length === 0) {
+            const sumberLegacy = [
+                kes.sejarah,
+                kes.history,
+                kes.historyTindakan,
+                kes.tindakanSejarah,
+                kes.dataBorang.sejarahTindakan,
+                kes.dataBorang.sejarah,
+                kes.dataBorang.historyTindakan
+            ];
+
+            const sejarahDitemui = sumberLegacy.find(
+                x => Array.isArray(x) && x.length > 0
+            );
+
+            if (sejarahDitemui) {
+                kes.sejarahTindakan = sejarahDitemui;
+                adaMigrasiBaru = true;
+            }
+        }
+
+        // 3. Jika langsung tiada sejarah, cipta array kosong
+        if (!Array.isArray(kes.sejarahTindakan)) {
+            kes.sejarahTindakan = [];
+        }
+
+        // 4. Simpan semula (persist) ke storan sekiranya data sejarah berjaya dipulihkan
+        if (adaMigrasiBaru && typeof simpanSenaraiKeLokal === 'function') {
+            simpanSenaraiKeLokal();
+        }
+        if (!kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+        if (!kes.dataBorang.tuntutanKetua) kes.dataBorang.tuntutanKetua = [];
+        if (!kes.dataBorang.tuntutanTambahan) kes.dataBorang.tuntutanTambahan = {};
+        
+        // Pulihkan parameter jenisAduan & tuntutanKetua untuk kes lama
+        if (!kes.jenisAduan && kes.dataBorang.inputs && kes.dataBorang.inputs['aduan']) {
+            kes.jenisAduan = kes.dataBorang.inputs['aduan'];
+        }
+        if (kes.jenisAduan === 'Berkumpulan' && kes.dataBorang.tuntutanKetua.length === 0 && kes.dataBorang.tuntutanBiasa.length > 0) {
+            kes.dataBorang.tuntutanKetua = [...kes.dataBorang.tuntutanBiasa];
+        }
+
+        const isMajikan = kes.jenisAduan === 'Majikan';
+        const isBerkumpulan = kes.jenisAduan === 'Berkumpulan';
+        
+        document.getElementById('mk_header_kes').innerHTML = `Maklumat Kes (${kes.noKes})`;
     document.getElementById('mk_tarikh_daftar').innerText = kes.tarikh;
     document.getElementById('mk_tarikh_sah').innerText = kes.tarikh; 
     document.getElementById('mk_tarikh_tugas').innerText = kes.tarikh; 
@@ -3601,8 +3754,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
 
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
-        // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
-        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
+        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pemantauan MOU:", e); }
     }
 
     // =========================================================================
@@ -3611,24 +3763,22 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     const kadSejarah = document.getElementById('kad_sejarah_tindakan');
     const menuTindakanUrus = document.getElementById('menu_tindakan_urus');
     
-    // 1. Kawal Kotak Sejarah
+    // --- KODING BARU PENGGANTI ---
+
+// 1. Koding baru untuk kad sejarah tindakan:
     if (kadSejarah) {
-        if (!isDraf) {
-            kadSejarah.style.display = 'flex';
-            
-            // FIX: Pastikan struktur data wujud untuk elak fungsi luaran crash bagi Aduan Berkumpulan
-            if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
-            if (kes.dataBorang && !kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
-            
-            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat pada sejarah tindakan:", e); }
+        // Paparkan sejarah jika ia bukan draf ATAU jika sudah mempunyai rekod sejarah tindakan
+        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
+            kadSejarah.style.display = 'block';
+            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat sejarah tindakan:", e); }
         } else {
             kadSejarah.style.display = 'none';
         }
     }
 
-    // 2. Kawal Menu Butang Tindakan Secara Berasingan
+// 2. Koding baru untuk menu tindakan urus:
     if (menuTindakanUrus) {
-        if (!isDraf) {
+        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
             menuTindakanUrus.style.display = 'flex';
         } else {
             menuTindakanUrus.style.display = 'none';
@@ -9416,145 +9566,38 @@ function janaTerusDariSejarah(kunci, tarikhHst, masaHst, pihak) {
     bukaPreviewNotisGenerik(kunci, tarikhHst, masaHst);
 }
        
-// --- FUNGSI BARU: Memaparkan rekod ke dalam jadual ---
 function renderJadualSejarah(index) {
-    try {
-        const kes = memoriSenaraiKes[index];
-        const tbody = document.getElementById('mk_body_sejarah');
-        const kadSejarah = document.getElementById('kad_sejarah_tindakan');
-        if (!tbody) return;
-
-        tbody.innerHTML = '';
-        const sejarah = kes.sejarahTindakan || [];
-
-        if (sejarah.length === 0) {
-            if (kadSejarah) kadSejarah.style.display = 'none';
-            return;
-        }
-
-        if (kadSejarah) kadSejarah.style.display = 'flex';
-
-        const sejarahTerbalik = [...sejarah].reverse();
-        
-        sejarahTerbalik.forEach((rekod, i) => {
-            const num = sejarah.length - i; 
-            const originalIndex = sejarah.length - 1 - i;
-            let btnJana = "-";
-
-            let tdk = rekod.tindakan || "";
-            let btr = rekod.butiran || "";
-            let trk = rekod.tarikhMasa || "-";
-
-            let paparanButiran = btr.replace(/ \[DATA_.*?\]/g, '');
+            const tbody = document.getElementById('mk_body_sejarah');
+            const kadSejarah = document.getElementById('kad_sejarah_tindakan');
             
-if ((tdk.includes("Notis") && !tdk.includes("Notis Custom")) || tdk.includes("Borang A (Saman) (Defendan)")) {
-                let tMatch = btr.match(/pada (.*?) jam/);
-                let mMatch = btr.match(/jam (.*?)\./);
-                let tarikhHst = tMatch ? tMatch[1] : '';
-                let masaHst = mMatch ? mMatch[1] : '';
-                
-                let kunci = '';
-                if (tdk.includes("Notis Sebutan (Pengadu)") || tdk.includes("Notis Sebutan (Defendan)")) kunci = 'sebutan';
-                else if (tdk.includes("Notis Sebutan (Tangguh)")) kunci = 'sebutan_tangguh';
-                else if (tdk.includes("Notis Sebutan (Penetapan Semula)")) kunci = 'sebutan_semula';
-                else if (tdk.includes("Borang A (Saman) (Defendan)")) kunci = 'sebutan_semula';
-                else if (tdk.includes("Notis Perbicaraan (Tangguh)")) kunci = 'bicara_tangguh';
-                else if (tdk.includes("Notis Perbicaraan (Sambung)")) kunci = 'bicara_sambung';
-                else if (tdk.includes("Notis Perbicaraan")) kunci = 'bicara';
-                else if (tdk.includes("Notis Keputusan")) kunci = 'keputusan';
-                
-                if (kunci !== '') {
-                    // Semak sama ada sejarah ini milik Defendan atau Pengadu
-                    const pihakSejarah = tdk.includes("(Defendan)") ? "defendan" : "pengadu";
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
-                    btnJana = `
-                        <div style="display: flex; gap: 5px; justify-content: center;">
-                            <button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" 
-                                onclick="janaTerusDariSejarah('${kunci}', '${tarikhHst}', '${masaHst}', '${pihakSejarah}')">
-                                📄 Jana
-                            </button>
-                            <button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" 
-                                onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">
-                                🗑️
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    // UNTUK NOTIS YANG TIDAK BOLEH DIJANA SEMULA (CTH: NOTIS CUSTOM PELBAGAI)
-                    btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-                }
-            } 
-            else if (tdk.includes("Tarik Balik Kes")) {
-                let dMatch = btr.match(/\[DATA_TARIK:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewTarikBalik(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Alamat Terkini Defendan")) {
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewAlamatTerkini()">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Peringatan Bayaran MOU")) {
-                let dMatch = btr.match(/\[DATA_PERINGATAN:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewPeringatanMOU(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Peringatan Bayaran Perintah")) {
-                let dMatch = btr.match(/\[DATA_PERINGATAN:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewPeringatanBorangC(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Perintah (Borang C)")) {
-                let dMatch = btr.match(/\[DATA_BORANGC:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewBorangC(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("MOU")) {
-                let dMatch = btr.match(/\[DATA_MOU:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewMou(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Saman (Borang A)")) {
-                let dMatch = btr.match(/\[DATA_SAMANA:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanA(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Saman (Tampal)")) {
-                let dMatch = btr.match(/\[DATA_TAMPAL:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanTampal(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Saman (Memo)")) {
-                let dMatch = btr.match(/\[DATA_MEMO:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewSamanMemo(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Batal Kes")) {
-                let dMatch = btr.match(/\[DATA_BATAL:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="bukaPreviewBatalKes(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            }
-            else if (tdk.includes("Notis Custom")) {
-                let dMatch = btr.match(/\[DATA_NOTISLAIN:(.*?)\]/);
-                let param = dMatch ? `'${dMatch[1]}'` : 'null';
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-edit-tbl" style="background-color: #0ea5e9; font-size: 0.85em; padding: 6px 12px;" onclick="janaSemulaNotisLain(${param})">📄 Jana</button><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
-            } else {
-                // SEMUA YANG TIDAK TERLIBAT DENGAN DOKUMEN CETAKAN (HAPUS SAHAJA)
-                btnJana = `<div style="display: flex; gap: 5px; justify-content: center;"><button class="btn-delete-tbl" style="font-size: 0.85em; padding: 6px 10px;" onclick="hapusSejarahTindakan(${index}, ${originalIndex})" title="Hapus Sejarah">🗑️</button></div>`;
+            const kes = memoriSenaraiKes[index];
+            
+            // Failsafe: Pastikan kad sentiasa dipaparkan melainkan ia adalah Draf
+            if (kadSejarah && kes && (!kes.noKes || !kes.noKes.includes('DRAF'))) {
+                kadSejarah.style.display = 'block';
             }
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="text-align:center; padding: 10px; border-bottom: 1px solid var(--border-color);">${num}</td>
-                <td style="padding: 10px; border-bottom: 1px solid var(--border-color); font-weight: 500;">${trk}</td>
-                <td style="padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--primary-blue); font-weight: bold;">${tdk}</td>
-                <td style="padding: 10px; border-bottom: 1px solid var(--border-color); line-height: 1.4;">${paparanButiran}</td>
-                <td style="text-align:center; padding: 10px; border-bottom: 1px solid var(--border-color);">${btnJana}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    } catch (e) {
-        console.error("Ralat dipintas:", e);
-    }
-}
+            // Paparan rekod kosong jika tiada array sejarahTindakan
+            if (!kes || !kes.sejarahTindakan || kes.sejarahTindakan.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-row" style="padding: 15px;">Tiada rekod sejarah tindakan.</td></tr>';
+                return;
+            }
+
+            kes.sejarahTindakan.forEach((rekod, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align:center; padding: 12px; border-bottom: 1px solid var(--border-color);">${i + 1}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color);">${rekod.tarikh || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color); font-weight: 600; color: var(--primary-blue);">${rekod.tindakan || '-'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid var(--border-color); line-height: 1.4;">${rekod.butiran || '-'}</td>
+                        <td style="text-align:center; padding: 12px; border-bottom: 1px solid var(--border-color);">-</td>
+                    </tr>
+                `;
+            });
+        }
 
 // --- FUNGSI BARU: Hapus Sejarah Tindakan ---
 function hapusSejarahTindakan(indexKes, indexSejarah) {
