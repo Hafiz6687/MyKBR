@@ -14798,46 +14798,29 @@ function bukaPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // 1. KESERASIAN KE BELAKANG: Semak pelbagai sumber data MOU (Data Baru, Data Lama, atau memori sementara)
+    // Ambil data MOU dari memori kes (window.tempDataMou atau dataBorang)
     let dataMou = kes.dataMou || window.tempDataMou || null;
 
-    // Jika tiada dalam struktur rasmi, cuba cari dalam Sejarah Tindakan atau data borang terdahulu
-    if (!dataMou && kes.sejarahTindakan) {
-        const jejakMou = kes.sejarahTindakan.find(s => s.tindakan && s.tindakan.includes("MOU"));
-        if (jejakMou) {
-            // Wujudkan struktur lalai berdasarkan maklumat kes jika struktur lama tidak lengkap
-            dataMou = {
-                tarikhMou: kes.tarikh || '-',
-                kaedahMou: 'Penuh', // Lalai sekiranya data tersembunyi
-                jumlahMou: 0,
-                statusBayaranPenuh: 'Belum Selesai',
-                senaraiAnsuran: []
-            };
-        }
-    }
-
     if (!dataMou) {
-        alert("Tiada rekod MOU / Persetujuan Bersama dijumpai bagi kes ini. Sila jana dokumen MOU terlebih dahulu.");
+        alert("Tiada rekod MOU / Persetujuan Bersama dijumpai bagi kes ini. Sila jana MOU terlebih dahulu.");
         return;
     }
 
-    // Simpan semula ke dalam objek kes supaya kesinambungan data terjamin untuk sesi seterusnya
-    kes.dataMou = dataMou;
-
-    // Papar maklumat ringkas pada paparan antara muka modal
-    document.getElementById('pm_tarikh_mou').innerText = dataMou.tarikhMou || '-';
-    document.getElementById('pm_kaedah_mou').innerText = dataMou.kaedahMou || 'Penuh';
+    // Ekstrak jumlah dipersetujui secara tepat daripada perjanjian bersama (MOU)
+    let jumlahMou = parseFloat(dataMou.jumlahMou || document.getElementById('mk_jumlah_mou')?.value || 0);
     
-    // Auto-hitung jumlah keseluruhan tuntutan jika jumlahMou belum disetkan dalam rekod lama
-    let jumlahMou = parseFloat(dataMou.jumlahMou || 0);
-    if (jumlahMou === 0 && kes.dataBorang && kes.dataBorang.tuntutanBiasa) {
-        kes.dataBorang.tuntutanBiasa.forEach(t => {
-            let val = parseFloat(t.jumlah);
+    // Fallback sekiranya jumlah masih 0, cuba hitung dari senarai ansuran (jika ada)
+    if (jumlahMou === 0 && dataMou.senaraiAnsuran && dataMou.senaraiAnsuran.length > 0) {
+        dataMou.senaraiAnsuran.forEach(a => {
+            let val = parseFloat(a.amaun || 0);
             if (!isNaN(val)) jumlahMou += val;
         });
         dataMou.jumlahMou = jumlahMou;
     }
 
+    // Papar maklumat ringkas
+    document.getElementById('pm_tarikh_mou').innerText = dataMou.tarikhMou || '-';
+    document.getElementById('pm_kaedah_mou').innerText = dataMou.kaedahMou || '-';
     document.getElementById('pm_jumlah_mou').innerText = `RM ${jumlahMou.toFixed(2)}`;
 
     const bekasDinamik = document.getElementById('pm_kandungan_dinamik');
@@ -14846,7 +14829,7 @@ function bukaPemantauanMou() {
     // ==========================================
     // KES 1: KAEDAH BAYARAN PENUH
     // ==========================================
-    if (dataMou.kaedahMou === 'Penuh' || !dataMou.kaedahMou) {
+    if (dataMou.kaedahMou === 'Penuh') {
         const isSelesai = dataMou.statusBayaranPenuh === 'Selesai';
         const baki = isSelesai ? 0 : jumlahMou;
         document.getElementById('pm_baki_mou').innerText = `RM ${baki.toFixed(2)}`;
@@ -14919,7 +14902,7 @@ function bukaPemantauanMou() {
         }
     }
 
-    // Paparkan modal pop-up pemantauan
+    // Tampilkan modal pemantauan
     document.getElementById('modalPemantauanMou').style.display = 'flex';
 }
 
