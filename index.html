@@ -2961,45 +2961,10 @@ Portal rasmi : jtksm.mohr.gov.my
             document.getElementById('kad2').addEventListener('focusin', semakTutupSelesaiHari);
             document.getElementById('kad3_ketua')?.addEventListener('focusin', tutupMaklumatPerkhidmatanDalaman);
             
-            const namaDisimpan = localStorage.getItem('eLC_namaProfil');
-            if (namaDisimpan) {
-                document.getElementById('namaProfilEdit').innerHTML = namaDisimpan;
-            }
+            // Panggil fungsi muat turun profil dari awan secara automatik
+            muatkanProfilDariAwan();
 
-            const gambarDisimpan = localStorage.getItem('eLC_gambarProfil');
-            const posDisimpan = localStorage.getItem('eLC_gambarPos');
-            const scaleDisimpan = localStorage.getItem('eLC_gambarScale');
-            
-            if (scaleDisimpan) {
-                currentScale = parseFloat(scaleDisimpan);
-            }
-
-            if (gambarDisimpan) {
-                document.getElementById('ikonKamera').style.display = 'none';
-                const img = document.getElementById('gambarProfil');
-                img.style.display = 'block';
-                img.src = gambarDisimpan;
-                img.style.cursor = 'grab';
-
-                img.onload = function() {
-                    if (this.naturalHeight > this.naturalWidth) {
-                        this.style.width = '100%';
-                        this.style.height = 'auto';
-                    } else {
-                        this.style.width = 'auto';
-                        this.style.height = '100%';
-                    }
-
-if (posDisimpan) {
-                    const pos = JSON.parse(posDisimpan);
-                    currentPosX = pos.x;
-                    currentPosY = pos.y;
-                }
-                updateTransform();
-            };
-        } // <--- penutup if (gambarDisimpan)
-
-        // --- KEMASKINI: Tarik data dari Local Storage supaya tak hilang bila refresh ---
+// --- KEMASKINI: Tarik data dari Local Storage supaya tak hilang bila refresh ---
 // Fungsi untuk menarik data dari awan Firestore
     async function muatkanDataAwal() {
         try {
@@ -3039,7 +3004,87 @@ if (posDisimpan) {
         tukarView('senarai'); 
 
     }); // <--- INI ADALAH PENUTUP DOMContentLoaded
+// =========================================================================
+// FUNGSI AWAN UNTUK GAMBAR DAN NAMA PROFIL (FIRESTORE)
+// =========================================================================
 
+async function muatkanProfilDariAwan() {
+    try {
+        const docSnap = await window.getDocs(window.collection(window.db, "data_pengguna"));
+        
+        let dataProfil = null;
+        docSnap.forEach((docItem) => {
+            if (docItem.id === "profil_hafiz_abubakar") {
+                dataProfil = docItem.data();
+            }
+        });
+
+        // Tetapkan nilai lalai dari local storage jika ada
+        let namaDisimpan = localStorage.getItem('eLC_namaProfil');
+        let gambarDisimpan = localStorage.getItem('eLC_gambarProfil');
+        let posDisimpan = localStorage.getItem('eLC_gambarPos');
+        let scaleDisimpan = localStorage.getItem('eLC_gambarScale');
+
+        // Gantikan dengan data awan jika wujud
+        if (dataProfil) {
+            if (dataProfil.nama) { namaDisimpan = dataProfil.nama; localStorage.setItem('eLC_namaProfil', dataProfil.nama); }
+            if (dataProfil.gambar) { gambarDisimpan = dataProfil.gambar; localStorage.setItem('eLC_gambarProfil', dataProfil.gambar); }
+            if (dataProfil.pos) { posDisimpan = dataProfil.pos; localStorage.setItem('eLC_gambarPos', dataProfil.pos); }
+            if (dataProfil.scale) { scaleDisimpan = dataProfil.scale; localStorage.setItem('eLC_gambarScale', dataProfil.scale); }
+        }
+
+        // --- Logik Paparan Profil Asal ---
+        if (namaDisimpan) {
+            document.getElementById('namaProfilEdit').innerHTML = namaDisimpan;
+        }
+        
+        if (scaleDisimpan && typeof currentScale !== 'undefined') {
+            currentScale = parseFloat(scaleDisimpan);
+        }
+
+        if (gambarDisimpan) {
+            document.getElementById('ikonKamera').style.display = 'none';
+            const img = document.getElementById('gambarProfil');
+            img.style.display = 'block';
+            img.src = gambarDisimpan;
+            img.style.cursor = 'grab';
+
+            img.onload = function() {
+                if (this.naturalHeight > this.naturalWidth) {
+                    this.style.width = '100%';
+                    this.style.height = 'auto';
+                } else {
+                    this.style.width = 'auto';
+                    this.style.height = '100%';
+                }
+
+                if (posDisimpan && typeof currentPosX !== 'undefined' && typeof currentPosY !== 'undefined') {
+                    const pos = JSON.parse(posDisimpan);
+                    currentPosX = pos.x;
+                    currentPosY = pos.y;
+                }
+                if (typeof updateTransform === 'function') updateTransform();
+            };
+        }
+    } catch (error) {
+        console.error("Gagal memuat turun profil dari awan:", error);
+    }
+}
+
+async function simpanProfilKeAwan() {
+    try {
+        const docRef = window.doc(window.db, "data_pengguna", "profil_hafiz_abubakar");
+        await window.setDoc(docRef, {
+            nama: localStorage.getItem('eLC_namaProfil') || "",
+            gambar: localStorage.getItem('eLC_gambarProfil') || "",
+            pos: localStorage.getItem('eLC_gambarPos') || "",
+            scale: localStorage.getItem('eLC_gambarScale') || "",
+            kemaskiniTerakhir: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("Ralat menyimpan profil ke awan:", error);
+    }
+}
 // --- FUNGSI BARU: Simpan senarai kes ke dalam memori browser (Local Storage) ---
 async function simpanSenaraiKeLokal() {
     try {
@@ -5957,23 +6002,30 @@ function kemaskiniDropdownPendaftaran() {
                 updateTransform();
             });
 
-            window.addEventListener('mouseup', function() {
-                if (isDraggingProfil) {
-                    isDraggingProfil = false;
-                    imgProfile.style.cursor = 'grab';
-                    localStorage.setItem('eLC_gambarPos', JSON.stringify({x: currentPosX, y: currentPosY}));
-                }
-            });
+window.addEventListener('mouseup', function() {
+    if (isDraggingProfil) {
+        isDraggingProfil = false;
+        imgProfile.style.cursor = 'grab';
+        localStorage.setItem('eLC_gambarPos', JSON.stringify({x: currentPosX, y: currentPosY}));
+        
+        // MASUKKAN PENCETUS AWAN DI SINI (Apabila klik dilepaskan)
+        simpanProfilKeAwan();
+    }
+});
 
-            bekasProfil.addEventListener('wheel', function(e) {
-                if (imgProfile.style.display === 'none') return;
-                e.preventDefault(); 
-                if(e.deltaY < 0) { currentScale += 0.2; } else { currentScale -= 0.2; }
-                currentScale = Math.min(Math.max(currentScale, 1.0), 5.0); 
-                updateTransform();
-                localStorage.setItem('eLC_gambarScale', currentScale.toString());
-                localStorage.setItem('eLC_gambarPos', JSON.stringify({x: currentPosX, y: currentPosY}));
-            }, { passive: false });
+bekasProfil.addEventListener('wheel', function(e) {
+    if (imgProfile.style.display === 'none') return;
+    e.preventDefault(); 
+    if(e.deltaY < 0) { currentScale += 0.2; } else { currentScale -= 0.2; }
+    currentScale = Math.min(Math.max(currentScale, 1.0), 5.0); 
+    updateTransform();
+    localStorage.setItem('eLC_gambarScale', currentScale.toString());
+    localStorage.setItem('eLC_gambarPos', JSON.stringify({x: currentPosX, y: currentPosY}));
+    
+    // MASUKKAN PENCETUS AWAN DI SINI
+    simpanProfilKeAwan();
+    
+}, { passive: false });
 
             imgProfile.addEventListener('dblclick', function() { inputProfil.click(); });
         }
@@ -5998,6 +6050,10 @@ function kemaskiniDropdownPendaftaran() {
                             localStorage.setItem('eLC_gambarProfil', base64Data);
                             localStorage.setItem('eLC_gambarScale', currentScale.toString());
                             localStorage.setItem('eLC_gambarPos', JSON.stringify({x: 0, y: 0}));
+                            
+                            // MASUKKAN PENCETUS AWAN DI SINI
+                            simpanProfilKeAwan();
+                            
                         } catch (err) { 
                             console.warn("Gambar terlalu besar.");
                             alert("⚠️ AMARAN: Saiz gambar terlalu besar. Sistem hanya boleh memaparkannya sementara, tetapi ia akan HILANG apabila halaman di-refresh. Sila gunakan gambar yang bersaiz lebih kecil (bawah 1MB).");
