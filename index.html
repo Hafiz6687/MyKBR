@@ -3587,17 +3587,22 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     if (document.getElementById('mk_negeri_memo')) {
         document.getElementById('mk_negeri_memo').value = ''; document.getElementById('mk_negeri_memo').placeholder = 'Lengkapkan Poskod'; document.getElementById('mk_negeri_memo').setAttribute('readonly', true);
     }
+    
+    // PEMBETULAN: Simbol '}' yang berlebihan telah dibuang di hujung baris ini
     if (typeof semakButangSamanMemo === 'function') semakButangSamanMemo();
+    
     if (document.getElementById('kad_saman_memo')) document.getElementById('kad_saman_memo').style.display = 'none';
     if (document.getElementById('tempatHadirBerbeza_memo')) {
         document.getElementById('tempatHadirBerbeza_memo').checked = false;
         if (typeof toggleTempatHadirMemo === 'function') toggleTempatHadirMemo();
     }
+    
     const isDraf = kes.noKes.includes('DRAF');
 
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
-        renderKadPemantauan(kes);
+        // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
+        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
     }
 
     // =========================================================================
@@ -3606,24 +3611,29 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     const kadSejarah = document.getElementById('kad_sejarah_tindakan');
     const menuTindakanUrus = document.getElementById('menu_tindakan_urus');
     
-// 1. Kawal Kotak Sejarah
-if (kadSejarah) {
-    if (!isDraf) {
-        kadSejarah.style.display = 'flex';
-        try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error(e); }
-    } else {
-        kadSejarah.style.display = 'none';
+    // 1. Kawal Kotak Sejarah
+    if (kadSejarah) {
+        if (!isDraf) {
+            kadSejarah.style.display = 'flex';
+            
+            // FIX: Pastikan struktur data wujud untuk elak fungsi luaran crash bagi Aduan Berkumpulan
+            if (!kes.sejarahTindakan) kes.sejarahTindakan = [];
+            if (kes.dataBorang && !kes.dataBorang.tuntutanBiasa) kes.dataBorang.tuntutanBiasa = [];
+            
+            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat pada sejarah tindakan:", e); }
+        } else {
+            kadSejarah.style.display = 'none';
+        }
     }
-}
 
-// 2. Kawal Menu Butang Tindakan Secara Berasingan
-if (menuTindakanUrus) {
-    if (!isDraf) {
-        menuTindakanUrus.style.display = 'flex';
-    } else {
-        menuTindakanUrus.style.display = 'none';
+    // 2. Kawal Menu Butang Tindakan Secara Berasingan
+    if (menuTindakanUrus) {
+        if (!isDraf) {
+            menuTindakanUrus.style.display = 'flex';
+        } else {
+            menuTindakanUrus.style.display = 'none';
+        }
     }
-}
     
     const btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
     if (btnKemaskiniPendaftaran) {
@@ -3665,7 +3675,7 @@ if (menuTindakanUrus) {
     document.getElementById('tajukHalamanAtas').innerHTML = 'Maklumat Kes Terperinci';
     document.getElementById('butangCetakHeader').style.display = 'none'; 
 
-// Render senarai perwakilan/kehadiran jika ada
+    // Render senarai perwakilan/kehadiran jika ada
     if (typeof renderSemuaJadualPerwakilan === 'function') renderSemuaJadualPerwakilan();
 
     // =========================================================================
