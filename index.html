@@ -5596,6 +5596,12 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     `;
 
     if (peguamPengaduHTML !== '') {
+        // Tapis perkataan 'anak guam' khas untuk Kesatuan (Pengadu)
+        let isiAkhirWakilPengadu = isiPeguamPengadu || isiPengadu;
+        if (labelWakilPengadu.includes('Kesatuan')) {
+            isiAkhirWakilPengadu = isiAkhirWakilPengadu.replace(/anak guam/gi, 'pihak yang tuan wakili');
+        }
+
         suratPengaduLengkap += `
         <div class="kertas-notis">
             ${templateHeaderHTML}
@@ -5605,7 +5611,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 <div style="margin-bottom: 15px;">Tuan,</div>
                 ${tajukPengadu}
                 <hr class="notis-garis-tajuk">
-                ${isiPeguamPengadu || isiPengadu}
+                ${isiAkhirWakilPengadu}
                 ${templateFooterHTML}
             </div>
         </div>
@@ -5620,12 +5626,21 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         </div>
         `;
         if (peguamDefendanHTML !== '') {
+            // Tapis perkataan 'anak guam' khas untuk Kesatuan (Defendan)
+            let isiAkhirWakilDefendan = isiPeguamDefendan || isiDefendan;
+            let labelSalinanDefendan = "*Salinan untuk Peguamcara Defendan:";
+            
+            if (labelWakilDefendan.includes('Kesatuan')) {
+                isiAkhirWakilDefendan = isiAkhirWakilDefendan.replace(/anak guam/gi, 'pihak yang tuan wakili');
+                labelSalinanDefendan = "*Salinan untuk Kesatuan bagi Defendan:";
+            }
+
             suratDefendanLengkap += `
             <div class="kertas-notis" id="kertasNotisPeguamDefendan">
                 <div style="text-align: left; font-weight: bold; font-size: 9pt; margin-bottom: 15px; font-style: italic; color: #475569;">
-                    *Salinan untuk Peguamcara Defendan:<br><span style="text-transform: uppercase;">${peguamDefendanHTML}</span>
+                    ${labelSalinanDefendan}<br><span style="text-transform: uppercase;">${peguamDefendanHTML}</span>
                 </div>
-                ${isiPeguamDefendan || isiDefendan}
+                ${isiAkhirWakilDefendan}
             </div>
             `;
         }
@@ -5646,6 +5661,12 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         `;
 
         if (peguamDefendanHTML !== '') {
+            // Tapis perkataan 'anak guam' khas untuk Kesatuan (Defendan)
+            let isiAkhirWakilDefendan = isiPeguamDefendan || isiDefendan;
+            if (labelWakilDefendan.includes('Kesatuan')) {
+                isiAkhirWakilDefendan = isiAkhirWakilDefendan.replace(/anak guam/gi, 'pihak yang tuan wakili');
+            }
+
             suratDefendanLengkap += `
             <div class="kertas-notis">
                 ${templateHeaderHTML}
@@ -5655,7 +5676,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                     <div style="margin-bottom: 15px;">Tuan,</div>
                     ${tajukDefendan}
                     <hr class="notis-garis-tajuk">
-                    ${isiPeguamDefendan || isiDefendan}${templateFooterHTML}
+                    ${isiAkhirWakilDefendan}${templateFooterHTML}
                 </div>
             </div>
             `;
