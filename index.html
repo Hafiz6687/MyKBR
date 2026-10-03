@@ -14794,10 +14794,6 @@ function janaSemulaNotisLain(dataSimpanan) {
 // KODING BARU: PEMANTAUAN BAYARAN MOU (DINAMIK BERDASARKAN SEJARAH TERKINI)
 // =========================================================================
 
-// =========================================================================
-// KODING BARU: EKSTRAK KAEDAH BAYARAN MOU TEPAT DARI SEJARAH TINDAKAN
-// =========================================================================
-
 function bukaPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) {
@@ -14805,22 +14801,22 @@ function bukaPemantauanMou() {
         return;
     }
 
-    // 1. Cari rekod MOU TERKINI di dalam Sejarah Tindakan secara menyeluruh
+    // 1. Cari rekod MOU TERKINI di dalam Sejarah Tindakan
     let mouTerkini = null;
     if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
+        // Gelung dari belakang untuk mendapatkan rekod MOU paling baharu
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             const st = kes.sejarahTindakan[i];
             if (st.tindakan && (st.tindakan.includes("MOU") || st.tindakan.includes("Persetujuan Bersama"))) {
-                // Gabungkan semakan kepada semua kemungkinan struktur penyimpanan data MOU
-                mouTerkini = st.dataMou || st.data || st; 
-                if (mouTerkini) break;
+                mouTerkini = st.dataMou || st; // Ambil objek data MOU
+                break;
             }
         }
     }
 
-    // Fallback sekiranya tiada dalam sejarah tindakan
-    if (!mouTerkini) {
-        mouTerkini = window.tempDataMou || kes.dataMou || null;
+    // Fallback: Jika tiada di sejarah tindakan, semak window.tempDataMou
+    if (!mouTerkini && window.tempDataMou) {
+        mouTerkini = window.tempDataMou;
     }
 
     if (!mouTerkini) {
@@ -14828,22 +14824,10 @@ function bukaPemantauanMou() {
         return;
     }
 
-    // 2. Ekstrak Maklumat Utama MOU Terkini (Menyokong pelbagai variasi kunci data)
-    const tarikhMou = mouTerkini.tarikhMou || mouTerkini.tarikh || kes.tarikh || "-";
-    
-    // PEMBETULAN UTAMA: Memastikan ekstraksi kaedah bayaran mengambil nilai penuh / ansuran dengan tepat
-    const kaedahRaw = mouTerkini.kaedahBayaran || mouTerkini.kaedahMou || mouTerkini.kaedah || mouTerkini.pilihanKaedah || "Penuh";
-    const kaedahBayaran = (typeof kaedahRaw === 'string' && kaedahRaw.toLowerCase().includes('ansuran')) ? 'Ansuran' : 'Penuh';
-    
-    // Auto-hitung jumlah keseluruhan tuntutan sekiranya jumlahMou kosong
-    let jumlahDipersetujui = parseFloat(mouTerkini.jumlahMou || mouTerkini.jumlah || mouTerkini.jumlahDipersetujui || 0);
-    if (jumlahDipersetujui === 0 && kes.dataBorang && kes.dataBorang.tuntutanBiasa) {
-        kes.dataBorang.tuntutanBiasa.forEach(t => {
-            let val = parseFloat(t.jumlah);
-            if (!isNaN(val)) jumlahDipersetujui += val;
-        });
-    }
-
+    // 2. Ekstrak Maklumat Utama MOU Terkini
+    const tarikhMou = mouTerkini.tarikhMou || mouTerkini.tarikh || "-";
+    const kaedahBayaran = mouTerkini.kaedahBayaran || mouTerkini.kaedah || "Penuh";
+    const jumlahDipersetujui = parseFloat(mouTerkini.jumlahMou || mouTerkini.jumlah || 0) || 0;
     const dibayarDiPejabat = parseFloat(mouTerkini.dibayarPejabat || mouTerkini.dibayarDiPejabat || 0) || 0;
 
     // Pulihkan rekod bayaran pemantauan lepas jika pernah disimpan
@@ -14901,6 +14885,7 @@ function bukaPemantauanMou() {
             jadualAnsuran.forEach((ans, idx) => {
                 const amaunPersetujuan = parseFloat(ans.amaun || ans.jumlah || 0) || 0;
                 
+                // Cari status tersimpan dari pemantauan lepas jika ada
                 const rekodLama = rekodBayaranLepas[idx] || {};
                 const statusLama = rekodLama.status || "Belum Bayar";
                 const amaunDibayarLama = rekodLama.amaunDibayar !== undefined ? parseFloat(rekodLama.amaunDibayar) : (statusLama === "Selesai" ? amaunPersetujuan : 0);
@@ -14960,6 +14945,7 @@ function bukaPemantauanMou() {
     // Paparkan Modal
     document.getElementById('modalPemantauanMou').style.display = 'flex';
 }
+
 // =========================================================================
 // FUNGSI BANTUAN: Kira Baki Tertunggak Dinamik
 // =========================================================================
