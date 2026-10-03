@@ -13577,6 +13577,16 @@ function semakButangMou() {
 
 function tindakanMou() {
     if (!document.getElementById('btnTindakanMou').disabled) {
+        // Baca checkbox penerima notis MOU yang ditanda
+        const penerimaNodeMou = document.querySelectorAll('input[name="mou_penerima"]:checked');
+        let senaraiPenerimaMou = Array.from(penerimaNodeMou).map(cb => cb.value);
+        
+        // Simpan ke dalam memori global untuk dibaca oleh fungsi Preview MOU
+        window.tempDataMou = { 
+            // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini (cth: tarikh, jumlah, dll)
+            senaraiPenerima: senaraiPenerimaMou 
+        };
+
         bukaPreviewMou();
     } else {
         alert("Sila lengkapkan semua maklumat Persetujuan Bersama & Jadual Ansuran (jika ada).");
@@ -14076,20 +14086,51 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
     const templateFooterHTML = `<div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div><div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div><div class="notis-sign" style="margin-bottom: 60px;">Saya yang menjalankan amanah,</div><div class="gambar-sign" style="position: absolute; z-index: 2; pointer-events: none; margin-top: -85px;"><img src="tandatangan.png" alt="Tandatangan" style="height: 110px; width: auto; mix-blend-mode: multiply; display: block;"></div><div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1;">${namaPegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span></div><div class="notis-footer-line"></div>`;
     
+    // Dapatkan data checkbox yang ditanda dari memori
+    let senaraiPenerimaMou = (window.tempDataMou && window.tempDataMou.senaraiPenerima) ? window.tempDataMou.senaraiPenerima : [];
+
     // EKSTRAK MAKLUMAT PEGUAM UNTUK S.K.
     let peguamPengaduHTML = '';
+    let labelWakilPengadu = '(Peguamcara bagi Pengadu)';
+
     if (kes.senaraiPerwakilan) {
-        const peguamP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
-        if (peguamP) {
-            peguamPengaduHTML = `${peguamP.firma.toUpperCase()}<br>${peguamP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        let wakilP = null;
+        
+        // Syarat Ketat: Tarik peguam HANYA JIKA dicentang
+        if (senaraiPenerimaMou.includes('Peguam Pengadu')) {
+            wakilP = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+            labelWakilPengadu = '(Peguamcara bagi Pengadu)';
+        }
+        // Syarat Ketat: Tarik kesatuan HANYA JIKA dicentang
+        if (!wakilP && senaraiPenerimaMou.includes('Wakil Kesatuan Pengadu')) {
+            wakilP = kes.senaraiPerwakilan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            labelWakilPengadu = '(Kesatuan bagi Pengadu)';
+        }
+        
+        if (wakilP) {
+            peguamPengaduHTML = `${wakilP.firma.toUpperCase()}<br>${wakilP.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
         }
     }
 
     let peguamDefendanHTML = '';
+    let labelWakilDefendan = '(Peguamcara bagi Defendan)';
+
     if (kes.senaraiPerwakilanDefendan) {
-        const peguamD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
-        if (peguamD) {
-            peguamDefendanHTML = `${peguamD.firma.toUpperCase()}<br>${peguamD.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
+        let wakilD = null;
+        
+        // Syarat Ketat: Tarik peguam HANYA JIKA dicentang
+        if (senaraiPenerimaMou.includes('Peguam Defendan')) {
+            wakilD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
+            labelWakilDefendan = '(Peguamcara bagi Defendan)';
+        }
+        // Syarat Ketat: Tarik kesatuan HANYA JIKA dicentang
+        if (!wakilD && senaraiPenerimaMou.includes('Wakil Kesatuan Defendan')) {
+            wakilD = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            labelWakilDefendan = '(Kesatuan bagi Defendan)';
+        }
+        
+        if (wakilD) {
+            peguamDefendanHTML = `${wakilD.firma.toUpperCase()}<br>${wakilD.alamat.toUpperCase().replace(/,\s*/g, '<br>')}`;
         }
     }
 
@@ -14102,7 +14143,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                         <td style="vertical-align: top; width: 40px; border: none; padding: 0;">s.k:</td>
                         <td style="vertical-align: top; border: none; padding: 0; text-transform: uppercase;">
                             <strong>${peguamPengaduHTML}</strong><br>
-                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">(Peguamcara bagi Pengadu)</span>
+                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">${labelWakilPengadu}</span>
                         </td>
                     </tr>
                 </table>
@@ -14119,7 +14160,7 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                         <td style="vertical-align: top; width: 40px; border: none; padding: 0;">s.k:</td>
                         <td style="vertical-align: top; border: none; padding: 0; text-transform: uppercase;">
                             <strong>${peguamDefendanHTML}</strong><br>
-                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">(Peguamcara bagi Defendan)</span>
+                            <span style="font-size: 0.9em; font-style: italic; font-weight: bold; text-transform: none;">${labelWakilDefendan}</span>
                         </td>
                     </tr>
                 </table>
