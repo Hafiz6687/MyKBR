@@ -3618,9 +3618,6 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         }
     }
     // --- KOD PEMBETULAN TAMAT ---
-        // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
-        try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
-    }
 
     // =========================================================================
     // KAWALAN PAPARAN SEJARAH & MENU TINDAKAN PENGURUSAN
@@ -9608,7 +9605,7 @@ function hapusSejarahTindakan(indexKes, indexSejarah) {
         }
     }
 }
-       // --- FUNGSI BARU: Kawalan Dropdown Modal Tarik Balik ---
+// --- FUNGSI BARU: Kawalan Dropdown Modal Tarik Balik ---
 function kawalJenisPendWakilTarikBalik() {
     const jenis = document.getElementById('tb_jenisPendWakil').value;
     const ruangan = document.getElementById('ruangan_tb_idWakil');
