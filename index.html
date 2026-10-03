@@ -3483,12 +3483,70 @@ if (menuTindakanUrus) {
 
     document.getElementById('tajukHalamanAtas').innerHTML = 'Maklumat Kes Terperinci';
     document.getElementById('butangCetakHeader').style.display = 'none'; 
-    // Render senarai perwakilan/kehadiran jika ada
+
+// Render senarai perwakilan/kehadiran jika ada
     if (typeof renderSemuaJadualPerwakilan === 'function') renderSemuaJadualPerwakilan();
+
+    // =========================================================================
+    // KAWALAN PINTAR CHECKBOX PERWAKILAN DI SEMUA POP-UP (KOD BARU)
+    // =========================================================================
+    function kawalCheckboxPenerimaNotis() {
+        const kes = memoriSenaraiKes[indexKesSemasa];
+        if (!kes) return;
+
+        let adaPeguamPengadu = false;
+        let adaKesatuanPengadu = false;
+        let adaPeguamDefendan = false;
+        let adaKesatuanDefendan = false;
+
+        // Semak Perwakilan Pengadu
+        if (kes.senaraiPerwakilan) {
+            adaPeguamPengadu = kes.senaraiPerwakilan.some(p => p.kategori === 'Peguam');
+            adaKesatuanPengadu = kes.senaraiPerwakilan.some(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+        }
+
+        // Semak Perwakilan Defendan
+        if (kes.senaraiPerwakilanDefendan) {
+            adaPeguamDefendan = kes.senaraiPerwakilanDefendan.some(p => p.kategori === 'Peguam');
+            adaKesatuanDefendan = kes.senaraiPerwakilanDefendan.some(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+        }
+
+        // Fungsi bantuan untuk disable/enable checkbox
+        function kemaskiniCheckbox(nilai, adaMaklumat) {
+            document.querySelectorAll('input[type="checkbox"][value="' + nilai + '"]').forEach(cb => {
+                cb.disabled = !adaMaklumat;
+                if (!adaMaklumat) cb.checked = false; // Buang tick jika tiada maklumat wakil
+                
+                // Gayakan label supaya nampak kelabu jika tidak aktif
+                const label = cb.closest('label');
+                if (label) {
+                    label.style.opacity = adaMaklumat ? '1' : '0.4';
+                    label.style.cursor = adaMaklumat ? 'pointer' : 'not-allowed';
+                }
+            });
+        }
+
+        // Terapkan kepada semua jenis checkbox di dalam keseluruhan pop-up serentak
+        kemaskiniCheckbox('Peguam Pengadu', adaPeguamPengadu);
+        kemaskiniCheckbox('Wakil Kesatuan Pengadu', adaKesatuanPengadu);
+        kemaskiniCheckbox('Peguam Defendan', adaPeguamDefendan);
+        kemaskiniCheckbox('Wakil Kesatuan Defendan', adaKesatuanDefendan);
+    }
+    
+    // Jalankan semakan apabila kes dibuka
+    kawalCheckboxPenerimaNotis();
+
+    // Pantau jadual perwakilan secara automatik (Jika user tambah wakil baru, checkbox terus jadi aktif tanpa perlu refresh)
+    const pemerhatiWakil = new MutationObserver(kawalCheckboxPenerimaNotis);
+    const tbodyPengadu = document.getElementById('mk_body_perwakilan');
+    const tbodyDefendan = document.getElementById('mk_body_perwakilan_defendan');
+    if (tbodyPengadu) pemerhatiWakil.observe(tbodyPengadu, { childList: true, subtree: true });
+    if (tbodyDefendan) pemerhatiWakil.observe(tbodyDefendan, { childList: true, subtree: true });
 
     // =========================================================================
     // KAWALAN PINTAR KAD PENETAPAN TARIKH SEBUTAN KES
     // =========================================================================
+    
     // Sembunyikan kad secara lalai jika kes sudah ada tarikh sebutan atau ada sejarah Notis/Saman
     let adaSebutanSaman = false;
     
@@ -11947,6 +12005,21 @@ function formatMyKadWakil(inputElement) {
 
 // 2. Buka modal dan set tajuk mengikut pihak
 function bukaModalPerwakilan(pihak) {
+    // =========================================================================
+    // KOD BARU: KAWALAN PAPARAN DROPDOWN KATEGORI WAKIL (PENGADU / DEFENDAN)
+    // =========================================================================
+    const optPengadu = document.querySelector('#pw_kategori option[value="Wakil Pengadu"]');
+    const optDefendan = document.querySelector('#pw_kategori option[value="Wakil Defendan"]');
+    
+    if (optPengadu && optDefendan) {
+        if (pihak === 'pengadu') {
+            optPengadu.style.display = 'block';
+            optDefendan.style.display = 'none';
+        } else if (pihak === 'defendan') {
+            optPengadu.style.display = 'none';
+            optDefendan.style.display = 'block';
+        }
+    }
     pihakPerwakilanSemasa = pihak;
     document.getElementById('pw_index').value = "-1"; 
     const modalTitle = pihak === 'pengadu' ? 'Tambah Maklumat Wakil / Saksi (Pengadu)' : 'Tambah Maklumat Wakil / Saksi (Defendan)';
