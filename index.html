@@ -15860,7 +15860,19 @@ function bukaModalPemantauanMou() {
     if (!kes || !kes.pemantauanMou) return;
 
     const tbody = document.getElementById('kandungan_jadual_pemantauan');
-    let html = `<table style="width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: left;">
+    
+    // --- KEMASKINI: TAMBAH KOTAK PANDUAN ---
+    let html = `
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; font-size: 0.85em; color: #334155; line-height: 1.5; text-align: left;">
+        <strong>Panduan Kemaskini Ansuran:</strong>
+        <ul style="margin: 5px 0 0 20px; padding: 0;">
+            <li><strong>Papar Jadual Automatik:</strong> Kotak dialog ini memaparkan senarai baris tarikh matang ansuran yang telah ditetapkan (contohnya Ansuran Bulan 1, Bulan 2, dan seterusnya).</li>
+            <li><strong>Kemaskini Status Baris:</strong> Pengguna hanya perlu mengemas kini ruangan status, tarikh bayaran, atau memasukkan catatan/nombor resit pada baris ansuran yang berkaitan di dalam jadual tersebut.</li>
+            <li><strong>Simpan Perubahan:</strong> Selepas selesai mengemas kini maklumat pembayaran pada lajur yang disediakan, klik butang <strong>✔ Simpan Rekod</strong> di bahagian bawah untuk mengemaskini baki keseluruhan dan peratusan kemajuan bayaran secara automatik.</li>
+        </ul>
+    </div>`;
+
+    html += `<table style="width: 100%; border-collapse: collapse; font-size: 0.85em; text-align: left;">
         <thead style="background-color: var(--card-header-bg); position: sticky; top: 0; z-index: 1;">
             <tr>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">Bil.</th>
@@ -15924,8 +15936,6 @@ function bukaModalPemantauanMou() {
 
         let bgStatus = item.status === 'Lunas' ? '#dcfce7' : (item.status === 'Separa' ? '#fef08a' : '#fee2e2');
         let clStatus = item.status === 'Lunas' ? '#166534' : (item.status === 'Separa' ? '#854d0e' : '#991b1b');
-           
-        // (BLOK PENDUA YANG MENYEBABKAN RALAT TELAH DIPADAM DI SINI)
 
         html += `<tr>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: center;">${index+1}</td>
