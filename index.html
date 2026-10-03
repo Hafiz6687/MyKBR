@@ -747,7 +747,32 @@
             </div>
         </div>
     </div>
-    
+    <!-- MODAL POP-UP KHAS UNTUK PEMANTAUAN BAYARAN MOU -->
+<div class="modal-overlay" id="modalPemantauanMou">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Pemantauan Bayaran MOU</div>
+        
+        <!-- MAKLUMAT RINGKAS MOU -->
+        <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                <div><strong>Tarikh MOU:</strong> <span id="pm_tarikh_mou">-</span></div>
+                <div><strong>Kaedah Bayaran:</strong> <span id="pm_kaedah_mou">-</span></div>
+                <div><strong>Jumlah Dipersetujui:</strong> <span id="pm_jumlah_mou" style="color: var(--primary-blue); font-weight: bold;">RM 0.00</span></div>
+                <div><strong>Baki Tertunggak:</strong> <span id="pm_baki_mou" style="color: var(--danger); font-weight: bold;">RM 0.00</span></div>
+            </div>
+        </div>
+
+        <!-- BEKAS KANDUNGAN DINAMIK (DIBINA OLEH JAVASCRIPT) -->
+        <div id="pm_kandungan_dinamik">
+            <!-- Isi kandungan bayaran penuh / ansuran akan dijana di sini -->
+        </div>
+
+        <div class="modal-actions" style="margin-top: 20px;">
+            <button class="btn-cancel" onclick="document.getElementById('modalPemantauanMou').style.display='none'">Tutup</button>
+            <button class="btn-save" onclick="simpanPemantauanMou()">✔ Simpan Rekod Bayaran</button>
+        </div>
+    </div>
+</div>
     <!-- MODAL POP-UP KHAS UNTUK PERINGATAN BAYARAN -->
     <div class="modal-overlay" id="modalPeringatanBayaran">
         <div class="modal-box">
@@ -14765,12 +14790,165 @@ function janaSemulaNotisLain(dataSimpanan) {
         bukaModalNotisLain();
     }
 }
+// =========================================================================
+// MODUL PEMANTAUAN BAYARAN MOU
+// =========================================================================
+
 function bukaPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
+
+    // Ambil data MOU dari memori kes (window.tempDataMou atau dataBorang)
+    const dataMou = kes.dataMou || window.tempDataMou || null;
+
+    if (!dataMou) {
+        alert("Tiada rekod MOU / Persetujuan Bersama dijumpai bagi kes ini. Sila jana MOU terlebih dahulu.");
+        return;
+    }
+
+    // Papar maklumat ringkas
+    document.getElementById('pm_tarikh_mou').innerText = dataMou.tarikhMou || '-';
+    document.getElementById('pm_kaedah_mou').innerText = dataMou.kaedahMou || '-';
     
-    // Kod atau paparan modal untuk Pemantauan Bayaran MOU boleh diletakkan di sini
-    alert("Modul Pemantauan Bayaran MOU bagi kes " + kes.noKes + " dibuka.");
+    const jumlahMou = parseFloat(dataMou.jumlahMou || 0);
+    document.getElementById('pm_jumlah_mou').innerText = `RM ${jumlahMou.toFixed(2)}`;
+
+    const bekasDinamik = document.getElementById('pm_kandungan_dinamik');
+    bekasDinamik.innerHTML = '';
+
+    // ==========================================
+    // KES 1: KAEDAH BAYARAN PENUH
+    // ==========================================
+    if (dataMou.kaedahMou === 'Penuh') {
+        const isSelesai = dataMou.statusBayaranPenuh === 'Selesai';
+        const baki = isSelesai ? 0 : jumlahMou;
+        document.getElementById('pm_baki_mou').innerText = `RM ${baki.toFixed(2)}`;
+
+        bekasDinamik.innerHTML = `
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <h5 style="margin-top:0; color:var(--primary-blue); margin-bottom: 12px;">Status Bayaran Penuh</h5>
+                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                    <label style="text-align: left;">Status Penerimaan Bayaran</label>
+                    <select id="pm_status_penuh" onchange="kemaskiniBakiPenuh(${jumlahMou})">
+                        <option value="Belum Selesai" ${!isSelesai ? 'selected' : ''}>⏳ Belum Dibayar / Dalam Proses</option>
+                        <option value="Selesai" ${isSelesai ? 'selected' : ''}>✅ Bayaran Penuh Telah Diterima</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
+                    <label style="text-align: left;">Catatan / No. Resit</label>
+                    <input type="text" id="pm_catatan_penuh" value="${dataMou.catatanPenuh || ''}" placeholder="Cth: Dibayar melalui Cek / Pindahan Bank No. Ref: 123456">
+                </div>
+            </div>
+        `;
+    } 
+    // ==========================================
+    // KES 2: KAEDAH BAYARAN ANSURAN
+    // ==========================================
+    else if (dataMou.kaedahMou === 'Ansuran') {
+        const senaraiAnsuran = dataMou.senaraiAnsuran || [];
+
+        if (senaraiAnsuran.length === 0) {
+            bekasDinamik.innerHTML = `<p style="color:var(--danger); text-align:center;">Tiada jadual ansuran dijumpai dalam rekod MOU.</p>`;
+            document.getElementById('pm_baki_mou').innerText = `RM ${jumlahMou.toFixed(2)}`;
+        } else {
+            let htmlJadual = `
+                <h5 style="margin-top:0; color:var(--primary-blue); margin-bottom: 10px;">Jadual & Rekod Pembayaran Ansuran</h5>
+                <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                        <thead style="background: var(--card-header-bg); sticky; top: 0;">
+                            <tr>
+                                <th style="padding: 8px; text-align: center;">Bil.</th>
+                                <th style="padding: 8px;">Tarikh Patut Bayar</th>
+                                <th style="padding: 8px; text-align: right;">Amaun (RM)</th>
+                                <th style="padding: 8px; text-align: center;">Status Bayaran</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let totalDibayar = 0;
+
+            senaraiAnsuran.forEach((ans, idx) => {
+                const isPaid = ans.status === 'Selesai';
+                if (isPaid) totalDibayar += parseFloat(ans.amaun || 0);
+
+                htmlJadual += `
+                    <tr>
+                        <td style="padding: 8px; text-align: center;">${idx + 1}</td>
+                        <td style="padding: 8px;">${ans.tarikh || '-'}</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 600;">RM ${parseFloat(ans.amaun || 0).toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: center;">
+                            <input type="checkbox" class="chk-ansuran" id="ans_chk_${idx}" ${isPaid ? 'checked' : ''} onchange="kiraBakiAnsuran(${jumlahMou})">
+                            <label for="ans_chk_${idx}">${isPaid ? ' ✅ Lunas' : ' ⏳ Belum'}</label>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            htmlJadual += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            bekasDinamik.innerHTML = htmlJadual;
+            kiraBakiAnsuran(jumlahMou);
+        }
+    }
+
+    // Tampilkan modal
+    document.getElementById('modalPemantauanMou').style.display = 'flex';
+}
+
+// Fungsi Pengira Baki Bayaran Penuh
+function kemaskiniBakiPenuh(jumlahTotal) {
+    const st = document.getElementById('pm_status_penuh').value;
+    const baki = (st === 'Selesai') ? 0 : jumlahTotal;
+    document.getElementById('pm_baki_mou').innerText = `RM ${baki.toFixed(2)}`;
+}
+
+// Fungsi Pengira Baki Bayaran Ansuran
+function kiraBakiAnsuran(jumlahTotal) {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    const dataMou = kes.dataMou || window.tempDataMou;
+    if (!dataMou || !dataMou.senaraiAnsuran) return;
+
+    let totalDibayar = 0;
+    dataMou.senaraiAnsuran.forEach((ans, idx) => {
+        const chk = document.getElementById(`ans_chk_${idx}`);
+        if (chk && chk.checked) {
+            totalDibayar += parseFloat(ans.amaun || 0);
+        }
+    });
+
+    const baki = jumlahTotal - totalDibayar;
+    document.getElementById('pm_baki_mou').innerText = `RM ${Math.max(0, baki).toFixed(2)}`;
+}
+
+// Fungsi Simpan Rekod Pemantauan
+function simpanPemantauanMou() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    if (!kes.dataMou) kes.dataMou = window.tempDataMou || {};
+    const kaedah = kes.dataMou.kaedahMou;
+
+    if (kaedah === 'Penuh') {
+        kes.dataMou.statusBayaranPenuh = document.getElementById('pm_status_penuh').value;
+        kes.dataMou.catatanPenuh = document.getElementById('pm_catatan_penuh').value;
+    } else if (kaedah === 'Ansuran' && kes.dataMou.senaraiAnsuran) {
+        kes.dataMou.senaraiAnsuran.forEach((ans, idx) => {
+            const chk = document.getElementById(`ans_chk_${idx}`);
+            if (chk) {
+                ans.status = chk.checked ? 'Selesai' : 'Belum Selesai';
+            }
+        });
+    }
+
+    // Simpan ke memori & kemaskini
+    simpanSenaraiKeLokal();
+    alert("Rekod Pemantauan Bayaran MOU telah berjaya dikemaskini.");
+    document.getElementById('modalPemantauanMou').style.display = 'none';
 }
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
