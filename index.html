@@ -747,10 +747,10 @@
             </div>
         </div>
     </div>
-    <!-- MODAL POP-UP KHAS UNTUK PEMANTAUAN BAYARAN MOU -->
+    <!-- MODAL POP-UP KHAS UNTUK PEMANTAUAN BAYARAN (BERSEPADU) -->
     <div class="modal-overlay" id="modalPemantauanMou">
         <div class="modal-box" style="max-width: 800px;">
-            <div class="modal-title">Kemaskini Rekod Bayaran Ansuran MOU</div>
+            <div class="modal-title" id="tajuk_modal_pemantauan">Kemaskini Rekod Bayaran</div>
             <div id="kandungan_jadual_pemantauan" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
                 <!-- Jadual akan dijana di sini -->
             </div>
@@ -1506,9 +1506,9 @@ Portal rasmi : jtksm.mohr.gov.my
                     </table>
                 </div>
             </div>
-            <!-- BAHAGIAN 3.4: Pemantauan Bayaran MOU -->
+            <!-- BAHAGIAN 3.4: Pemantauan Bayaran (Bersepadu) -->
             <div class="card full-width" id="kad_pemantauan_mou" style="display: none;">
-                <div class="card-header">Pemantauan Bayaran Ansuran (MOU)</div>
+                <div class="card-header" id="tajuk_kad_pemantauan">Pemantauan Bayaran</div>
                 <div class="card-body" id="body_pemantauan_mou">
                     <!-- Progress bar and summary will be injected here -->
                 </div>
@@ -1553,7 +1553,7 @@ Portal rasmi : jtksm.mohr.gov.my
                             <span>🤝 MOU</span>
                         </button>
                         <button class="btn-terapung" id="btn_menu_pemantauan_mou" style="display: none; background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPemantauanMou()">
-                            <span>💰 Rekod Bayaran<br>MOU</span>
+                            <span id="teks_btn_pemantauan">💰 Rekod Bayaran</span>
                         </button>
                         <button class="btn-terapung" style="background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPeringatanBayaran('MOU')">
                             <span>⚠️ Peringatan<br>Bayaran MOU</span>
@@ -12666,6 +12666,7 @@ function semakButangBorangC() {
         btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed';
     }
 }
+
 function tindakanBorangC() {
     if (!document.getElementById('btnTindakanBorangC').disabled) {
         
@@ -12675,6 +12676,19 @@ function tindakanBorangC() {
         
         // Simpan senarai penerima ke memori global untuk ditarik oleh enjin preview Borang C
         window.tempDataBorangC = { senaraiPenerima: senaraiPenerimaBC };
+
+        // --- TAMBAH KODING INI DI DALAM function tindakanBorangC() ---
+        const kes = memoriSenaraiKes[indexKesSemasa];
+        if (!kes.borangC) kes.borangC = {};
+        
+        // Tangkap data dari Borang C
+        kes.borangC.jenisPerintah = document.getElementById('bc_jenis_perintah').value;
+        kes.borangC.jumlahPerintah = document.getElementById('bc_jumlah_perintah').value.replace(/,/g, ''); 
+        
+        // Simpan ke memori dan paksa kad pemantauan muncul
+        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
+        // -------------------------------------------------------------
 
         bukaPreviewBorangC();
     }
@@ -13642,6 +13656,19 @@ function tindakanMou() {
             // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini (cth: tarikh, jumlah, dll)
             senaraiPenerima: senaraiPenerimaMou 
         };
+
+        // --- TAMBAH KODING INI DI DALAM function tindakanMou() ---
+        const kes = memoriSenaraiKes[indexKesSemasa];
+        if (!kes.mou) kes.mou = {};
+        
+        // Tangkap data dari borang MOU
+        kes.mou.kaedah = document.getElementById('mk_kaedah_mou').value;
+        kes.mou.jumlahMou = document.getElementById('mk_jumlah_mou').value.replace(/,/g, ''); // Buang koma jika ada
+        
+        // Simpan ke memori dan paksa kad pemantauan muncul
+        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
+        // ---------------------------------------------------------
 
         bukaPreviewMou();
     } else {
@@ -15860,6 +15887,329 @@ function simpanPemantauanMou() {
     renderKadPemantauan(kes);
     document.getElementById('modalPemantauanMou').style.display = 'none';
 }
+
+// =========================================================================
+// MODUL PEMANTAUAN BAYARAN BERSEPADU (MOU ANSURAN, MOU PENUH, BORANG C)
+// =========================================================================
+
+function semakJenisPemantauan(kes) {
+    if (!kes.pemantauan) kes.pemantauan = {};
+    
+    let aktif = false;
+    let jenis = '';
+    let jumlah = 0;
+    let tajuk = 'Pemantauan Bayaran';
+    
+    // Cek jika ada Borang C (Perintah Bayar)
+    if (kes.borangC && kes.borangC.jenisPerintah === 'Bayar') {
+        aktif = true;
+        jenis = 'borang_c';
+        jumlah = parseFloat(kes.borangC.jumlahPerintah) || 0;
+        tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+    } 
+    // Cek jika ada MOU
+    else if (kes.mou && kes.mou.jumlahMou) {
+        aktif = true;
+        jumlah = parseFloat(kes.mou.jumlahMou) || 0;
+        if (kes.mou.kaedah === 'Ansuran') {
+            jenis = 'ansuran';
+            tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+        } else {
+            jenis = 'penuh';
+            tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+        }
+    }
+    
+    return { aktif, jenis, jumlah, tajuk };
+}
+
+window.renderKadPemantauan = function(kes) {
+    const info = semakJenisPemantauan(kes);
+    const kad = document.getElementById('kad_pemantauan_mou');
+    const btnMenu = document.getElementById('btn_menu_pemantauan_mou');
+    
+    if (!info.aktif) {
+        if(kad) kad.style.display = 'none';
+        if(btnMenu) btnMenu.style.display = 'none';
+        return;
+    }
+
+    // Paparkan Kad dan Butang
+    if(kad) kad.style.display = 'block';
+    if(btnMenu) btnMenu.style.display = 'flex';
+    
+    // Kemaskini Tajuk
+    document.getElementById('tajuk_kad_pemantauan').innerText = info.tajuk;
+    let teksBtn = info.jenis === 'borang_c' ? '💰 Rekod Bayaran<br>Borang C' : '💰 Rekod Bayaran<br>MOU';
+    document.getElementById('teks_btn_pemantauan').innerHTML = teksBtn;
+
+    // Kira jumlah dibayar
+    let jumlahDibayar = 0;
+    let rekodBayaran = kes.pemantauan.rekod || [];
+    
+    if (info.jenis === 'ansuran') {
+        rekodBayaran.forEach(r => {
+            if (r.status === 'Telah Dibayar') jumlahDibayar += parseFloat(r.amaun || 0);
+        });
+    } else {
+        rekodBayaran.forEach(r => {
+            jumlahDibayar += parseFloat(r.amaun || 0);
+        });
+    }
+
+    let baki = info.jumlah - jumlahDibayar;
+    if (baki < 0) baki = 0;
+    let peratus = info.jumlah > 0 ? Math.min((jumlahDibayar / info.jumlah) * 100, 100) : 0;
+    
+    let warnaBar = peratus === 100 ? '#10b981' : 'var(--primary-blue)';
+
+    let html = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; font-size: 0.9em;">
+            <span>Kemajuan Bayaran</span>
+            <span>${peratus.toFixed(1)}%</span>
+        </div>
+        <div style="width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 20px;">
+            <div style="width: ${peratus}%; background-color: ${warnaBar}; height: 100%; transition: width 0.5s ease;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; font-size: 0.9em;">
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 4px;">Jumlah Keseluruhan</div>
+                <div style="font-weight: bold; font-size: 1.1em; color: var(--text-main);">RM ${info.jumlah.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+            </div>
+            <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0;">
+                <div style="color: #166534; font-size: 0.85em; margin-bottom: 4px;">Telah Dibayar</div>
+                <div style="font-weight: bold; font-size: 1.1em; color: #15803d;">RM ${jumlahDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+            </div>
+            <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                <div style="color: #991b1b; font-size: 0.85em; margin-bottom: 4px;">Baki Semasa</div>
+                <div style="font-weight: bold; font-size: 1.1em; color: #b91c1c;">RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+            </div>
+        </div>
+    `;
+    document.getElementById('body_pemantauan_mou').innerHTML = html;
+};
+
+window.bukaModalPemantauanMou = function() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+    
+    const info = semakJenisPemantauan(kes);
+    document.getElementById('tajuk_modal_pemantauan').innerText = "Kemaskini " + info.tajuk;
+    
+    let htmlJadual = '';
+    
+    if (info.jenis === 'ansuran') {
+        let senaraiAnsuran = kes.mou.senaraiAnsuran || [];
+        let rekodPemantauan = kes.pemantauan.rekod || [];
+        
+        if (rekodPemantauan.length === 0 && senaraiAnsuran.length > 0) {
+            rekodPemantauan = senaraiAnsuran.map(a => ({
+                tarikhMestiBayar: a.tarikh,
+                amaun: a.amaun,
+                status: 'Belum Dibayar',
+                tarikhDibayar: '',
+                resit: ''
+            }));
+        }
+        
+        htmlJadual = `
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                <thead style="background-color: var(--card-header-bg);">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Bil.</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh (Matang)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Amaun (RM)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Status</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Dibayar</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Catatan / Resit</th>
+                    </tr>
+                </thead>
+                <tbody id="body_jadual_pemantauan_ansuran">
+        `;
+        
+        rekodPemantauan.forEach((rekod, i) => {
+            let warnaStatus = rekod.status === 'Telah Dibayar' ? 'color: #10b981;' : 'color: #ef4444;';
+            htmlJadual += `
+                <tr class="baris-ansuran">
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">${i+1}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">${rekod.tarikhMestiBayar}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color); font-weight: bold;">
+                        <input type="hidden" class="inp-amaun" value="${rekod.amaun}">${parseFloat(rekod.amaun).toLocaleString('en-MY', {minimumFractionDigits:2})}
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                        <select class="inp-status" style="padding: 4px; font-size: 0.9em; ${warnaStatus} font-weight: bold;" onchange="this.style.color = this.value === 'Telah Dibayar' ? '#10b981' : '#ef4444';">
+                            <option value="Belum Dibayar" ${rekod.status === 'Belum Dibayar' ? 'selected' : ''}>Belum Dibayar</option>
+                            <option value="Telah Dibayar" ${rekod.status === 'Telah Dibayar' ? 'selected' : ''}>Telah Dibayar</option>
+                        </select>
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                        <input type="date" class="inp-tarikh-bayar" value="${rekod.tarikhDibayar}" style="padding: 4px; width: 100%;">
+                    </td>
+                    <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                        <input type="text" class="inp-resit" placeholder="No. Resit" value="${rekod.resit}" style="padding: 4px; width: 100%;">
+                    </td>
+                </tr>
+            `;
+        });
+        htmlJadual += `</tbody></table>`;
+        
+    } else {
+        // Render Jadual Ad-hoc (MOU Penuh / Borang C)
+        let rekodPemantauan = kes.pemantauan.rekod || [];
+        
+        htmlJadual = `
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                <div style="font-size: 0.9em; font-weight: 600;">Rekod Bayaran (Ad-hoc)</div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                <thead style="background-color: var(--card-header-bg);">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 25%;">Tarikh Bayaran</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 30%;">Amaun Dibayar (RM)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 30%;">Catatan / Resit</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 10%; text-align: center;">Hapus</th>
+                    </tr>
+                </thead>
+                <tbody id="body_jadual_pemantauan_adhoc">
+        `;
+        
+        if (rekodPemantauan.length === 0) {
+            htmlJadual += `<tr id="baris_kosong_adhoc"><td colspan="5" class="empty-row" style="padding: 15px;">Tiada rekod bayaran dimasukkan.</td></tr>`;
+        } else {
+            rekodPemantauan.forEach((rekod, i) => {
+                htmlJadual += janaBarisAdhocHTML(i, rekod);
+            });
+        }
+        htmlJadual += `</tbody></table>`;
+    }
+    
+    document.getElementById('kandungan_jadual_pemantauan').innerHTML = htmlJadual;
+    document.getElementById('modalPemantauanMou').style.display = 'flex';
+};
+
+window.janaBarisAdhocHTML = function(index, rekod = {tarikhDibayar: '', amaun: '', resit: ''}) {
+    return `
+        <tr class="baris-adhoc">
+            <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-adhoc">${index + 1}</td>
+            <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                <input type="date" class="inp-tarikh-bayar" value="${rekod.tarikhDibayar}" style="padding: 6px; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                <input type="number" class="inp-amaun" placeholder="Contoh: 1500" value="${rekod.amaun}" style="padding: 6px; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                <input type="text" class="inp-resit" placeholder="No. Resit / Nota" value="${rekod.resit}" style="padding: 6px; width: 100%; box-sizing: border-box;">
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">
+                <button class="btn-delete-tbl" onclick="hapusBarisAdhoc(this)">🗑️</button>
+            </td>
+        </tr>
+    `;
+};
+
+window.tambahBarisBayaranAdhoc = function() {
+    const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
+    const barisKosong = document.getElementById('baris_kosong_adhoc');
+    if (barisKosong) barisKosong.remove();
+    
+    const currentCount = tbody.querySelectorAll('.baris-adhoc').length;
+    tbody.insertAdjacentHTML('beforeend', janaBarisAdhocHTML(currentCount));
+    kemaskiniBilanganAdhoc();
+};
+
+window.hapusBarisAdhoc = function(btn) {
+    btn.closest('tr').remove();
+    kemaskiniBilanganAdhoc();
+    const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
+    if (tbody.querySelectorAll('.baris-adhoc').length === 0) {
+        tbody.innerHTML = `<tr id="baris_kosong_adhoc"><td colspan="5" class="empty-row" style="padding: 15px;">Tiada rekod bayaran dimasukkan.</td></tr>`;
+    }
+};
+
+window.kemaskiniBilanganAdhoc = function() {
+    const baris = document.querySelectorAll('.baris-adhoc .bil-adhoc');
+    baris.forEach((td, i) => { td.innerText = i + 1; });
+};
+
+window.simpanPemantauanMou = function() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+    const info = semakJenisPemantauan(kes);
+    
+    let rekodBaru = [];
+    let jumlahDibayarLama = 0;
+    
+    if (kes.pemantauan && kes.pemantauan.rekod) {
+        kes.pemantauan.rekod.forEach(r => {
+            if(info.jenis === 'ansuran' && r.status !== 'Telah Dibayar') return;
+            jumlahDibayarLama += parseFloat(r.amaun || 0);
+        });
+    }
+    
+    let jumlahDibayarBaru = 0;
+
+    if (info.jenis === 'ansuran') {
+        const baris = document.querySelectorAll('.baris-ansuran');
+        baris.forEach(tr => {
+            let amaun = tr.querySelector('.inp-amaun').value;
+            let status = tr.querySelector('.inp-status').value;
+            let tarikhDibayar = tr.querySelector('.inp-tarikh-bayar').value;
+            let resit = tr.querySelector('.inp-resit').value;
+            let tMatang = tr.cells[1].innerText;
+            
+            if (status === 'Telah Dibayar') jumlahDibayarBaru += parseFloat(amaun);
+
+            rekodBaru.push({ tarikhMestiBayar: tMatang, amaun: amaun, status: status, tarikhDibayar: tarikhDibayar, resit: resit });
+        });
+    } else {
+        const baris = document.querySelectorAll('.baris-adhoc');
+        baris.forEach(tr => {
+            let tarikhDibayar = tr.querySelector('.inp-tarikh-bayar').value;
+            let amaun = tr.querySelector('.inp-amaun').value;
+            let resit = tr.querySelector('.inp-resit').value;
+            
+            if (amaun && parseFloat(amaun) > 0) {
+                jumlahDibayarBaru += parseFloat(amaun);
+                rekodBaru.push({ tarikhDibayar: tarikhDibayar, amaun: amaun, resit: resit });
+            }
+        });
+    }
+
+    if (!kes.pemantauan) kes.pemantauan = {};
+    kes.pemantauan.rekod = rekodBaru;
+    
+    if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+    
+    document.getElementById('modalPemantauanMou').style.display = 'none';
+    renderKadPemantauan(kes); 
+    
+    // Check Auto-Selesai Fail Kes
+    let baki = info.jumlah - jumlahDibayarBaru;
+    if (baki <= 0 && jumlahDibayarLama < info.jumlah) {
+        setTimeout(() => {
+            if (confirm("PENGESAHAN: Baki bayaran telah diselesaikan sepenuhnya (RM 0.00). Adakah anda ingin menutup fail kes ini secara rasmi?")) {
+                selesaiPemfailanLuarPreview();
+            } else {
+                alert("Rekod disimpan. Fail kes dikekalkan aktif.");
+            }
+        }, 500);
+    } else {
+        alert("Rekod bayaran berjaya dikemaskini.");
+    }
+};
+
+window.selesaiPemfailanLuarPreview = function() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (kes) {
+        kes.status = "Selesai";
+        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        alert(`Kes ${kes.noKes.replace(/<br>/g, '')} telah berjaya diselesaikan dan ditutup.`);
+        if (typeof tukarView === 'function') tukarView('senarai');
+    }
+};
+     
 </script>
 
 <!-- Muatkan Firebase SDK melalui CDN (Hanya Firestore) -->
