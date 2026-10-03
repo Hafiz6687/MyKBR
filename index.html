@@ -3599,8 +3599,25 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     
     const isDraf = kes.noKes.includes('DRAF');
 
+    // --- KOD PEMBETULAN MULA ---
+    // Pastikan butang dan kad pemantauan disembunyikan secara lalai (default)
+    if (document.getElementById('btn_menu_pemantauan_mou')) {
+        document.getElementById('btn_menu_pemantauan_mou').style.display = 'none';
+    }
+    if (document.getElementById('kad_pemantauan_mou')) {
+        document.getElementById('kad_pemantauan_mou').style.display = 'none';
+    }
+
     // KAWALAN KAD PEMANTAUAN MOU
     if (typeof renderKadPemantauan === 'function') {
+        try { 
+            // Kad hanya akan dipaparkan oleh fungsi ini jika memori MOU masih wujud
+            renderKadPemantauan(kes); 
+        } catch(e) { 
+            console.error("Ralat pada pemantauan MOU:", e); 
+        }
+    }
+    // --- KOD PEMBETULAN TAMAT ---
         // FIX: Letakkan try-catch supaya jika ia ralat, ia tidak menghentikan paparan Sejarah Tindakan
         try { renderKadPemantauan(kes); } catch(e) { console.error("Ralat pada pemantauan MOU:", e); }
     }
@@ -9560,11 +9577,32 @@ if ((tdk.includes("Notis") && !tdk.includes("Notis Custom")) || tdk.includes("Bo
 function hapusSejarahTindakan(indexKes, indexSejarah) {
     if (confirm("Adakah anda pasti mahu memadam rekod sejarah tindakan ini?")) {
         const kes = memoriSenaraiKes[indexKes];
+        
+        // 1. Kenal pasti apa yang sedang dihapus sebelum ia dibuang
+        let tindakanDihapus = "";
+        if (kes && kes.sejarahTindakan && kes.sejarahTindakan[indexSejarah]) {
+            tindakanDihapus = kes.sejarahTindakan[indexSejarah].tindakan || "";
+        }
+
         if (kes && kes.sejarahTindakan) {
-            // Buang 1 item pada index yang spesifik
+            // 2. Buang 1 item pada index yang spesifik
             kes.sejarahTindakan.splice(indexSejarah, 1);
             
-            // Simpan perubahan ke memori dan paparkan semula jadual
+            // 3. KOD PEMBERSIHAN MEMORI MOU JIKA YANG DIHAPUS ADALAH MOU
+            if (tindakanDihapus.includes("MOU") || tindakanDihapus.includes("Persetujuan")) {
+                delete kes.mou;
+                delete kes.pemantauanMou;
+                
+                // Hilangkan butang dan kad pemantauan dari skrin secara langsung
+                if (document.getElementById('btn_menu_pemantauan_mou')) {
+                    document.getElementById('btn_menu_pemantauan_mou').style.display = 'none';
+                }
+                if (document.getElementById('kad_pemantauan_mou')) {
+                    document.getElementById('kad_pemantauan_mou').style.display = 'none';
+                }
+            }
+            
+            // 4. Simpan perubahan ke memori dan paparkan semula jadual
             simpanSenaraiKeLokal();
             renderJadualSejarah(indexKes);
         }
