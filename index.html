@@ -14563,20 +14563,34 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // ENJIN EKSTRAK DATA MOU DARI SEJARAH TINDAKAN
+    // ENJIN EKSTRAK DATA MOU DARI SEJARAH TINDAKAN & MEMORI (KALIS-GAGAL)
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
-    let jumRM = "RM 0.00";
+    let jumRMRaw = 0;
 
-    const rekodMOU = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
-    if (rekodMOU && rekodMOU.butiran) {
-        let dMatch = rekodMOU.butiran.match(/\[DATA_MOU:(.*?)\]/);
+    // 1. Tarik Tarikh dari teks Sejarah Tindakan 
+    const rekodMOUAsal = (kes.sejarahTindakan || []).slice().reverse().find(s => s.tindakan && s.tindakan.includes("MOU"));
+    if (rekodMOUAsal && rekodMOUAsal.tarikhMasa) {
+        let tParts = rekodMOUAsal.tarikhMasa.split('|')[0].trim().split('/');
+        if (tParts.length === 3) {
+            tarikhDD = tParts[0];
+            tarikhMMYYYY = `${bulanMY[parseInt(tParts[1])-1]} ${tParts[2]}`;
+        }
+    }
+
+    // 2. Baca dari Input Borang (jika ada)
+    let kaedahMOU = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['mk_kaedah_mou'] : "Penuh";
+    let inputAmuan = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['mk_jumlah_mou'] : "0";
+    jumRMRaw = parseFloat((inputAmuan || "0").toString().replace(/,/g, '')) || 0;
+
+    // 3. Ekstrak data tersembunyi (Base64)
+    const rekodMOUBase64 = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
+    if (rekodMOUBase64 && rekodMOUBase64.butiran) {
+        let dMatch = rekodMOUBase64.butiran.match(/\[DATA_MOU:(.*?)\]/);
         if (dMatch && dMatch[1]) {
             try {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoData.jumlah) {
-                    let jumPersetujuanFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPersetujuanFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                }
+                if (memoData.jumlah) jumRMRaw = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
+                if (memoData.kaedah) kaedahMOU = memoData.kaedah;
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
                     if (!isNaN(t.getTime())) {
@@ -14584,7 +14598,67 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                         tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
                     }
                 }
-            } catch(e) { console.error("Ralat extract MOU:", e); }
+            } catch(e) {}
+        }
+    }
+
+    // 4. Bina teks lalai (Keseluruhan)
+    let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+    let teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
+
+    // 5. PENYEDUT BAKI ANSURAN (KALIS-GAGAL)
+    let adaTunggakanDikesan = false; // PEMBETULAN: Isytihar pembolehubah ini
+    
+    // Curi baca terus dari kotak 'Baki Tertunggak' yang wujud di skrin profil sistem
+    const teksSkrin = document.body.innerText;
+    const perlawananBaki = teksSkrin.match(/Baki Tertunggak:\s*RM\s*([\d,]+\.\d{2})/i);
+    
+    if (perlawananBaki && perlawananBaki[1]) {
+        // Jika teks Baki Tertunggak wujud di skrin, terus override teks surat
+        let bakiSemasa = parseFloat(perlawananBaki[1].replace(/,/g, ''));
+        if (bakiSemasa > 0 && bakiSemasa < jumRMRaw) {
+            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBaki[1]}</strong>`;
+            adaTunggakanDikesan = true; // Tandakan dah jumpa
+        }
+    } else if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
+        // Sandaran: Jika skrin gagal dibaca, kira dari memori jadual
+        let telahDibayar = 0;
+        kes.rekodPemantauanMou.forEach(r => {
+            if (r.status === "Telah Bayar" || r.status === "Selesai") {
+                telahDibayar += parseFloat((r.amaun || "0").toString().replace(/,/g, ''));
+            }
+        });
+        let baki = jumRMRaw - telahDibayar;
+        if (baki > 0 && baki < jumRMRaw) {
+            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
+            adaTunggakanDikesan = true; // Tandakan dah jumpa
+        }
+    }
+
+    // Langkah 5B: Jika jadual kosong (sebab refresh), paksa cari dari teks Sejarah Tindakan
+    if (!adaTunggakanDikesan && kes.sejarahTindakan) {
+        // Cari rekod terakhir dalam sejarah yang menyebut 'baki', 'tunggakan', atau 'ansuran' beserta nilai RM
+        const rekodTunggakanSejarah = kes.sejarahTindakan.slice().reverse().find(s => 
+            s.butiran && 
+            (s.butiran.toLowerCase().includes("baki") || s.butiran.toLowerCase().includes("tunggakan") || s.tindakan.toLowerCase().includes("mou")) && 
+            s.butiran.match(/RM\s*[\d,]+\.\d{2}/i)
+        );
+
+        if (rekodTunggakanSejarah) {
+            // Tangkap RM yang berada dekat dengan perkataan Baki/Tunggakan
+            let perlawananBakiSejarah = rekodTunggakanSejarah.butiran.match(/(?:baki|tunggak).*?RM\s*([\d,]+\.\d{2})/i);
+            if (perlawananBakiSejarah && perlawananBakiSejarah[1]) {
+                teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBakiSejarah[1]}</strong>`;
+            } else {
+                // Jika tiada perkataan khusus, ambil sahaja RM terakhir yang dipaparkan dalam rekod update tersebut
+                let semuaRM = [...rekodTunggakanSejarah.butiran.matchAll(/RM\s*([\d,]+\.\d{2})/gi)];
+                if (semuaRM.length > 0) {
+                    let nilaiRMTerakhir = semuaRM[semuaRM.length - 1][1];
+                    if (parseFloat(nilaiRMTerakhir.replace(/,/g, '')) < jumRMRaw) {
+                        teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${nilaiRMTerakhir}</strong>`;
+                    }
+                }
+            }
         }
     }
 
@@ -14619,7 +14693,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                             <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
                             <hr class="notis-garis-tajuk">
                             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                             <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Tuan diminta menasihati ${anak} tuan mematuhi arahan tersebut. Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil tanpa sebarang rujukan lanjut sekiranya gagal berbuat demikian.</div>
                             <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
                             <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
@@ -14654,7 +14728,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                             <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
                             <hr class="notis-garis-tajuk">
                             <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Dimaklumkan bahawa ${anak} tuan telah diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana Persetujuan Bersama (MOU) bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY}. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                             <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">3.<span class="jarak-tab"></span>Tuan diminta menasihati ${anak} tuan mematuhi arahan tersebut. Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil tanpa sebarang rujukan lanjut sekiranya gagal berbuat demikian.</div>
                             <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
                             <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
@@ -14686,19 +14760,15 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
 
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
 
-    // --- KODING BARU MULA DI SINI UNTUK SEMAKAN LOGIK MOU MAJIKAN ---
     let isMajikanCheckMOU = false;
     if (kes.dataBorang && kes.dataBorang.inputs) {
-        // Tambahan semakan "on" sekiranya checkbox dihantar dalam format berbeza
         isMajikanCheckMOU = (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true" || kes.dataBorang.inputs['majikan'] === "on");
     }
-    // Backup semakan terus dari profil kes
     if (kes.jenisAduan === 'Majikan') {
         isMajikanCheckMOU = true;
     }
 
     let teksPerenggan3 = '';
-    // Syarat kaedahMouSemasa === 'Penuh' DIBUANG kerana ia menyebabkan sistem ralat
     if (isMajikanCheckMOU) {
         teksPerenggan3 = `
                 <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">3.<span class="jarak-tab"></span>Sila ambil perhatian, sekiranya tuan/puan gagal berbuat demikian maka tindakan menguatkuasakan perintah kes ini boleh dilaksanakan oleh pengadu terhadap tuan/puan tanpa sebarang rujukan kepada tuan/puan.</div>`;
@@ -14708,7 +14778,6 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
                 <div style="margin-left: 40px; text-align: justify; margin-bottom: 8px; line-height: 1.4;"><strong>i.<span style="display:inline-block; width: 18px;"></span>Tuan telah melakukan kesalahan di bawah Seksyen 69(4) Akta Kerja 1955 dan boleh didakwa dan sabit kesalahan denda maksimum RM50,000.00 dan bayaran denda RM1,000.00 setiap hari kelewatan yang berterusan setelah disabitkan kesalahan;</strong></div>
                 <div style="margin-left: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.4;">ii.<span style="display:inline-block; width: 14px;"></span>Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil terhadap tuan tanpa sebarang rujukan kepada tuan.</div>`;
     }
-    // --- TAMAT KODING BARU ---
 
     const htmlPeringatan = `
         <style>
@@ -14731,14 +14800,14 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                 <div style="display: grid; grid-template-columns: 1fr auto; align-items: end; margin-top: 10px; margin-bottom: 20px;">
                     <div style="font-size: 17.5pt; font-weight: bold; text-decoration: underline; text-align: left; padding-bottom: 2px;">PERINGATAN</div>
-                    <div style="text-align: right; font-size: 10pt; line-height: 1.4;">Rujukan Kami : ${noKes}<br>Tarikh :${tarikhSurat}</div>
+                    <div style="text-align: right; font-size: 10pt; line-height: 1.4;">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSurat}</div>
                 </div>
                 <div class="notis-alamat"><strong>${namaD}</strong><br>${alamatD}</div>
                 <div style="margin-bottom: 15px;">Tuan/Puan,</div>
-                <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN :${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
+                <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</div>
                 <hr class="notis-garis-tajuk">
                 <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Tuan dengan ini diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana PERSETUJUAN BERSAMA dan BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan${tarikhMMYYYY} dengan mendepositkan bank draf atau kiriman wang pos atas nama pengadu. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
+                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">2.<span class="jarak-tab"></span>Tuan dengan ini diberikan PERINGATAN untuk mengamanahkan ${teksTuntutanMOU} sebagaimana PERSETUJUAN BERSAMA dan BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY} dengan mendepositkan bank draf atau kiriman wang pos atas nama pengadu. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.</div>
                 
                 ${teksPerenggan3}
                 
@@ -14759,6 +14828,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         </div>
 
         <!-- MUKA SURAT 2 -->
+        ${(!isMajikanCheckMOU || skArray.length > 0) ? `
         <div class="kertas-notis" style="page-break-before: always; position: relative;">
             <div style="position: absolute; top: 1.5cm; left: 2.5cm; right: 2.5cm; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; line-height: 1.4; border-bottom: 1px solid #000; padding-bottom: 8px;">
                 Rujukan: ${noKes}<br>KETUA PENGARAH TENAGA KERJA KES SAMAN
@@ -14777,6 +14847,7 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
             </div>
             <div class="notis-footer-line"></div>
         </div>
+        ` : ''}
         ${htmlNotisWakilDinamik}
     `;
     
@@ -14824,6 +14895,9 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     document.getElementById('modalPreview').style.display = 'flex';
 }
 
+// =========================================================
+// FUNGSI PREVIEW PERINGATAN BAYARAN BORANG C
+// =========================================================
 function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -14874,20 +14948,29 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // ENJIN EKSTRAK DATA BORANG C DARI SEJARAH TINDAKAN
+    // ENJIN EKSTRAK DATA BORANG C DARI SEJARAH TINDAKAN & MEMORI (KALIS-GAGAL)
     let tarikhDD = ".......", tarikhMMYYYY = "........................";
-    let jumRM = "RM 0.00";
+    let jumRMRaw = 0;
 
-    const rekodBC = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
-    if (rekodBC && rekodBC.butiran) {
-        let dMatch = rekodBC.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
+    const rekodBCAsal = (kes.sejarahTindakan || []).slice().reverse().find(s => s.tindakan && (s.tindakan.includes("Borang C") || s.tindakan.includes("Perintah")));
+    if (rekodBCAsal && rekodBCAsal.tarikhMasa) {
+        let tParts = rekodBCAsal.tarikhMasa.split('|')[0].trim().split('/');
+        if (tParts.length === 3) {
+            tarikhDD = tParts[0];
+            tarikhMMYYYY = `${bulanMY[parseInt(tParts[1])-1]} ${tParts[2]}`;
+        }
+    }
+
+    let inputAmuan = (kes.dataBorang && kes.dataBorang.inputs) ? kes.dataBorang.inputs['bc_jumlah_perintah'] : "0";
+    jumRMRaw = parseFloat((inputAmuan || "0").toString().replace(/,/g, '')) || 0;
+
+    const rekodBCBase64 = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
+    if (rekodBCBase64 && rekodBCBase64.butiran) {
+        let dMatch = rekodBCBase64.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
         if (dMatch && dMatch[1]) {
             try {
                 let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoData.jumlah) {
-                    let jumPerintahFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPerintahFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                }
+                if (memoData.jumlah) jumRMRaw = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
                 if (memoData.tarikh) {
                     let t = new Date(memoData.tarikh);
                     if (!isNaN(t.getTime())) {
@@ -14895,11 +14978,12 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
                         tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
                     }
                 }
-            } catch(e) { console.error("Ralat extract Borang C:", e); }
+            } catch(e) {}
         }
     }
 
-    // LOGIK PENJANAAN S.K. DAN NOTIS WAKIL BERDASARKAN CHECKBOX
+    let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
+
     let skArray = [];
     let htmlNotisWakilDinamik = '';
 
@@ -14907,11 +14991,9 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         const penerima = dataPeringatan.senaraiPenerima;
         
         if (penerima.includes('Defendan')) {
-            // Ditukar kepada Pengadu (namaP & alamatP) sebagai s.k.
             skArray.push(`<strong>${namaP}</strong><br>${alamatP}`);
         }
         
-        // Wakil Pengadu
         if (penerima.includes('Peguam Pengadu') || penerima.includes('Wakil Kesatuan Pengadu')) {
             let wakilP = kes.senaraiPerwakilan?.find(p => p.kategori === 'Peguam' || p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
             if (wakilP) {
@@ -14946,7 +15028,6 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
             }
         }
 
-        // Wakil Defendan
         if (penerima.includes('Peguam Defendan') || penerima.includes('Wakil Kesatuan Defendan')) {
             let wakilD = kes.senaraiPerwakilanDefendan?.find(p => p.kategori === 'Peguam' || p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
             if (wakilD) {
@@ -14999,6 +15080,15 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
 
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
 
+    // Pengesanan Majikan untuk menyembunyikan Muka Surat 2 jika tiada S.K.
+    let isMajikanCheckMOU = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        isMajikanCheckMOU = (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true" || kes.dataBorang.inputs['majikan'] === "on");
+    }
+    if (kes.jenisAduan === 'Majikan') {
+        isMajikanCheckMOU = true;
+    }
+
     const htmlPeringatan = `
         <style>
             @media print { 
@@ -15039,6 +15129,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
         </div>
 
         <!-- MUKA SURAT 2 -->
+        ${(!isMajikanCheckMOU || skArray.length > 0) ? `
         <div class="kertas-notis" style="page-break-before: always; position: relative;">
             <div style="position: absolute; top: 1.5cm; left: 2.5cm; right: 2.5cm; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; line-height: 1.4; border-bottom: 1px solid #000; padding-bottom: 8px;">
                 Rujukan: ${noKes}<br>KETUA PENGARAH TENAGA KERJA KES SAMAN
@@ -15053,6 +15144,7 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
             </div>
             <div class="notis-footer-line"></div>
         </div>
+        ` : ''}
         ${htmlNotisWakilDinamik}
     `;
     
@@ -15100,208 +15192,12 @@ function bukaPreviewPeringatanBorangC(dataSimpanan = null) {
     document.getElementById('modalPreview').style.display = 'flex';
 }
 
-function bukaPreviewPeringatanBorangC() {
-    const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
-
-    let noKes = kes.noKes.split('<br>')[0].trim();
-    let namaP = "", alamatP = "", namaD = "", alamatD = "";
-
-    if (kes.dataBorang && kes.dataBorang.inputs) {
-        const inputs = kes.dataBorang.inputs;
-        const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
-        let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
-        let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
-        if (isMajikan) {
-            namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]'; alamatP = arrDef.join('<br>') || '[ALAMAT PENGADU]';
-            namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]'; alamatD = arrPeng.join('<br>') || '[ALAMAT DEFENDAN]';
-        } else {
-            namaP = inputs['namaPengadu'] || '[NAMA PENGADU]'; alamatP = arrPeng.join('<br>') || '[ALAMAT PENGADU]';
-            namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]'; alamatD = arrDef.join('<br>') || '[ALAMAT DEFENDAN]';
-        }
-    } else {
-        namaP = kes.namaPengadu.replace(/<br>.*$/g, ''); alamatP = "[ALAMAT PENGADU TIDAK LENGKAP]";
-        namaD = kes.namaDefendan.replace(/<br>.*$/g, ''); alamatD = "[ALAMAT DEFENDAN TIDAK LENGKAP]";
-    }
-
-    const tH = new Date(); const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
-    const tarikhSurat = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
-    const namaPegawai = namaPegawaiRaw.toUpperCase();
-
-    // ENJIN EKSTRAK DATA BORANG C DARI SEJARAH TINDAKAN
-    let tarikhDD = ".......", tarikhMMYYYY = "........................";
-    let jumRM = "RM 0.00";
-
-    const rekodBC = (kes.sejarahTindakan || []).slice().reverse().find(s => s.butiran && s.butiran.includes("[DATA_BORANGC:"));
-    if (rekodBC && rekodBC.butiran) {
-        let dMatch = rekodBC.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
-        if (dMatch && dMatch[1]) {
-            try {
-                let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                if (memoData.jumlah) {
-                    let jumPerintahFormatted = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                    jumRM = `RM ${jumPerintahFormatted.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-                }
-                if (memoData.tarikh) {
-                    let t = new Date(memoData.tarikh);
-                    if (!isNaN(t.getTime())) {
-                        tarikhDD = t.getDate();
-                        tarikhMMYYYY = `${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
-                    }
-                }
-            } catch(e) { console.error("Ralat extract Borang C:", e); }
-        }
-    }
-
-    const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
-    
-    // PEMBETULAN: Padding-bottom ditambah supaya kertas sentiasa cukup panjang untuk footer line
-    let skHTML = `
-        <div style="margin-top: 40px; padding-bottom: 50px;">
-            <table style="border: none; font-size: 10pt; width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="vertical-align: top; width: 30px; border: none; padding: 0;">s.k:</td>
-                    <td style="vertical-align: top; border: none; padding: 0; text-transform: uppercase; line-height: 1.3;">
-                        <strong>${namaP}</strong><br>
-                        ${alamatP}
-                    </td>
-                </tr>
-            </table>
-        </div>
-    `;
-
-    const htmlPeringatan = `
-        <style>
-            @media print { 
-                @page { margin: 0; } 
-                body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
-                body > *:not(#printArea) { display: none !important; } 
-                #printArea { display: block !important; } 
-                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm 2cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
-                .kertas-notis:last-child { page-break-after: auto; } 
-            }
-            .kertas-notis { background: white; width: 210mm; min-height: 297mm; padding: 1.5cm 1.27cm 3.5cm 1.27cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; font-size: 10pt; line-height: 1.4; box-sizing: border-box; position: relative; }
-            .notis-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 15px; } .notis-header-kiri { display: flex; align-items: flex-start; gap: 15px; flex: 1; } .notis-logo { flex-shrink: 0; } .notis-logo img { width: 120px; height: auto; display: block; } .notis-jabatan { text-align: left; line-height: 1.2; } .notis-hubungi { flex-shrink: 0; width: 200px; font-family: Arial, sans-serif; font-size: 8pt; line-height: 1.3; } .notis-hubungi table { width: 100%; border: none; font-size: 8pt; border-collapse: collapse; } .notis-hubungi td { padding: 1px 0; vertical-align: top; border: none; } .kol-label { width: 40%; white-space: nowrap; } .kol-titik { width: 5%; text-align: center; } .notis-body-wrapper { padding: 0 1.23cm; } .notis-rujukan { text-align: right; width: 100%; font-size: 10pt; margin-top: 10px; margin-bottom: 20px; } .notis-alamat { margin-bottom: 20px; font-size: 10pt; text-transform: uppercase; line-height: 1.3; } .notis-tajuk { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; } .notis-garis-tajuk { border: 0; border-top: 1px solid #000; margin-top: 5px; margin-bottom: 15px; } .notis-isi { text-align: justify; font-size: 10pt; margin-bottom: 15px; } .jarak-tab { display: inline-block; width: 30px; } .notis-slogan { font-weight: bold; margin-bottom: 30px; font-size: 10pt; line-height: 1.4; } 
-            .notis-footer-line { position: absolute; bottom: 15mm; left: 2.5cm; right: 2.5cm; border-bottom: 1px solid #555; }
-        </style>
-        
-        <!-- MUKA SURAT 1 -->
-        <div class="kertas-notis">
-            ${templateHeaderHTML}
-            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
-                
-                <div style="display: grid; grid-template-columns: 1fr auto; align-items: end; margin-top: 10px; margin-bottom: 20px;">
-                    <div style="font-size: 17.5pt; font-weight: bold; text-decoration: underline; text-align: left; padding-bottom: 2px;">PERINGATAN</div>
-                    <div style="text-align: right; font-size: 10pt; line-height: 1.4;">
-                        Rujukan Kami : ${noKes}<br>
-                        Tarikh : ${tarikhSurat}
-                    </div>
-                </div>
-
-                <div class="notis-alamat"><strong>${namaP}</strong><br>${alamatP}</div>
-                <div style="margin-bottom: 15px;">Tuan/Puan,</div>
-                <div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: PERINGATAN MAKLUM BALAS STATUS BAYARAN PERINTAH (BORANG C)</div>
-                <hr class="notis-garis-tajuk">
-                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 15px;">
-                    2.<span class="jarak-tab"></span>Tuan dengan ini diberikan PERINGATAN untuk mengamanahkan wang berjumlah <strong>${jumRM}</strong> sebagaimana BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955 bertarikh ${tarikhDD} haribulan ${tarikhMMYYYY} dengan mendepositkan bank draf atau kiriman wang pos atas nama pengadu. Bayaran hendaklah di buat di Pejabat Tenaga Kerja Kluang, Johor <strong>14 hari</strong> dari tarikh surat ini.
-                </div>
-
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 8px;">
-                    3.<span class="jarak-tab"></span>Sila ambil perhatian bahawa;
-                </div>
-                
-                <div style="margin-left: 40px; text-align: justify; margin-bottom: 8px; line-height: 1.4;">
-                    <strong>i.<span style="display:inline-block; width: 18px;"></span>Tuan telah melakukan kesalahan di bawah Seksyen 69(4) Akta Kerja 1955 dan boleh didakwa dan sabit kesalahan denda maksimum RM50,000.00 dan bayaran denda RM1,000.00 setiap hari kelewatan yang berterusan setelah disabitkan kesalahan;</strong>
-                </div>
-                
-                <div style="margin-left: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.4;">
-                    ii.<span style="display:inline-block; width: 14px;"></span>Tindakan Mahkamah untuk menguatkuasakan perintah kes ini akan diambil terhadap tuan tanpa sebarang rujukan kepada tuan.
-                </div>
-
-                <div class="notis-isi" style="text-align: justify; margin-bottom: 0;">
-                    4.<span class="jarak-tab"></span>Sekiranya perintah telah dipatuhi, tuan dikehendaki mengemukakan bukti pematuhan kepada pejabat ini atau email ke <u><strong>hafizabubakar@mohr.gov.my</strong></u> untuk perhatian En. Mohamad Hafiz bin Abu Bakar dalam tempoh 14 hari dari tarikh surat ini. Sila hubungi Unit Kes Buruh ditalian 07-7721646 ext. 133 untuk tujuan pembayaran atau sebarang pertanyaan.
-                </div>
-
-                <!-- DIPINDAHKAN KE MUKA 1 -->
-                <div class="notis-isi" style="margin-top: 25px;">Sekian, terima kasih.</div>
-                <div class="notis-slogan" style="margin-top: 15px; margin-bottom: 15px;">" MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em></div>
-            </div>
-            <!-- Garisan tetap di bawah Muka 1 -->
-            <div class="notis-footer-line"></div>
-        </div>
-
-        <!-- MUKA SURAT 2 -->
-        <div class="kertas-notis" style="page-break-before: always; position: relative;">
-            
-            <!-- HEADER ALA MS WORD (DILUAR PADDING BODY) -->
-            <!-- Margin diselaraskan ke 2.5cm supaya selari tepat dengan margin isi kandungan -->
-            <div style="position: absolute; top: 1.5cm; left: 2.5cm; right: 2.5cm; font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; line-height: 1.4; border-bottom: 1px solid #000; padding-bottom: 8px;">
-                Rujukan: ${noKes}<br>
-                KETUA PENGARAH TENAGA KERJA KES SAMAN
-            </div>
-
-            <!-- Padding-top ditetapkan kpd 2cm untuk memberi ruang 2 ENTER di bawah garisan Header -->
-            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 2cm; padding-bottom: 3cm;">
-                <div class="notis-sign" style="margin-bottom: 10px;">Saya yang menjalankan amanah,</div>
-                
-                <div style="position: relative; height: 80px; margin-top: 10px;">
-                    <div class="gambar-sign" style="position: absolute; z-index: 2; pointer-events: none; top: -45px; left: 0;">
-                        <img src="tandatangan.png" alt="Tandatangan" style="height: 130px; width: auto; mix-blend-mode: multiply; display: block;">
-                    </div>
-                    <div class="teks-nama-sign" style="position: absolute; bottom: 0; left: 0; font-weight: bold; text-transform: uppercase; z-index: 1; line-height: 1.3;">
-                        ${namaPegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
-                    </div>
-                </div>
-                
-                ${skHTML}
-            </div>
-            <!-- Garisan tetap di bawah Muka 2 -->
-            <div class="notis-footer-line"></div>
-        </div>
-    `;
-    
-    document.getElementById('previewContent').innerHTML = htmlPeringatan;
-    document.getElementById('printArea').innerHTML = htmlPeringatan;
-    
-    // Cuci butang menu supaya tak bocor dari fungsi lain
-    let actionMenu = document.getElementById('actionMenu');
-    Array.from(actionMenu.querySelectorAll('a')).forEach(btn => btn.style.display = 'none');
-    
-    // Butang Cetak untuk Peringatan Borang C
-    let btnCetakPeringatan = document.getElementById('menuCetakG1');
-    if (btnCetakPeringatan) {
-        btnCetakPeringatan.style.display = 'flex';
-        btnCetakPeringatan.innerHTML = '🖨️ Cetak Peringatan Borang C';
-        btnCetakPeringatan.onclick = function(e) {
-            e.preventDefault();
-            document.getElementById('actionMenu').classList.remove('show');
-            window.print();
-            rekodSejarahTindakan(indexKesSemasa, "Peringatan Bayaran Perintah (Borang C)", "Surat Peringatan Maklum Balas Status Bayaran Perintah (Borang C) telah dicetak.");
-            setTimeout(() => { document.getElementById('modalPreview').style.display = 'none'; tukarView('senarai'); }, 500);
-        };
-    }
-    
-    const btnBatal = document.getElementById('menuBatal');
-    btnBatal.style.display = 'flex';
-    btnBatal.onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('actionMenu').classList.remove('show');
-        document.getElementById('modalPreview').style.display = 'none';
-    };
-    
-    tunjukSuisTandatangan(true); // Bukakan suis tandatangan memandangkan ini surat rasmi
-    document.getElementById('modalPreview').style.display = 'flex';
-}
-
 // =========================================================
 // FUNGSI SORTING JADUAL SENARAI TUGASAN
 // =========================================================
 let sortCol = '';
 let sortAsc = true;
-
+       
 function sortSenaraiTugas(col) {
     if (sortCol === col) {
         sortAsc = !sortAsc; // Terbalikkan susunan (A-Z ke Z-A) jika klik lajur yang sama
@@ -15342,7 +15238,7 @@ function sortSenaraiTugas(col) {
         let el = document.getElementById('sort_' + c);
         if (el) {
             if (c === sortCol) {
-                el.innerHTML = sortAsc ? '⬆️' : '⬇️';
+                el.innerHTML = sortAsc ? '⬆️️' : '⬇️';
                 el.style.color = 'var(--primary-blue)';
             } else {
                 el.innerHTML = '↕️';
@@ -15350,11 +15246,11 @@ function sortSenaraiTugas(col) {
             }
         }
     });
-// Simpan susunan baharu dan paparkan semula jadual
-        simpanSenaraiKeLokal();
-        renderSenaraiTugas();
-    }
-
+    // Simpan susunan baharu dan paparkan semula jadual
+    simpanSenaraiKeLokal();
+    renderSenaraiTugas();
+}
+       
 // =========================================================
 // FUNGSI PEMANTAUAN BAYARAN MOU (NEW)
 // =========================================================
@@ -15418,20 +15314,39 @@ function renderKadPemantauan(kes) {
         });
 
         let baki = totalDue - totalBayar;
-        let percent = totalDue > 0 ? Math.min(100, Math.round((totalBayar / totalDue) * 100)) : 0;
-        let colorStr = percent === 100 ? 'var(--success)' : 'var(--primary-blue)';
+        let percent = totalDue > 0 ? Math.round((totalBayar / totalDue) * 100) : 0;
+        
+        let warnaBar = '';
+        let teksIndikator = '';
+
+        if (percent === 100) {
+            warnaBar = '#16a34a'; // HIJAU (Lunas Sepenuhnya)
+            teksIndikator = `<span style="color: #16a34a; font-weight: bold; font-size: 0.9em;">100% Selesai</span>`;
+        } else if (percent > 100) {
+            warnaBar = '#06b6d4'; // TURQUOISE (Lebihan bayaran)
+            teksIndikator = `<span style="color: #06b6d4; font-weight: bold; font-size: 0.9em;">${percent}% Selesai</span>`;
+        } else if (percent > 0 && percent < 100) {
+            warnaBar = '#eab308'; // KUNING (Separa / Ada baki)
+            let peratusBaki = 100 - percent;
+            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #ca8a04;">${percent}% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">${peratusBaki}% Baki</span>`;
+        } else {
+            warnaBar = '#cbd5e1'; // KELABU (Tiada bayaran)
+            teksIndikator = `<span style="font-weight: bold; font-size: 0.9em; color: #334155;">0% Telah Dibayar</span> <span style="color: #dc2626; font-weight: bold; font-size: 0.9em; margin-left: 10px;">100% Baki</span>`;
+        }
 
         if(body) {
             body.innerHTML = `
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Jumlah Perlu Dibayar:</span><br><strong style="font-size: 1.1em;">RM ${totalDue.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
-                    <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Telah Dibayar:</span><br><strong style="font-size: 1.1em; color: ${colorStr};">RM ${totalBayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
+                    <div><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Telah Dibayar:</span><br><strong style="font-size: 1.1em; color: ${warnaBar};">RM ${totalBayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
                     <div style="text-align: right;"><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 600;">Baki Tertunggak:</span><br><strong style="font-size: 1.1em; color: var(--danger);">RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>
                 </div>
                 <div style="width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 5px;">
-                    <div style="width: ${percent}%; background-color: ${colorStr}; height: 100%; transition: width 0.3s ease;"></div>
+                    <div style="width: ${percent > 100 ? 100 : percent}%; background-color: ${warnaBar}; height: 100%; transition: width 0.3s ease;"></div>
                 </div>
-                <div style="text-align: right; font-size: 0.8em; font-weight: bold; color: ${colorStr};">${percent}% Selesai</div>
+                <div style="text-align: right; margin-top: 5px;">
+                    ${teksIndikator}
+                </div>
             `;
         }
     } else {
@@ -15439,7 +15354,104 @@ function renderKadPemantauan(kes) {
         if(btnMenu) btnMenu.style.display = 'none';
     }
 }
+// =========================================================================
+// FUNGSI BARU: AUTO KIRA STATUS & RUMUSAN JADUAL MOU
+// =========================================================================
+function janaRumusanDanAutoStatusMOU() {
+    const table = document.querySelector('#kandungan_jadual_pemantauan table');
+    if (!table) return;
 
+    let tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr:not(.rumusan-row)');
+
+    rows.forEach(row => {
+        let amaunCell = row.cells[2];
+        if (!amaunCell) return;
+        let amaunVal = parseFloat(amaunCell.innerText.replace(/[^0-9.]/g, '')) || 0;
+
+        let dibayarInput = row.querySelector('td:nth-child(5) input');
+        let statusSelect = row.querySelector('td:nth-child(7) select');
+
+        if (dibayarInput && statusSelect) {
+            // Bind Event Listener untuk Auto-Update Status (hanya sekali)
+            if (!dibayarInput.hasAttribute('data-auto-bind')) {
+                dibayarInput.setAttribute('data-auto-bind', 'true');
+                
+                dibayarInput.addEventListener('input', function() {
+                    let currentDibayar = parseFloat(this.value.replace(/[^0-9.]/g, '')) || 0;
+                    
+                    // Auto-Update Status dropdown tanpa mengganggu format emoji sedia ada
+                    Array.from(statusSelect.options).forEach(opt => {
+                        if (currentDibayar === 0 || this.value.trim() === '') {
+                            if (opt.value.includes('Tertunggak')) statusSelect.value = opt.value;
+                        } else if (currentDibayar > 0 && currentDibayar < amaunVal) {
+                            if (opt.value.includes('Separa')) statusSelect.value = opt.value;
+                        } else if (currentDibayar >= amaunVal) {
+                            if (opt.value.includes('Lunas')) statusSelect.value = opt.value;
+                        }
+                    });
+                    
+                    // Trigger pengiraan semula rumusan di bawah jadual
+                    kiraSemulaRumusanMOU();
+                });
+            }
+        }
+    });
+
+    // Panggilan pertama untuk kiraan awal masa modal dibuka
+    kiraSemulaRumusanMOU();
+}
+
+function kiraSemulaRumusanMOU() {
+    const table = document.querySelector('#kandungan_jadual_pemantauan table');
+    if (!table) return;
+    let tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr:not(.rumusan-row)');
+    
+    let totalAmaun = 0;
+    let totalDibayar = 0;
+
+    rows.forEach(row => {
+        let amaunCell = row.cells[2];
+        let dibayarInput = row.querySelector('td:nth-child(5) input');
+        
+        if (amaunCell) {
+            totalAmaun += parseFloat(amaunCell.innerText.replace(/[^0-9.]/g, '')) || 0;
+        }
+        if (dibayarInput) {
+            totalDibayar += parseFloat(dibayarInput.value.replace(/[^0-9.]/g, '')) || 0;
+        }
+    });
+
+    let baki = totalAmaun - totalDibayar;
+    
+    // Simpan ke memori global sementara untuk ditarik oleh Surat Peringatan
+    window.tempBakiMOU = baki; 
+    window.tempBakiMOU_kesIndex = indexKesSemasa; // Security lock: Pastikan baki untuk kes yang betul
+
+    // Buang row rumusan lama jika sudah wujud (elak duplicate)
+    let oldRumusan = tbody.querySelector('.rumusan-row');
+    if (oldRumusan) oldRumusan.remove();
+
+    // Cipta dan tambah row rumusan baru
+    let tr = document.createElement('tr');
+    tr.className = 'rumusan-row';
+    tr.style.backgroundColor = '#f1f5f9';
+    tr.style.fontWeight = 'bold';
+    tr.innerHTML = `
+        <td colspan="2" style="text-align: right; padding: 12px; border-top: 2px solid var(--border-color);">RUMUSAN KESELURUHAN:</td>
+        <td style="padding: 12px; color: var(--primary-blue); border-top: 2px solid var(--border-color);">RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+        <td style="text-align: right; padding: 12px; border-top: 2px solid var(--border-color);">JUMLAH DIBAYAR & BAKI:</td>
+        <td style="padding: 12px; color: var(--success); border-top: 2px solid var(--border-color);" id="rumusan_dibayar">RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+        <td colspan="2" style="padding: 12px; color: var(--danger); border-top: 2px solid var(--border-color);" id="rumusan_baki">BAKI: RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+    `;
+    tbody.appendChild(tr);
+}
+       
 function bukaModalPemantauanMou() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes || !kes.pemantauanMou) return;
@@ -15449,9 +15461,9 @@ function bukaModalPemantauanMou() {
         <thead style="background-color: var(--card-header-bg); position: sticky; top: 0; z-index: 1;">
             <tr>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">Bil.</th>
-                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Due</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Persetujuan Pembayaran</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: right;">Amaun (RM)</th>
-                <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Tarikh Bayar</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 140px; line-height: 1.2;">Tarikh Pembayaran<br><span style="font-size: 0.8em; font-weight: normal;">(tarikh bayaran dibuat oleh defendan)</span></th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Dibayar (RM)</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">No. Rujukan / Resit</th>
                 <th style="padding: 10px; border-bottom: 1px solid var(--border-color);">Status</th>
@@ -15459,6 +15471,17 @@ function bukaModalPemantauanMou() {
         </thead><tbody>`;
 
     const bulanMY = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogos", "Sep", "Okt", "Nov", "Dis"];
+
+    // Pembolehubah untuk mengira jumlah keseluruhan
+    let totalAmaun = 0;
+    let totalDibayar = 0;
+
+    // KIRA GRAND TOTAL KESELURUHAN DAHULU UNTUK LOGIK BAYARAN PENUH AWAL
+    let grandTotalDue = 0, grandTotalBayar = 0;
+    kes.pemantauanMou.forEach(r => { 
+        grandTotalDue += parseFloat(r.amaunDue) || 0; 
+        grandTotalBayar += parseFloat(r.amaunBayar) || 0; 
+    });
 
     kes.pemantauanMou.forEach((item, index) => {
         let labelPengadu = item.pengadu !== 'Pukal' ? `<br><span style="font-size: 0.8em; color: var(--primary-blue); text-transform: uppercase;">${item.pengadu.replace('_', ' ')}</span>` : '';
@@ -15469,18 +15492,47 @@ function bukaModalPemantauanMou() {
             if(!isNaN(t.getTime())) tarikhCetak = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
         }
 
+        // Tambah ke jumlah keseluruhan (Dinaikkan ke atas supaya boleh diguna untuk logik status)
+        let amaunSemasa = parseFloat(item.amaunDue) || 0;
+        let dibayarSemasa = parseFloat(item.amaunBayar) || 0;
+        totalAmaun += amaunSemasa;
+        totalDibayar += dibayarSemasa;
+
+        // LOGIK AUTO-UPDATE STATUS KETIKA JADUAL DIBUKA
+        let tarikhBayarAda = item.tarikhBayar && item.tarikhBayar.trim() !== '';
+        let isPastDue = false;
+        
+        if (item.tarikhDue) {
+            let tDue = new Date(item.tarikhDue);
+            tDue.setHours(0,0,0,0);
+            let tHariIni = new Date();
+            tHariIni.setHours(0,0,0,0);
+            if (tHariIni > tDue) isPastDue = true;
+        }
+
+        // Semak jika bayaran dipukul habis lebih awal (Grand Total >= Keseluruhan)
+        if (grandTotalBayar >= grandTotalDue && grandTotalDue > 0) {
+            item.status = 'Lunas';
+        } else if (dibayarSemasa > 0 && tarikhBayarAda) {
+            item.status = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
+        } else if ((dibayarSemasa === 0 || !tarikhBayarAda) && isPastDue) {
+            item.status = 'Tertunggak';
+        }
+
         let bgStatus = item.status === 'Lunas' ? '#dcfce7' : (item.status === 'Separa' ? '#fef08a' : '#fee2e2');
         let clStatus = item.status === 'Lunas' ? '#166534' : (item.status === 'Separa' ? '#854d0e' : '#991b1b');
+           
+        // (BLOK PENDUA YANG MENYEBABKAN RALAT TELAH DIPADAM DI SINI)
 
         html += `<tr>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: center;">${index+1}</td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color); font-weight: bold;">${tarikhCetak}${labelPengadu}</td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: right; font-weight: bold;">${item.amaunDue.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="date" id="pm_tarikh_${index}" value="${item.tarikhBayar}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;"></td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_amaun_${index}" value="${item.amaunBayar}" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; text-align: right;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_resit_${index}" value="${item.resit}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;" placeholder="Cth: Cek 1234"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color); text-align: right; font-weight: bold;">${amaunSemasa.toLocaleString('en-MY', {minimumFractionDigits:2})}</td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="date" id="pm_tarikh_${index}" value="${item.tarikhBayar || ''}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_amaun_${index}" value="${item.amaunBayar || ''}" style="width: 80px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; text-align: right;" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')"></td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);"><input type="text" id="pm_resit_${index}" value="${item.resit || ''}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em;" placeholder="Cth: Cek 1234"></td>
             <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">
-                <select id="pm_status_${index}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; font-weight: bold; background-color: ${bgStatus}; color: ${clStatus};">
+                <select id="pm_status_${index}" style="min-width: 150px; width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; font-weight: bold; background-color: ${bgStatus}; color: ${clStatus};">
                     <option value="Tertunggak" ${item.status==='Tertunggak'?'selected':''}>🔴 Tertunggak</option>
                     <option value="Separa" ${item.status==='Separa'?'selected':''}>🟡 Separa</option>
                     <option value="Lunas" ${item.status==='Lunas'?'selected':''}>🟢 Lunas</option>
@@ -15489,18 +15541,113 @@ function bukaModalPemantauanMou() {
         </tr>`;
     });
 
-    html += `</tbody></table>`;
+    html += `</tbody>`;
+
+    // Pengiraan Baki dan rekaan Footer mengikut layout gambar
+    let bakiTertunggak = totalAmaun - totalDibayar;
+    
+    html += `
+        <tfoot>
+            <tr style="background-color: #f8fafc;">
+                <!-- 1. Bil. -->
+                <td style="border-top: 1px solid #cbd5e1;"></td>
+                
+                <!-- 2. Tarikh Persetujuan Pembayaran -->
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: left; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
+                    JUMLAH:
+                </td>
+                
+                <!-- 3. Amaun (RM) -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; color: #2563eb; text-align: right; font-size: 1.05em; vertical-align: middle; white-space: nowrap;">
+                    RM ${totalAmaun.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+                
+                <!-- 4. Tarikh Pembayaran -->
+                <td style="padding: 12px 10px; border-top: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 0.95em; vertical-align: middle;">
+                    JUMLAH DIBAYAR:
+                </td>
+                
+                <!-- 5. Dibayar (RM) -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #16a34a; white-space: nowrap;">
+                    RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+                
+                <!-- 6. No. Rujukan / Resit -->
+                <td style="border-top: 1px solid #cbd5e1;"></td>
+                
+                <!-- 7. Status -->
+                <td style="padding: 12px 8px; border-top: 1px solid #cbd5e1; font-weight: bold; font-size: 1.05em; vertical-align: middle; color: #dc2626; white-space: nowrap;">
+                    BAKI: RM ${bakiTertunggak.toLocaleString('en-MY', {minimumFractionDigits:2})}
+                </td>
+            </tr>
+        </tfoot>
+    </table>`;
+
     tbody.innerHTML = html;
 
-    // Warna status live update
+    // Warna status live update & AUTO-KIRA STATUS APABILA MENAIP (TERMASUK BAYARAN PENUH KESELURUHAN)
+    const updateWarnaStatus = function(dropdown) {
+        if(dropdown.value === 'Lunas') { dropdown.style.backgroundColor='#dcfce7'; dropdown.style.color='#166534'; }
+        else if(dropdown.value === 'Separa') { dropdown.style.backgroundColor='#fef08a'; dropdown.style.color='#854d0e'; }
+        else { dropdown.style.backgroundColor='#fee2e2'; dropdown.style.color='#991b1b'; }
+    };
+
+    const semakSemuaStatusAuto = function() {
+        let liveGrandTotalDue = 0;
+        let liveGrandTotalBayar = 0;
+
+        // Langkah 1: Kira total keseluruhan dari semua input secara live
+        kes.pemantauanMou.forEach((_, idx) => {
+            let amaunD = parseFloat(kes.pemantauanMou[idx].amaunDue) || 0;
+            let elAmaunB = document.getElementById(`pm_amaun_${idx}`);
+            let amaunB = elAmaunB ? (parseFloat(elAmaunB.value) || 0) : 0;
+            liveGrandTotalDue += amaunD;
+            liveGrandTotalBayar += amaunB;
+        });
+
+        // Langkah 2: Terapkan logik ke atas setiap baris secara serentak
+        kes.pemantauanMou.forEach((item, idx) => {
+            let elStatus = document.getElementById(`pm_status_${idx}`);
+            let elTarikhBayar = document.getElementById(`pm_tarikh_${idx}`);
+            let elAmaunBayar = document.getElementById(`pm_amaun_${idx}`);
+            
+            if (!elStatus || !elTarikhBayar || !elAmaunBayar) return;
+
+            let amaunSemasa = parseFloat(item.amaunDue) || 0;
+            let dibayarKini = parseFloat(elAmaunBayar.value) || 0;
+            let tarikhBayarAda = elTarikhBayar.value.trim() !== '';
+
+            let isPastDue = false;
+            if (item.tarikhDue) {
+                let tDue = new Date(item.tarikhDue);
+                tDue.setHours(0,0,0,0);
+                let tHariIni = new Date();
+                tHariIni.setHours(0,0,0,0);
+                if (tHariIni > tDue) isPastDue = true;
+            }
+
+            // Jika jumlah bayaran dah lepasi baki keseluruhan (Pukul habis)
+            if (liveGrandTotalBayar >= liveGrandTotalDue && liveGrandTotalDue > 0) {
+                elStatus.value = 'Lunas';
+            } else if (dibayarKini > 0 && tarikhBayarAda) {
+                elStatus.value = 'Separa'; // Sentiasa Separa selagi keseluruhan belum lunas
+            } else if ((dibayarKini === 0 || !tarikhBayarAda) && isPastDue) {
+                elStatus.value = 'Tertunggak';
+            }
+            
+            updateWarnaStatus(elStatus); // Kemaskini warna dropdown secara live
+        });
+    };
+
     kes.pemantauanMou.forEach((item, index) => {
         const elStatus = document.getElementById(`pm_status_${index}`);
+        const elTarikhBayar = document.getElementById(`pm_tarikh_${index}`);
+        const elAmaunBayar = document.getElementById(`pm_amaun_${index}`);
+        
         if(elStatus) {
-            elStatus.addEventListener('change', function() {
-                if(this.value === 'Lunas') { this.style.backgroundColor='#dcfce7'; this.style.color='#166534'; }
-                else if(this.value === 'Separa') { this.style.backgroundColor='#fef08a'; this.style.color='#854d0e'; }
-                else { this.style.backgroundColor='#fee2e2'; this.style.color='#991b1b'; }
-            });
+            elStatus.addEventListener('change', function() { updateWarnaStatus(this); });
+            if (elAmaunBayar) elAmaunBayar.addEventListener('input', semakSemuaStatusAuto);
+            if (elTarikhBayar) elTarikhBayar.addEventListener('change', semakSemuaStatusAuto);
         }
     });
 
