@@ -3765,25 +3765,20 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
     
     // --- KODING BARU PENGGANTI ---
 
-// 1. Koding baru untuk kad sejarah tindakan:
-    if (kadSejarah) {
-        // Paparkan sejarah jika ia bukan draf ATAU jika sudah mempunyai rekod sejarah tindakan
-        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
+// 1. Koding tetapan untuk kad sejarah tindakan:
+        if (kadSejarah) {
             kadSejarah.style.display = 'block';
-            try { renderJadualSejarah(indexKesSemasa); } catch(e) { console.error("Ralat sejarah tindakan:", e); }
-        } else {
-            kadSejarah.style.display = 'none';
+            try { 
+                renderJadualSejarah(indexKesSemasa); 
+            } catch (e) { 
+                console.error("Ralat sejarah tindakan:", e); 
+            }
         }
-    }
 
-// 2. Koding baru untuk menu tindakan urus:
-    if (menuTindakanUrus) {
-        if (!isDraf || (kes.sejarahTindakan && kes.sejarahTindakan.length > 0)) {
+        // 2. Koding tetapan untuk menu tindakan urus:
+        if (menuTindakanUrus) {
             menuTindakanUrus.style.display = 'flex';
-        } else {
-            menuTindakanUrus.style.display = 'none';
         }
-    }
     
     const btnKemaskiniPendaftaran = document.getElementById('btnEditRekodKes');
     if (btnKemaskiniPendaftaran) {
