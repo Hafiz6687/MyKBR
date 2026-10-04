@@ -14797,34 +14797,173 @@ function janaSemulaNotisLain(dataSimpanan) {
         bukaModalNotisLain();
     }
 }
-window.bukaPemantauanMou = function() {
+window.bukaModalPemantauanMou = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) {
-        alert("Sila pilih atau buka kes terlebih dahulu.");
-        return;
-    }
-
-    // Semak sama ada kes ini layak mempunyai pemantauan (MOU atau Borang C)
+    if (!kes) return;
+    
     const info = semakJenisPemantauan(kes);
-    if (!info.aktif) {
-        alert("Modul pemantauan bayaran hanya aktif untuk kes yang mempunyai rekod Persetujuan Bersama (MOU) atau Perintah Bayar (Borang C).");
-        return;
-    }
-
-    // Panggil fungsi modal pemantauan yang sebenar (daripada skrip berpusat)
-    if (typeof window.bukaModalPemantauanMou === 'function' && window.bukaModalPemantauanMou !== arguments.callee) {
-        window.bukaModalPemantauanMou();
-    } else {
-        const modal = document.getElementById('modalPemantauanMou');
-        if (modal) {
-            if (typeof window.bukaModalPemantauanMou === 'function') {
-                window.bukaModalPemantauanMou();
+    document.getElementById('tajuk_modal_pemantauan').innerText = "Kemaskini " + info.tajuk;
+    
+    let htmlJadual = '';
+    
+    if (info.jenis === 'ansuran') {
+        // Ambil senarai ansuran, jika tiada, cuba ekstrak daripada data sejarah MOU
+        let senaraiAnsuran = kes.mou?.senaraiAnsuran || [];
+        
+        if (senaraiAnsuran.length === 0 && kes.sejarahTindakan) {
+            const rekodMOU = [...kes.sejarahTindakan].reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
+            if (rekodMOU) {
+                let dMatch = rekodMOU.butiran.match(/\[DATA_MOU:(.*?)\]/);
+                if (dMatch && dMatch[1]) {
+                    try {
+                        let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
+                        if (memoData.ansuranDetails) {
+                            senaraiAnsuran = memoData.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                        }
+                    } catch(e){}
+                }
             }
-            modal.style.display = 'flex';
-        } else {
-            alert("Ralat: Elemen antara muka (UI) modal pemantauan bayaran tidak dijumpai dalam dokumen.");
         }
+
+        let rekodPemantauan = kes.pemantauan?.rekod || [];
+        
+        if (rekodPemantauan.length === 0 && senaraiAnsuran.length > 0) {
+            rekodPemantauan = senaraiAnsuran.map(a => ({
+                tarikhMestiBayar: a.tarikh,
+                amaun: a.amaun,
+                status: 'Belum Dibayar',
+                tarikhDibayar: '',
+                resit: ''
+            }));
+        }
+        
+        // Header Jadual Ansuran berserta butang tambah manual jika kosong
+        htmlJadual = `
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                <div style="font-size: 0.9em; font-weight: 600;">Jadual Ansuran Bulanan</div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                <thead style="background-color: var(--card-header-bg);">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Tarikh (Matang)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Amaun (RM)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Status</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Tarikh Dibayar</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Resit</th>
+                    </tr>
+                </thead>
+                <tbody id="body_jadual_pemantauan_ansuran">
+        `;
+        
+        if (rekodPemantauan.length === 0) {
+            htmlJadual += `<tr><td colspan="6" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
+        } else {
+            rekodPemantauan.forEach((rekod, i) => {
+                let warnaStatus = rekod.status === 'Telah Dibayar' ? 'color: #10b981;' : 'color: #ef4444;';
+                htmlJadual += `
+                    <tr class="baris-ansuran">
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${i+1}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <input type="date" class="inp-tarikh-matang" value="${rekod.tarikhMestiBayar || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;">
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <input type="number" class="inp-amaun" placeholder="0.00" value="${rekod.amaun || ''}" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold;">
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <select class="inp-status" style="padding: 4px; font-size: 0.9em; ${warnaStatus} font-weight: bold;" onchange="this.style.color = this.value === 'Telah Dibayar' ? '#10b981' : '#ef4444';">
+                                <option value="Belum Dibayar" ${rekod.status === 'Belum Dibayar' ? 'selected' : ''}>Belum Dibayar</option>
+                                <option value="Telah Dibayar" ${rekod.status === 'Telah Dibayar' ? 'selected' : ''}>Telah Dibayar</option>
+                            </select>
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <input type="date" class="inp-tarikh-bayar" value="${rekod.tarikhDibayar || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;">
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <input type="text" class="inp-resit" placeholder="No. Resit" value="${rekod.resit || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;">
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        htmlJadual += `</tbody></table>`;
+        
+    } else {
+        let rekodPemantauan = kes.pemantauan?.rekod || [];
+        
+        htmlJadual = `
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                <div style="font-size: 0.9em; font-weight: 600;">Rekod Bayaran (Ad-hoc)</div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
+                <thead style="background-color: var(--card-header-bg);">
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 25%;">Tarikh Bayaran</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 30%;">Amaun Dibayar (RM)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 30%;">Catatan / Resit</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 10%; text-align: center;">Hapus</th>
+                    </tr>
+                </thead>
+                <tbody id="body_jadual_pemantauan_adhoc">
+        `;
+        
+        if (rekodPemantauan.length === 0) {
+            htmlJadual += `<tr id="baris_kosong_adhoc"><td colspan="5" class="empty-row" style="padding: 15px; text-align: center;">Tiada rekod bayaran dimasukkan.</td></tr>`;
+        } else {
+            rekodPemantauan.forEach((rekod, i) => {
+                htmlJadual += janaBarisAdhocHTML(i, rekod);
+            });
+        }
+        htmlJadual += `</tbody></table>`;
     }
+    
+    document.getElementById('kandungan_jadual_pemantauan').innerHTML = htmlJadual;
+    document.getElementById('modalPemantauanMou').style.display = 'flex';
+};
+
+// Fungsi tambahan untuk membolehkan penambahan baris ansuran secara manual
+window.tambahBarisAnsuranManual = function() {
+    const tbody = document.getElementById('body_jadual_pemantauan_ansuran');
+    if (!tbody) return;
+
+    const barisKosong = tbody.querySelector('.empty-row');
+    if (barisKosong) barisKosong.closest('tr').remove();
+
+    const currentCount = tbody.querySelectorAll('.baris-ansuran').length;
+    
+    let tr = document.createElement('tr');
+    tr.className = 'baris-ansuran';
+    tr.innerHTML = `
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${currentCount + 1}</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="date" class="inp-tarikh-matang" style="padding: 4px; width: 100%; box-sizing: border-box;">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="number" class="inp-amaun" placeholder="0.00" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold;">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <select class="inp-status" style="padding: 4px; font-size: 0.9em; color: #ef4444; font-weight: bold;" onchange="this.style.color = this.value === 'Telah Dibayar' ? '#10b981' : '#ef4444';">
+                <option value="Belum Dibayar">Belum Dibayar</option>
+                <option value="Telah Dibayar">Telah Dibayar</option>
+            </select>
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="date" class="inp-tarikh-bayar" style="padding: 4px; width: 100%; box-sizing: border-box;">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="text" class="inp-resit" placeholder="No. Resit" style="padding: 4px; width: 100%; box-sizing: border-box;">
+        </td>
+    `;
+    tbody.appendChild(tr);
+    kemaskiniBilanganAnsuran();
+};
+
+window.kemaskiniBilanganAnsuran = function() {
+    const baris = document.querySelectorAll('.baris-ansuran .bil-ansuran');
+    baris.forEach((td, i) => { td.innerText = i + 1; });
 };
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
@@ -16121,9 +16260,11 @@ window.simpanPemantauanMou = function() {
             let status = tr.querySelector('.inp-status').value;
             let tarikhDibayar = tr.querySelector('.inp-tarikh-bayar').value;
             let resit = tr.querySelector('.inp-resit').value;
-            let tMatang = tr.cells[1].innerText;
             
-            if (status === 'Telah Dibayar') jumlahDibayarBaru += parseFloat(amaun);
+            // GANTI BAHAGIAN INI SUPAYA MENYOKONG INPUT MANUAL & TEKS SEDIA ADA
+            let tMatang = tr.querySelector('.inp-tarikh-matang')?.value || tr.cells[1].innerText.trim();
+            
+            if (status === 'Telah Dibayar') jumlahDibayarBaru += parseFloat(amaun || 0);
 
             rekodBaru.push({ tarikhMestiBayar: tMatang, amaun: amaun, status: status, tarikhDibayar: tarikhDibayar, resit: resit });
         });
@@ -16162,7 +16303,6 @@ window.simpanPemantauanMou = function() {
         alert("Rekod bayaran berjaya dikemaskini.");
     }
 };
-
 window.selesaiPemfailanLuarPreview = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (kes) {
