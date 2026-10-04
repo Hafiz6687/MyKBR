@@ -14797,6 +14797,7 @@ function janaSemulaNotisLain(dataSimpanan) {
         bukaModalNotisLain();
     }
 }
+
 window.bukaModalPemantauanMou = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -14837,7 +14838,7 @@ window.bukaModalPemantauanMou = function() {
             }));
         }
         
-        // Header Jadual Ansuran berserta butang tambah manual jika kosong
+        // Header Jadual Ansuran berserta butang tambah manual (DITAMBAH LAJUR TINDAKAN)
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
                 <div style="font-size: 0.9em; font-weight: 600;">Jadual Ansuran Bulanan</div>
@@ -14847,18 +14848,19 @@ window.bukaModalPemantauanMou = function() {
                 <thead style="background-color: var(--card-header-bg);">
                     <tr>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Tarikh (Matang)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Amaun (RM)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Status</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 20%;">Tarikh Dibayar</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Resit</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 17%;">Tarikh (Matang)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 17%;">Amaun (RM)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 17%;">Status</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 17%;">Tarikh Dibayar</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 17%;">Resit</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 10%; text-align: center;">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody id="body_jadual_pemantauan_ansuran">
         `;
         
         if (rekodPemantauan.length === 0) {
-            htmlJadual += `<tr><td colspan="6" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
+            htmlJadual += `<tr><td colspan="7" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
         } else {
             rekodPemantauan.forEach((rekod, i) => {
                 let warnaStatus = rekod.status === 'Telah Dibayar' ? 'color: #10b981;' : 'color: #ef4444;';
@@ -14882,6 +14884,9 @@ window.bukaModalPemantauanMou = function() {
                         </td>
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
                             <input type="text" class="inp-resit" placeholder="No. Resit" value="${rekod.resit || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;">
+                        </td>
+                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">
+                            <button class="btn-delete-tbl" onclick="hapusBarisAnsuran(this)">🗑️️</button>
                         </td>
                     </tr>
                 `;
@@ -14956,6 +14961,9 @@ window.tambahBarisAnsuranManual = function() {
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
             <input type="text" class="inp-resit" placeholder="No. Resit" style="padding: 4px; width: 100%; box-sizing: border-box;">
         </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">
+            <button class="btn-delete-tbl" onclick="hapusBarisAnsuran(this)">🗑️</button>
+        </td>
     `;
     tbody.appendChild(tr);
     kemaskiniBilanganAnsuran();
@@ -14964,6 +14972,16 @@ window.tambahBarisAnsuranManual = function() {
 window.kemaskiniBilanganAnsuran = function() {
     const baris = document.querySelectorAll('.baris-ansuran .bil-ansuran');
     baris.forEach((td, i) => { td.innerText = i + 1; });
+};
+
+// FUNGSI BARU: Hapus Baris Ansuran
+window.hapusBarisAnsuran = function(btn) {
+    btn.closest('tr').remove();
+    kemaskiniBilanganAnsuran();
+    const tbody = document.getElementById('body_jadual_pemantauan_ansuran');
+    if (tbody.querySelectorAll('.baris-ansuran').length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
+    }
 };
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
@@ -16256,15 +16274,14 @@ window.simpanPemantauanMou = function() {
     if (info.jenis === 'ansuran') {
         const baris = document.querySelectorAll('.baris-ansuran');
         baris.forEach(tr => {
-            let amaun = tr.querySelector('.inp-amaun').value;
+            let amaunRaw = tr.querySelector('.inp-amaun').value;
+            let amaun = parseFloat(amaunRaw) || 0; // Lindungi dari nilai kosong/NaN
             let status = tr.querySelector('.inp-status').value;
             let tarikhDibayar = tr.querySelector('.inp-tarikh-bayar').value;
             let resit = tr.querySelector('.inp-resit').value;
-            
-            // GANTI BAHAGIAN INI SUPAYA MENYOKONG INPUT MANUAL & TEKS SEDIA ADA
             let tMatang = tr.querySelector('.inp-tarikh-matang')?.value || tr.cells[1].innerText.trim();
             
-            if (status === 'Telah Dibayar') jumlahDibayarBaru += parseFloat(amaun || 0);
+            if (status === 'Telah Dibayar') jumlahDibayarBaru += amaun;
 
             rekodBaru.push({ tarikhMestiBayar: tMatang, amaun: amaun, status: status, tarikhDibayar: tarikhDibayar, resit: resit });
         });
@@ -16272,11 +16289,12 @@ window.simpanPemantauanMou = function() {
         const baris = document.querySelectorAll('.baris-adhoc');
         baris.forEach(tr => {
             let tarikhDibayar = tr.querySelector('.inp-tarikh-bayar').value;
-            let amaun = tr.querySelector('.inp-amaun').value;
+            let amaunRaw = tr.querySelector('.inp-amaun').value;
+            let amaun = parseFloat(amaunRaw) || 0;
             let resit = tr.querySelector('.inp-resit').value;
             
-            if (amaun && parseFloat(amaun) > 0) {
-                jumlahDibayarBaru += parseFloat(amaun);
+            if (amaun > 0) {
+                jumlahDibayarBaru += amaun;
                 rekodBaru.push({ tarikhDibayar: tarikhDibayar, amaun: amaun, resit: resit });
             }
         });
@@ -16290,8 +16308,11 @@ window.simpanPemantauanMou = function() {
     document.getElementById('modalPemantauanMou').style.display = 'none';
     renderKadPemantauan(kes); 
     
-    let baki = info.jumlah - jumlahDibayarBaru;
-    if (baki <= 0 && jumlahDibayarLama < info.jumlah) {
+    // Pelindung keselamatan: pastikan info.jumlah wujud sebelum banding baki
+    let jumlahKeseluruhanKes = info.jumlah > 0 ? info.jumlah : (kes.mou?.jumlahMou ? parseFloat(kes.mou.jumlahMou) : 0);
+    let baki = jumlahKeseluruhanKes - jumlahDibayarBaru;
+
+    if (baki <= 0 && jumlahKeseluruhanKes > 0 && jumlahDibayarLama < jumlahKeseluruhanKes) {
         setTimeout(() => {
             if (confirm("PENGESAHAN: Baki bayaran telah diselesaikan sepenuhnya (RM 0.00). Adakah anda ingin menutup fail kes ini secara rasmi?")) {
                 selesaiPemfailanLuarPreview();
@@ -16303,6 +16324,7 @@ window.simpanPemantauanMou = function() {
         alert("Rekod bayaran berjaya dikemaskini.");
     }
 };
+       
 window.selesaiPemfailanLuarPreview = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (kes) {
