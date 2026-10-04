@@ -3758,7 +3758,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         adaSebutanSaman = true;
     }
 
-    // Laksanakan arahan papar atau sembunyi
+    // Laksanakan arahan papar atau sembunyi (kad_sebutan_kes)
     const kadSebutanKes = document.getElementById('kad_sebutan_kes');
     if (kadSebutanKes) {
         if (adaSebutanSaman) {
@@ -3768,10 +3768,16 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
         }
     }
     
+    // =========================================================================
+    // TAMBAHAN BARU: PANGGIL KAD PEMANTAUAN BAYARAN SUPAYA MUNCUL DI SKRIN
+    // =========================================================================
+    if (typeof renderKadPemantauan === 'function') {
+        renderKadPemantauan(kes);
+    }
+    
     // Auto-scroll ke atas skrin untuk kekemasan UI
     window.scrollTo(0, 0);
-}
-
+} // <--- Ini adalah penutup fungsi bukaMaklumatKes(index)
 
 function tindakanSebutan() {
     const elTarikh = document.getElementById('mk_tarikh_sebutan');
