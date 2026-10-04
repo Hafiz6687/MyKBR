@@ -16429,61 +16429,76 @@ window.kiraStatusAnsuran = function() {
 };
 
 window.renderKadPemantauan = function(kes) {
-    const info = semakJenisPemantauan(kes);
+    const container = document.getElementById('body_pemantauan_mou');
     const kad = document.getElementById('kad_pemantauan_mou');
-    const btnMenu = document.getElementById('btn_menu_pemantauan_mou');
-    
+    if (!container || !kad) return;
+
+    const info = semakJenisPemantauan(kes);
     if (!info.aktif) {
-        if(kad) kad.style.display = 'none';
-        if(btnMenu) btnMenu.style.display = 'none';
+        kad.style.display = 'none';
         return;
     }
 
-    if(kad) kad.style.display = 'block';
-    if(btnMenu) btnMenu.style.display = 'flex';
-    
+    kad.style.display = 'flex';
     document.getElementById('tajuk_kad_pemantauan').innerText = info.tajuk;
 
-    let jumlahDibayar = 0;
-    let rekodBayaran = kes.pemantauan?.rekod || [];
-    
-    rekodBayaran.forEach(r => {
-        if (info.jenis === 'ansuran') {
-            if (r.status === 'Telah Dibayar') jumlahDibayar += parseFloat(r.amaun || 0);
-        } else {
-            jumlahDibayar += parseFloat(r.amaun || 0);
-        }
-    });
+    let jumlahKeseluruhan = info.jumlah || 0;
+    let telahDibayar = 0;
 
-    let baki = info.jumlah - jumlahDibayar;
-    if (baki < 0) baki = 0;
-    let peratus = info.jumlah > 0 ? Math.min((jumlahDibayar / info.jumlah) * 100, 100) : 0;
-    let warnaBar = peratus === 100 ? '#10b981' : 'var(--primary-blue)';
+    if (kes.pemantauan && kes.pemantauan.rekod) {
+        kes.pemantauan.rekod.forEach(r => {
+            let dibayar = 0;
+            // Baca dari struktur data baharu (amaunDibayar)
+            if (r.amaunDibayar !== undefined && r.amaunDibayar !== '') {
+                dibayar = parseFloat(String(r.amaunDibayar).replace(/,/g, '')) || 0;
+            } 
+            // Fallback untuk struktur data lama jika kes direkod sebelum kemaskini
+            else if (r.status === 'Telah Dibayar' || r.status === 'Selesai') {
+                dibayar = parseFloat(String(r.amaun || 0).replace(/,/g, '')) || 0;
+            }
+            telahDibayar += dibayar;
+        });
+    }
 
-    let html = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; font-size: 0.9em;">
-            <span>Kemajuan Bayaran</span>
-            <span>${peratus.toFixed(1)}%</span>
-        </div>
-        <div style="width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 20px;">
-            <div style="width: ${peratus}%; background-color: ${warnaBar}; height: 100%; transition: width 0.5s ease;"></div>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; font-size: 0.9em;">
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <div style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 4px;">Jumlah Keseluruhan</div>
-                <div style="font-weight: bold; font-size: 1.1em; color: var(--text-main);">RM ${info.jumlah.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+    let bakiSemasa = jumlahKeseluruhan - telahDibayar;
+    if (bakiSemasa < 0) bakiSemasa = 0;
+
+    let peratus = 0;
+    if (jumlahKeseluruhan > 0) {
+        peratus = (telahDibayar / jumlahKeseluruhan) * 100;
+        if (peratus > 100) peratus = 100;
+    }
+
+    let warnaProgress = '#3b82f6'; // Biru (Separa)
+    if (peratus === 100) warnaProgress = '#10b981'; // Hijau (Selesai)
+    else if (peratus === 0) warnaProgress = '#cbd5e1'; // Kelabu (Belum ada bayaran)
+
+    let htmlRingkasan = `
+        <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85em; font-weight: 600;">
+                <span>Kemajuan Bayaran</span>
+                <span>${peratus.toFixed(1)}%</span>
             </div>
-            <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0;">
-                <div style="color: #166534; font-size: 0.85em; margin-bottom: 4px;">Telah Dibayar</div>
-                <div style="font-weight: bold; font-size: 1.1em; color: #15803d;">RM ${jumlahDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+            <div style="width: 100%; background-color: #e2e8f0; border-radius: 8px; height: 10px; overflow: hidden;">
+                <div style="width: ${peratus}%; background-color: ${warnaProgress}; height: 100%; transition: width 0.5s ease;"></div>
             </div>
-            <div style="background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px solid #fecaca;">
-                <div style="color: #991b1b; font-size: 0.85em; margin-bottom: 4px;">Baki Semasa</div>
-                <div style="font-weight: bold; font-size: 1.1em; color: #b91c1c;">RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div style="background-color: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;">
+                <div style="font-size: 0.75em; color: var(--text-muted); font-weight: 600; margin-bottom: 4px;">Jumlah Keseluruhan</div>
+                <div style="font-size: 1.1em; font-weight: 700; color: var(--text-main);">RM ${jumlahKeseluruhan.toLocaleString('en-MY', {minimumFractionDigits: 2})}</div>
+            </div>
+            <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px; border-radius: 8px;">
+                <div style="font-size: 0.75em; color: #065f46; font-weight: 600; margin-bottom: 4px;">Telah Dibayar</div>
+                <div style="font-size: 1.1em; font-weight: 700; color: #047857;">RM ${telahDibayar.toLocaleString('en-MY', {minimumFractionDigits: 2})}</div>
+            </div>
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px;">
+                <div style="font-size: 0.75em; color: #991b1b; font-weight: 600; margin-bottom: 4px;">Baki Semasa</div>
+                <div style="font-size: 1.1em; font-weight: 700; color: #b91c1c;">RM ${bakiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2})}</div>
             </div>
         </div>
     `;
-    document.getElementById('body_pemantauan_mou').innerHTML = html;
+    container.innerHTML = htmlRingkasan;
 };
 // =========================================================================
 // PENCETUS BUTANG PEMANTAUAN BAYARAN (DARI MENU TINDAKAN PENGURUSAN)
