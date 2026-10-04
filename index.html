@@ -776,6 +776,26 @@
             </div>
         </div>
     </div>
+    <!-- MODAL KEMASKINI PEMANTAUAN BAYARAN -->
+    <div class="modal-overlay" id="modalPemantauanMou" style="z-index: 2100;">
+        <div class="modal-box" style="max-width: 800px; width: 100%;">
+            <div class="modal-title" id="tajuk_modal_pemantauan">Kemaskini Pemantauan Bayaran</div>
+            
+            <p style="font-size: 0.85em; color: var(--text-muted); margin-top: -10px; margin-bottom: 20px; font-style: italic;">
+                *Sila kemaskini status atau masukkan rekod bayaran baru yang diterima daripada pihak Defendan.
+            </p>
+
+            <!-- KANDUNGAN JADUAL DINAMIK DIJANA OLEH JS -->
+            <div id="kandungan_jadual_pemantauan" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <!-- Jadual Ansuran atau Ad-hoc akan dipaparkan di sini -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('modalPemantauanMou').style.display='none'">Batal</button>
+                <button class="btn-save" onclick="simpanPemantauanMou()">✔ Simpan Rekod</button>
+            </div>
+        </div>
+    </div>
 <!-- MODAL POP-UP KHAS UNTUK ALAMAT TERKINI DEFENDAN -->
     <div class="modal-overlay" id="modalAlamatTerkini">
         <div class="modal-box">
@@ -1358,8 +1378,8 @@ Portal rasmi : jtksm.mohr.gov.my
         </div>
 
 <!-- ========================================== -->
-        <!-- PAPARAN MAKLUMAT KES TERPERINCI            -->
-        <!-- ========================================== -->
+<!-- PAPARAN MAKLUMAT KES TERPERINCI            -->
+<!-- ========================================== -->
         <div id="viewMaklumatKes" style="display: none; padding: 32px; max-width: 1600px; margin: 0 auto; width: 100%; box-sizing: border-box;">
             
 <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
@@ -1458,6 +1478,18 @@ Portal rasmi : jtksm.mohr.gov.my
                             <tr><td colspan="6" class="empty-row" style="padding: 15px;">Tiada maklumat kehadiran / perwakilan direkodkan.</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <!-- KAD PEMANTAUAN BAYARAN (MOU / BORANG C) -->
+            <div class="card full-width" id="kad_pemantauan_mou" style="display: none;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="tajuk_kad_pemantauan">Pemantauan Bayaran</span>
+                    <button class="btn-add btn-terapung" id="btn_menu_pemantauan_mou" style="padding: 6px 12px; font-size: 0.85em; display: flex; align-items: center; gap: 5px;" onclick="bukaModalPemantauanMou()">
+                        <span>💰 Kemaskini Rekod Bayaran</span>
+                    </button>
+                </div>
+                <div class="card-body" id="body_pemantauan_mou">
+                    <!-- Progress bar & ringkasan dijana dinamik oleh renderKadPemantauan() -->
                 </div>
             </div>
             <!-- BAHAGIAN 3: Maklumat Defendan -->
@@ -15767,6 +15799,10 @@ function kiraSemulaRumusanMOU() {
 // MODUL PEMANTAUAN BAYARAN BERSEPADU (MOU ANSURAN, MOU PENUH, BORANG C)
 // =========================================================================
 
+// =========================================================================
+// MODUL PEMANTAUAN BAYARAN BERSEPADU (MOU ANSURAN, MOU PENUH, BORANG C)
+// =========================================================================
+
 function semakJenisPemantauan(kes) {
     if (!kes.pemantauan) kes.pemantauan = {};
     
@@ -15775,7 +15811,6 @@ function semakJenisPemantauan(kes) {
     let jumlah = 0;
     let tajuk = 'Pemantauan Bayaran';
     
-    // 1. Cek Ciri Baharu (Sudah ada data rasmi dalam memori)
     if (kes.borangC && kes.borangC.jenisPerintah === 'Bayar') {
         aktif = true;
         jenis = 'borang_c';
@@ -15793,41 +15828,23 @@ function semakJenisPemantauan(kes) {
             tajuk = 'Pemantauan Bayaran (MOU Penuh)';
         }
     }
-    // 2. BACKWARD COMPATIBILITY (Pengekstrakan Automatik Data Lama)
     else if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
-        // Semak rekod sejarah dari yang paling terkini ke paling lama
         const sejarahReverse = [...kes.sejarahTindakan].reverse();
-
-        // Cari rekod Borang C dahulu
         let adaBorangC = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('borang c') || s.tindakan.toLowerCase().includes('perintah')));
         
         if (adaBorangC) {
             aktif = true;
             jenis = 'borang_c';
             tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-            
-            // Ekstrak jumlah dari Draf Input atau Jumlah Tuntutan Asal
-            let drafJumlah = kes.dataBorang?.inputs?.bc_jumlah_perintah;
-            if (drafJumlah && parseFloat(drafJumlah.toString().replace(/,/g, '')) > 0) {
-                jumlah = parseFloat(drafJumlah.toString().replace(/,/g, ''));
-            } else {
-                jumlah = kiraJumlahTuntutanLegacy(kes);
-            }
+            jumlah = parseFloat(kes.dataBorang?.inputs?.bc_jumlah_perintah?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
         } else {
-            // Jika tiada Borang C, cari rekod MOU
             let adaMou = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('mou') || s.tindakan.toLowerCase().includes('persetujuan')));
             if (adaMou) {
                 aktif = true;
                 let isAnsuran = adaMou.butiran && adaMou.butiran.toLowerCase().includes('ansuran');
                 jenis = isAnsuran ? 'ansuran' : 'penuh';
                 tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
-
-                let drafJumlah = kes.dataBorang?.inputs?.mk_jumlah_mou;
-                if (drafJumlah && parseFloat(drafJumlah.toString().replace(/,/g, '')) > 0) {
-                    jumlah = parseFloat(drafJumlah.toString().replace(/,/g, ''));
-                } else {
-                    jumlah = kiraJumlahTuntutanLegacy(kes);
-                }
+                jumlah = parseFloat(kes.dataBorang?.inputs?.mk_jumlah_mou?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
             }
         }
     }
@@ -15835,7 +15852,6 @@ function semakJenisPemantauan(kes) {
     return { aktif, jenis, jumlah, tajuk };
 }
 
-// Fungsi Bantuan Pengekstrakan Jumlah Legacy
 function kiraJumlahTuntutanLegacy(kes) {
     let total = 0;
     if (kes.dataBorang) {
@@ -15869,33 +15885,25 @@ window.renderKadPemantauan = function(kes) {
         return;
     }
 
-    // Paparkan Kad dan Butang
     if(kad) kad.style.display = 'block';
     if(btnMenu) btnMenu.style.display = 'flex';
     
-    // Kemaskini Tajuk
     document.getElementById('tajuk_kad_pemantauan').innerText = info.tajuk;
-    let teksBtn = info.jenis === 'borang_c' ? '💰 Rekod Bayaran<br>Borang C' : '💰 Rekod Bayaran<br>MOU';
-    document.getElementById('teks_btn_pemantauan').innerHTML = teksBtn;
 
-    // Kira jumlah dibayar
     let jumlahDibayar = 0;
-    let rekodBayaran = kes.pemantauan.rekod || [];
+    let rekodBayaran = kes.pemantauan?.rekod || [];
     
-    if (info.jenis === 'ansuran') {
-        rekodBayaran.forEach(r => {
+    rekodBayaran.forEach(r => {
+        if (info.jenis === 'ansuran') {
             if (r.status === 'Telah Dibayar') jumlahDibayar += parseFloat(r.amaun || 0);
-        });
-    } else {
-        rekodBayaran.forEach(r => {
+        } else {
             jumlahDibayar += parseFloat(r.amaun || 0);
-        });
-    }
+        }
+    });
 
     let baki = info.jumlah - jumlahDibayar;
     if (baki < 0) baki = 0;
     let peratus = info.jumlah > 0 ? Math.min((jumlahDibayar / info.jumlah) * 100, 100) : 0;
-    
     let warnaBar = peratus === 100 ? '#10b981' : 'var(--primary-blue)';
 
     let html = `
@@ -15934,8 +15942,8 @@ window.bukaModalPemantauanMou = function() {
     let htmlJadual = '';
     
     if (info.jenis === 'ansuran') {
-        let senaraiAnsuran = kes.mou.senaraiAnsuran || [];
-        let rekodPemantauan = kes.pemantauan.rekod || [];
+        let senaraiAnsuran = kes.mou?.senaraiAnsuran || [];
+        let rekodPemantauan = kes.pemantauan?.rekod || [];
         
         if (rekodPemantauan.length === 0 && senaraiAnsuran.length > 0) {
             rekodPemantauan = senaraiAnsuran.map(a => ({
@@ -15989,8 +15997,7 @@ window.bukaModalPemantauanMou = function() {
         htmlJadual += `</tbody></table>`;
         
     } else {
-        // Render Jadual Ad-hoc (MOU Penuh / Borang C)
-        let rekodPemantauan = kes.pemantauan.rekod || [];
+        let rekodPemantauan = kes.pemantauan?.rekod || [];
         
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
@@ -16120,7 +16127,6 @@ window.simpanPemantauanMou = function() {
     document.getElementById('modalPemantauanMou').style.display = 'none';
     renderKadPemantauan(kes); 
     
-    // Check Auto-Selesai Fail Kes
     let baki = info.jumlah - jumlahDibayarBaru;
     if (baki <= 0 && jumlahDibayarLama < info.jumlah) {
         setTimeout(() => {
