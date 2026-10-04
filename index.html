@@ -14801,24 +14801,20 @@ function bukaPemantauanMou() {
         return;
     }
 
-    // 1. Cari rekod MOU TERKINI di dalam Sejarah Tindakan
+    // 1. Cari rekod MOU TERKINI di dalam Sejarah Tindakan atau memori sementara
     let mouTerkini = null;
     if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
-        // Gelung dari belakang untuk mendapatkan rekod MOU paling baharu
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             const st = kes.sejarahTindakan[i];
             if (st.tindakan && (st.tindakan.includes("MOU") || st.tindakan.includes("Persetujuan Bersama"))) {
-                mouTerkini = st.dataMou || st; // Ambil objek data MOU
+                mouTerkini = st.dataMou || st;
                 break;
             }
         }
     }
-
-    // Fallback: Jika tiada di sejarah tindakan, semak window.tempDataMou
     if (!mouTerkini && window.tempDataMou) {
         mouTerkini = window.tempDataMou;
     }
-
     if (!mouTerkini) {
         alert("Tiada rekod MOU / Persetujuan Bersama dijumpai dalam Sejarah Tindakan bagi kes ini. Sila jana MOU terlebih dahulu.");
         return;
@@ -14830,119 +14826,119 @@ function bukaPemantauanMou() {
     const jumlahDipersetujui = parseFloat(mouTerkini.jumlahMou || mouTerkini.jumlah || 0) || 0;
     const dibayarDiPejabat = parseFloat(mouTerkini.dibayarPejabat || mouTerkini.dibayarDiPejabat || 0) || 0;
 
-    // Pulihkan rekod bayaran pemantauan lepas jika pernah disimpan
-    const rekodBayaranLepas = kes.rekodPemantauanMou || mouTerkini.rekodBayaran || [];
-
     // 3. Kemaskini Ringkasan Atas Modal
     document.getElementById('pm_tarikh_mou').innerText = tarikhMou;
     document.getElementById('pm_kaedah_mou').innerText = kaedahBayaran;
-    document.getElementById('pm_jumlah_mou').innerText = `RM ${jumlahDipersetujui.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('pm_jumlah_mou').innerText = `RM ${jumlahDipersetujui.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
     const bekasKandungan = document.getElementById('pm_kandungan_dinamik');
     bekasKandungan.innerHTML = '';
 
     // 4. BINA STRUKTUR POP-UP BERDASARKAN KAEDAH BAYARAN (PENUH VS ANSURAN)
     if (kaedahBayaran === "Penuh") {
-        // --- PAPARAN UNTUK BAYARAN PENUH ---
         const baki = Math.max(0, jumlahDipersetujui - dibayarDiPejabat);
-        document.getElementById('pm_baki_mou').innerText = `RM ${baki.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById('pm_baki_mou').innerText = `RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+        let statusPenuh = baki === 0 ? "Selesai Penutup Kes" : "Belum selesai";
+        let statusBadge = baki === 0 
+            ? `<span style="background:#10b981; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">penuh</span>`
+            : `<span style="background:#f59e0b; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">separa</span>`;
 
         bekasKandungan.innerHTML = `
-            <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 12px;">Rekod Bayaran Penuh</h5>
-                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                    <label style="text-align: left;">Status Bayaran Penuh <span>*</span></label>
-                    <select id="pm_status_penuh" onchange="hitungBakiPemantauanMou('Penuh', ${jumlahDipersetujui})" style="width: 100%; box-sizing: border-box;">
-                        <option value="Belum Selesai" ${baki > 0 ? 'selected' : ''}>Belum Selesai</option>
-                        <option value="Selesai" ${baki === 0 ? 'selected' : ''}>Selesai Penutup Kes</option>
-                    </select>
-                </div>
-                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                    <label style="text-align: left;">Jumlah Telah Dibayar / Dijelaskan (RM) <span>*</span></label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <span style="position: absolute; left: 12px; top: 10px; color: var(--text-muted); font-weight: 600;">RM</span>
-                        <input type="text" id="pm_amaun_dibayar_penuh" value="${dibayarDiPejabat.toFixed(2)}" style="padding-left: 45px; width: 100%; box-sizing: border-box;" 
-                               oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); hitungBakiPemantauanMou('Penuh', ${jumlahDipersetujui});" onfocus="unformatDuit(this)" onblur="formatDuit(this)">
-                    </div>
-                </div>
-                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 0;">
-                    <label style="text-align: left;">Catatan / No. Resit Bayaran</label>
-                    <input type="text" id="pm_catatan_penuh" value="${mouTerkini.catatanPemantauan || ''}" placeholder="Cth: Resit Rasmi No. 123456" style="width: 100%; box-sizing: border-box;">
-                </div>
+            <div style="margin-bottom: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>Status Bayaran: Penuh *</span>
+                <span style="font-size: 0.9em; color: var(--text-muted);">${statusPenuh}</span>
             </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                <thead>
+                    <tr style="background-color: var(--card-header-bg);">
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">Tarikh Bayaran</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">Jumlah Bayaran (RM)</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">Baki (RM)</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">${tarikhMou}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">${dibayarDiPejabat.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">${statusBadge}</td>
+                    </tr>
+                </tbody>
+            </table>
         `;
 
-    } else {
-        // --- PAPARAN UNTUK BAYARAN ANSURAN ---
-        const jadualAnsuran = mouTerkini.jadualAnsuran || mouTerkini.senaraiAnsuran || [];
+    } else if (kaedahBayaran === "Ansuran") {
+        let senaraiAnsuran = mouTerkini.senaraiAnsuran || mouTerkini.jadualAnsuran || [];
+        let totalDibayarSemua = dibayarDiPejabat;
+        
+        let bakiKeseluruhan = Math.max(0, jumlahDipersetujui - totalDibayarSemua);
+        document.getElementById('pm_baki_mou').innerText = `RM ${bakiKeseluruhan.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-        let htmlJadualAnsuran = '';
-        let jumlahTelahDibayar = 0;
+        let statusAnsuranGlobal = bakiKeseluruhan === 0 ? "Selesai Penutup Kes" : "Belum selesai";
 
-        if (jadualAnsuran.length === 0) {
-            htmlJadualAnsuran = `<tr><td colspan="5" class="empty-row" style="text-align:center; padding:12px;">Tiada jadual ansuran direkodkan di dalam MOU terkini.</td></tr>`;
-        } else {
-            jadualAnsuran.forEach((ans, idx) => {
-                const amaunPersetujuan = parseFloat(ans.amaun || ans.jumlah || 0) || 0;
+        let rowsHtml = '';
+        let bakiRunning = jumlahDipersetujui;
+
+        if (senaraiAnsuran.length > 0) {
+            senaraiAnsuran.forEach((ans, idx) => {
+                let amaunAnsuran = parseFloat(ans.amaun || ans.jumlah || 0) || 0;
+                bakiRunning = Math.max(0, bakiRunning - amaunAnsuran);
                 
-                // Cari status tersimpan dari pemantauan lepas jika ada
-                const rekodLama = rekodBayaranLepas[idx] || {};
-                const statusLama = rekodLama.status || "Belum Bayar";
-                const amaunDibayarLama = rekodLama.amaunDibayar !== undefined ? parseFloat(rekodLama.amaunDibayar) : (statusLama === "Selesai" ? amaunPersetujuan : 0);
+                let tkhBayar = new Date(ans.tarikh || ans.tarikhBayaran);
+                let hariIni = new Date();
+                let statusBadge = "";
 
-                if (statusLama === "Selesai") {
-                    jumlahTelahDibayar += amaunPersetujuan;
+                if (amaunAnsuran >= bakiRunning || bakiRunning <= 0) {
+                    statusBadge = `<span style="background:#10b981; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">penuh</span>`;
+                } else if (amaunAnsuran > 0) {
+                    statusBadge = `<span style="background:#f59e0b; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">separa</span>`;
                 } else {
-                    jumlahTelahDibayar += amaunDibayarLama;
+                    if (!isNaN(tkhBayar.getTime()) && tkhBayar < hariIni) {
+                        statusBadge = `<span style="background:#ef4444; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">Tertunggak</span>`;
+                    } else {
+                        statusBadge = `<span style="background:#f59e0b; color:white; padding:4px 10px; border-radius:4px; font-weight:600;">separa</span>`;
+                    }
                 }
 
-                htmlJadualAnsuran += `
+                rowsHtml += `
                     <tr>
-                        <td style="text-align:center; padding: 10px; border-bottom: 1px solid var(--border-color);">${idx + 1}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); font-weight: 500;">${ans.tarikh || '-'}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: right; font-weight: 600;">RM ${amaunPersetujuan.toFixed(2)}</td>
-                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                            <select class="pm_ansuran_status" data-idx="${idx}" data-amaun="${amaunPersetujuan}" onchange="hitungBakiPemantauanMou('Ansuran', ${jumlahDipersetujui})" style="width: 100%; font-size: 0.85em; padding: 4px;">
-                                <option value="Belum Bayar" ${statusLama === 'Belum Bayar' ? 'selected' : ''}>❌ Belum Bayar</option>
-                                <option value="Selesai" ${statusLama === 'Selesai' ? 'selected' : ''}>✔ Selesai</option>
-                                <option value="Separa" ${statusLama === 'Separa' ? 'selected' : ''}>⚠️ Bayaran Separa</option>
-                            </select>
-                        </td>
-                        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                            <input type="text" class="pm_ansuran_catatan" data-idx="${idx}" value="${rekodLama.catatan || ''}" placeholder="Cth: Resit / Tarikh" style="width: 100%; font-size: 0.85em; padding: 4px;">
-                        </td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">${idx + 1}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">${ans.tarikh || ans.tarikhBayaran || '-'}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">${amaunAnsuran.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">${Math.max(0, bakiRunning).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">${statusBadge}</td>
                     </tr>
                 `;
             });
+        } else {
+            rowsHtml = `<tr><td colspan="5" style="text-align: center; padding: 15px; color: var(--text-muted);">Tiada jadual ansuran dijumpai.</td></tr>`;
         }
 
-        const bakiAnsuran = Math.max(0, jumlahDipersetujui - jumlahTelahDibayar);
-        document.getElementById('pm_baki_mou').innerText = `RM ${bakiAnsuran.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
         bekasKandungan.innerHTML = `
-            <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 12px;">Pemantauan Ansuran MOU</h5>
-                <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
-                        <thead style="background-color: var(--card-header-bg); position: sticky; top: 0;">
-                            <tr>
-                                <th style="width: 8%; text-align:center;">Bil</th>
-                                <th style="width: 22%;">Tarikh Janji</th>
-                                <th style="width: 25%; text-align:right;">Amaun (RM)</th>
-                                <th style="width: 25%;">Status Bayaran</th>
-                                <th style="width: 20%;">Catatan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${htmlJadualAnsuran}
-                        </tbody>
-                    </table>
-                </div>
+            <div style="margin-bottom: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+                <span>Status Bayaran: Ansuran *</span>
+                <span style="font-size: 0.9em; color: var(--text-muted);">${statusAnsuranGlobal}</span>
             </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                <thead>
+                    <tr style="background-color: var(--card-header-bg);">
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: center; width: 10%;">Bil</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">Tarikh Bayaran Dipersetujui</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">Jumlah Bayaran (RM)</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: right;">Baki (RM)</th>
+                        <th style="padding: 10px; border: 1px solid var(--border-color); text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
         `;
     }
 
-    // Paparkan Modal
+    // Paparkan modal pemantauan
     document.getElementById('modalPemantauanMou').style.display = 'flex';
 }
 
