@@ -14797,13 +14797,35 @@ function janaSemulaNotisLain(dataSimpanan) {
         bukaModalNotisLain();
     }
 }
-function bukaPemantauanMou() {
+window.bukaPemantauanMou = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
-    
-    // Kod atau paparan modal untuk Pemantauan Bayaran MOU boleh diletakkan di sini
-    alert("Modul Pemantauan Bayaran MOU bagi kes " + kes.noKes + " dibuka.");
-}
+    if (!kes) {
+        alert("Sila pilih atau buka kes terlebih dahulu.");
+        return;
+    }
+
+    // Semak sama ada kes ini layak mempunyai pemantauan (MOU atau Borang C)
+    const info = semakJenisPemantauan(kes);
+    if (!info.aktif) {
+        alert("Modul pemantauan bayaran hanya aktif untuk kes yang mempunyai rekod Persetujuan Bersama (MOU) atau Perintah Bayar (Borang C).");
+        return;
+    }
+
+    // Panggil fungsi modal pemantauan yang sebenar (daripada skrip berpusat)
+    if (typeof window.bukaModalPemantauanMou === 'function' && window.bukaModalPemantauanMou !== arguments.callee) {
+        window.bukaModalPemantauanMou();
+    } else {
+        const modal = document.getElementById('modalPemantauanMou');
+        if (modal) {
+            if (typeof window.bukaModalPemantauanMou === 'function') {
+                window.bukaModalPemantauanMou();
+            }
+            modal.style.display = 'flex';
+        } else {
+            alert("Ralat: Elemen antara muka (UI) modal pemantauan bayaran tidak dijumpai dalam dokumen.");
+        }
+    }
+};
 // =========================================================
 // FUNGSI KAWALAN MODAL PERINGATAN BAYARAN
 // =========================================================
