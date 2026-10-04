@@ -15898,8 +15898,14 @@ window.bukaModalPemantauanMou = function() {
                 if (dMatch && dMatch[1]) {
                     try {
                         let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                        if (memoData.ansuranDetails) {
+                        
+                        // Ekstrak Jadual Pukal atau Individu
+                        if (memoData.ansuranDetails && memoData.ansuranDetails.length > 0) {
                             senaraiAnsuran = memoData.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                        } else if (memoData.ansuranIndividu) {
+                            let tempAns = [];
+                            Object.values(memoData.ansuranIndividu).forEach(arr => { tempAns = tempAns.concat(arr); });
+                            senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                         }
                     } catch(e){}
                 }
@@ -15919,7 +15925,6 @@ window.bukaModalPemantauanMou = function() {
             }));
         }
         
-        // Susunan Kolum Diubah & Penambahan Footer Selari
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
                 <div style="font-size: 0.9em; font-weight: 600;">Jadual Ansuran Bulanan</div>
@@ -15945,10 +15950,13 @@ window.bukaModalPemantauanMou = function() {
             htmlJadual += `<tr><td colspan="8" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
         } else {
             rekodPemantauan.forEach((rekod, i) => {
-                let aSetuju = rekod.amaunDipersetujui !== undefined ? rekod.amaunDipersetujui : (rekod.amaun || '');
-                let aBayar = rekod.amaunDibayar !== undefined ? rekod.amaunDibayar : (rekod.status === 'Telah Dibayar' ? aSetuju : '');
+                // BUANG KOMA SUPAYA INPUT TYPE NUMBER BOLEH BACA
+                let aSetujuRaw = rekod.amaunDipersetujui !== undefined ? rekod.amaunDipersetujui : (rekod.amaun || '');
+                let aSetuju = aSetujuRaw !== '' ? parseFloat(String(aSetujuRaw).replace(/,/g, '')) : '';
                 
-                // Tarikh Dipersetujui dan Amaun Dipersetujui di extract dan dijadikan Readonly
+                let aBayarRaw = rekod.amaunDibayar !== undefined ? rekod.amaunDibayar : (rekod.status === 'Telah Dibayar' ? aSetuju : '');
+                let aBayar = aBayarRaw !== '' ? parseFloat(String(aBayarRaw).replace(/,/g, '')) : '';
+                
                 htmlJadual += `
                     <tr class="baris-ansuran">
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${i+1}</td>
@@ -15983,7 +15991,6 @@ window.bukaModalPemantauanMou = function() {
             });
         }
         
-        // Footer Baru: Berasaskan Susunan Lajur Tepat
         htmlJadual += `</tbody>
                 <tfoot>
                     <tr style="background-color: #f8fafc; border-top: 2px solid var(--border-color);">
@@ -15998,7 +16005,6 @@ window.bukaModalPemantauanMou = function() {
             </table>`;
         
     } else {
-        // [Kekalkan logik ad-hoc untuk MOU penuh/Borang C yang tidak terlibat dengan pindaan ini]
         let rekodPemantauan = kes.pemantauan?.rekod || [];
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
