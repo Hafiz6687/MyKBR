@@ -1480,18 +1480,6 @@ Portal rasmi : jtksm.mohr.gov.my
                     </table>
                 </div>
             </div>
-            <!-- KAD PEMANTAUAN BAYARAN (MOU / BORANG C) -->
-            <div class="card full-width" id="kad_pemantauan_mou" style="display: none;">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span id="tajuk_kad_pemantauan">Pemantauan Bayaran</span>
-                    <button class="btn-add btn-terapung" id="btn_menu_pemantauan_mou" style="padding: 6px 12px; font-size: 0.85em; display: flex; align-items: center; gap: 5px;" onclick="bukaModalPemantauanMou()">
-                        <span>💰 Kemaskini Rekod Bayaran</span>
-                    </button>
-                </div>
-                <div class="card-body" id="body_pemantauan_mou">
-                    <!-- Progress bar & ringkasan dijana dinamik oleh renderKadPemantauan() -->
-                </div>
-            </div>
             <!-- BAHAGIAN 3: Maklumat Defendan -->
             <div class="card full-width" id="kad_maklumat_defendan">
                 <div class="card-header" id="mk_header_defendan">Maklumat Defendan</div>
@@ -1525,7 +1513,18 @@ Portal rasmi : jtksm.mohr.gov.my
                     </table>
                 </div>
             </div>
-            
+            <!-- KAD PEMANTAUAN BAYARAN (MOU / BORANG C) -->
+            <div class="card full-width" id="kad_pemantauan_mou" style="display: none;">
+                <div class="card-header">
+                    <span id="tajuk_kad_pemantauan">Pemantauan Bayaran</span>
+                    <button class="btn-add btn-terapung" id="btn_menu_pemantauan_mou" style="margin-left: auto; padding: 6px 12px; font-size: 0.85em; display: flex; align-items: center; gap: 5px;" onclick="bukaModalPemantauanMou()">
+                        <span>💰 Kemaskini Rekod Bayaran</span>
+                    </button>
+                </div>
+                <div class="card-body" id="body_pemantauan_mou">
+                    <!-- Progress bar & ringkasan dijana dinamik oleh renderKadPemantauan() -->
+                </div>
+            </div>
             <!-- BAHAGIAN 3.5: Sejarah Tindakan -->
             <div class="card full-width" id="kad_sejarah_tindakan" style="display: none;">
                 <div class="card-header">Sejarah Tindakan</div>
