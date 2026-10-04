@@ -16101,10 +16101,12 @@ window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
 };
 
 // ENJIN AUTO KIRA AD-HOC (MOU PENUH / BORANG C)
+// ENJIN AUTO KIRA AD-HOC (MOU PENUH / BORANG C) YANG DIPERBAIKI
 window.kiraStatusAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
     if (!tbody) return;
 
+    let totalDiperintahAsal = window.tempAmaunDiperintahAdhoc || 0;
     let totalDibayar = 0;
     let today = new Date();
     today.setHours(0,0,0,0);
@@ -16117,44 +16119,58 @@ window.kiraStatusAdhoc = function() {
         let aBayarInp = tr.querySelector('.inp-amaun-bayar');
         let statusSel = tr.querySelector('.inp-status');
 
-        let aDiperintah = parseFloat(aDiperintahInp.value) || 0;
-        let aBayar = parseFloat(aBayarInp.value) || 0;
+        // KIRA AMAUN DIPERINTAH SECARA DINAMIK (Ditolak dari baki sebelumnya)
+        let currentDiperintah = totalDiperintahAsal - totalDibayar;
+        currentDiperintah = currentDiperintah > 0 ? currentDiperintah : 0;
         
+        // Kemaskini nilai Amaun Diperintah pada kotak (supaya ia sentiasa tepat bila baris atas diedit)
+        if (aDiperintahInp) {
+            aDiperintahInp.value = currentDiperintah;
+        }
+
+        let aBayar = parseFloat(aBayarInp.value) || 0;
         totalDibayar += aBayar;
 
         let dMatang = tMatangInp.value ? new Date(tMatangInp.value) : null;
         let dTunggak = dMatang ? new Date(dMatang) : null;
-        if (dTunggak) dTunggak.setDate(dTunggak.getDate() + 1); // 14 + 1 Hari
+        if (dTunggak) dTunggak.setDate(dTunggak.getDate() + 1); // Tarikh MOU + 14 + 1 Hari
 
         let isOverdue = dTunggak && today >= dTunggak;
 
+        // LOGIK STATUS TERKINI
         let newStatus = "Belum Dibayar";
-        if (aBayar >= aDiperintah && aDiperintah > 0) {
+        if (aBayar >= currentDiperintah && currentDiperintah > 0) {
             newStatus = "Selesai";
         } else if (aBayar === 0) {
             if (isOverdue) newStatus = "Tertunggak";
             else newStatus = "Belum Dibayar";
-        } else if (aBayar > 0 && aBayar < aDiperintah) {
+        } else if (aBayar > 0 && aBayar < currentDiperintah) {
             if (isOverdue) newStatus = "Tertunggak";
             else newStatus = "Separa";
         }
         
+        // Jika kumulatif dah menyamai atau lebih total asal, set status Selesai
+        if (totalDibayar >= totalDiperintahAsal && aBayar > 0) {
+            newStatus = "Selesai";
+        }
+
         statusSel.value = newStatus;
 
+        // WARNAKAN STATUS
         if (newStatus === 'Selesai') statusSel.style.color = '#10b981';
         else if (newStatus === 'Tertunggak') statusSel.style.color = '#ef4444';
         else if (newStatus === 'Separa') statusSel.style.color = '#f59e0b';
         else statusSel.style.color = '#64748b';
 
-        // LOGIK AUTO-TAMBAH REKOD JIKA SEPARA/TERTUNGGAK PADA BARIS TERAKHIR
+        // LOGIK AUTO-TAMBAH REKOD JIKA SEPARA/TERTUNGGAK PADA BARIS TERAKHIR SAHAJA
         if ((newStatus === 'Separa' || newStatus === 'Tertunggak') && i === rows.length - 1 && aBayar > 0) {
-            let baki = aDiperintah - aBayar;
+            let baki = totalDiperintahAsal - totalDibayar;
             if (baki > 0) {
-                let nextStatus = isOverdue ? "Tertunggak" : "Separa"; // Seperti arahan user
+                let nextStatus = isOverdue ? "Tertunggak" : "Separa"; 
                 let newRow = document.createElement('tr');
                 newRow.className = 'baris-adhoc';
                 newRow.innerHTML = janaBarisAdhocHTML_Raw(rows.length, {
-                    tarikhMestiBayar: tMatangInp.value, // Extract same matang date
+                    tarikhMestiBayar: tMatangInp.value, 
                     amaunDiperintah: baki,
                     amaunDibayar: '',
                     status: nextStatus
@@ -16165,14 +16181,41 @@ window.kiraStatusAdhoc = function() {
         }
     });
 
+    // KEMASKINI RUMUSAN (FOOTER JADUAL)
     const elTotalDibayar = document.getElementById('adhoc_total_dibayar');
     if (elTotalDibayar) {
         elTotalDibayar.innerText = `RM ${totalDibayar.toLocaleString('en-MY', {minimumFractionDigits:2})}`;
     }
+    
+    let bakiSemasa = totalDiperintahAsal - totalDibayar;
     const elBaki = document.getElementById('adhoc_baki_semasa');
     if (elBaki) {
-        let bakiSemasa = window.tempAmaunDiperintahAdhoc - totalDibayar;
         elBaki.innerText = `RM ${Math.max(0, bakiSemasa).toLocaleString('en-MY', {minimumFractionDigits:2})}`;
+    }
+
+    // AUTO-BUANG BARIS KOSONG TERLEBIH JIKA BAKI DAH = 0
+    if (bakiSemasa <= 0) {
+        let currentRows = Array.from(tbody.querySelectorAll('.baris-adhoc'));
+        for (let j = currentRows.length - 1; j >= 1; j--) {
+            let r = currentRows[j];
+            let bayarVal = parseFloat(r.querySelector('.inp-amaun-bayar').value) || 0;
+            if (bayarVal === 0) {
+                r.remove();
+            } else {
+                break;
+            }
+        }
+        kemaskiniBilanganAdhoc();
+    }
+
+    // KAWALAN BUTANG (+ TAMBAH REKOD BAYARAN) - Sembunyikan jika baki = 0
+    const btnTambah = document.querySelector('button[onclick="tambahBarisBayaranAdhoc()"]');
+    if (btnTambah) {
+        if (bakiSemasa <= 0) {
+            btnTambah.style.display = 'none';
+        } else {
+            btnTambah.style.display = 'inline-block';
+        }
     }
 };
 
@@ -16191,13 +16234,20 @@ window.tambahBarisBayaranAdhoc = function() {
     tbody.querySelectorAll('.inp-amaun-bayar').forEach(inp => {
         totalDibayarSetakatIni += parseFloat(inp.value) || 0;
     });
+    
     let bakiTerkini = totalDiperintahAsal - totalDibayarSetakatIni;
+
+    // Jika baki dah 0, halang user tambah baris secara manual
+    if (bakiTerkini <= 0) {
+        alert("Baki bayaran telah selesai. Tiada rekod baharu diperlukan.");
+        return;
+    }
 
     let tr = document.createElement('tr');
     tr.className = 'baris-adhoc';
     tr.innerHTML = janaBarisAdhocHTML_Raw(currentCount, {
         tarikhMestiBayar: window.tempTarikhMatangAdhoc,
-        amaunDiperintah: bakiTerkini > 0 ? bakiTerkini : 0,
+        amaunDiperintah: bakiTerkini,
         amaunDibayar: ''
     });
     
