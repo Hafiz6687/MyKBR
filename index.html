@@ -15893,8 +15893,10 @@ window.bukaModalPemantauanMou = function() {
     
     let htmlJadual = '';
     
+    // ==========================================
+    // MOD ANSURAN
+    // ==========================================
     if (info.jenis === 'ansuran') {
-        // [Kekalkan Logik Ansuran Terdahulu - Tidak Diganggu]
         let senaraiAnsuran = kes.mou?.senaraiAnsuran || [];
         if (senaraiAnsuran.length === 0 && kes.sejarahTindakan) {
             const rekodMOU = [...kes.sejarahTindakan].reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
@@ -15920,6 +15922,7 @@ window.bukaModalPemantauanMou = function() {
             rekodPemantauan = senaraiAnsuran.map(a => ({ tarikhMestiBayar: a.tarikh, amaunDipersetujui: a.amaun, amaunDibayar: '', status: 'Belum Dibayar', tarikhDibayar: '', resit: '' }));
         }
         
+        // SUSUNAN KOLUM LEBAR BARU (%): Tarikh dikecilkan ke 12%, Status dibesarkan ke 18%
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
                 <div style="font-size: 0.9em; font-weight: 600;">Jadual Ansuran Bulanan</div>
@@ -15929,13 +15932,13 @@ window.bukaModalPemantauanMou = function() {
                 <thead style="background-color: var(--card-header-bg);">
                     <tr>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Tarikh Dipersetujui</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 12%;">Tarikh Dipersetujui</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Amaun Dipersetujui (RM)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Tarikh Dibayar</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 12%;">Tarikh Dibayar</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Amaun Dibayar (RM)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 13%;">Status</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 18%;">Status</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Resit</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 10%; text-align: center;">Tindakan</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 9%; text-align: center;">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody id="body_jadual_pemantauan_ansuran">
@@ -15950,6 +15953,7 @@ window.bukaModalPemantauanMou = function() {
                 let aBayarRaw = rekod.amaunDibayar !== undefined ? rekod.amaunDibayar : (rekod.status === 'Telah Dibayar' ? aSetuju : '');
                 let aBayar = aBayarRaw !== '' ? parseFloat(String(aBayarRaw).replace(/,/g, '')) : '';
                 
+                // STATUS KEMBALI KEPADA FONT NORMAL (font-size: 0.9em; padding: 4px;)
                 htmlJadual += `
                     <tr class="baris-ansuran">
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${i+1}</td>
@@ -15958,8 +15962,11 @@ window.bukaModalPemantauanMou = function() {
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);"><input type="date" class="inp-tarikh-bayar" value="${rekod.tarikhDibayar || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;"></td>
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);"><input type="number" class="inp-amaun-bayar" placeholder="0.00" value="${aBayar}" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold; color: var(--primary-blue);" oninput="kiraStatusAnsuran()"></td>
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                            <select class="inp-status" style="padding: 4px; font-size: 0.9em; font-weight: bold; pointer-events: none; background: transparent; border: none; cursor: not-allowed; appearance: none; -moz-appearance: none; -webkit-appearance: none;" tabindex="-1">
-                                <option value="Belum Dibayar">Belum Dibayar</option><option value="Separa">Separa</option><option value="Tertunggak">Tertunggak</option><option value="Selesai">Selesai</option>
+                            <select class="inp-status" style="padding: 4px; width: 100%; font-size: 0.9em; font-weight: bold; pointer-events: none; background: transparent; border: none; cursor: not-allowed; appearance: none; -moz-appearance: none; -webkit-appearance: none;" tabindex="-1">
+                                <option value="Belum Dibayar" ${rekod.status === 'Belum Dibayar' ? 'selected' : ''}>Belum Dibayar</option>
+                                <option value="Separa" ${rekod.status === 'Separa' ? 'selected' : ''}>Separa</option>
+                                <option value="Tertunggak" ${rekod.status === 'Tertunggak' ? 'selected' : ''}>Tertunggak</option>
+                                <option value="Selesai" ${rekod.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
                             </select>
                         </td>
                         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);"><input type="text" class="inp-resit" placeholder="No. Resit" value="${rekod.resit || ''}" style="padding: 4px; width: 100%; box-sizing: border-box;"></td>
@@ -15987,9 +15994,9 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
     } else {
-        // --- LOGIK BAHARU UNTUK AD-HOC (MOU PENUH / BORANG C) ---
-        
-        // 1. Ekstrak Tarikh MOU/Borang C + 14 Hari
+        // ==========================================
+        // MOD ADHOC (MOU PENUH / BORANG C)
+        // ==========================================
         let tarikhAsal = new Date();
         if (kes.sejarahTindakan) {
             const rekod = [...kes.sejarahTindakan].reverse().find(s => s.tindakan && (s.tindakan.includes("MOU") || s.tindakan.includes("Borang C") || s.tindakan.includes("Perintah")));
@@ -15998,24 +16005,22 @@ window.bukaModalPemantauanMou = function() {
                 if (tMatch.length === 3) tarikhAsal = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
             }
         }
-        tarikhAsal.setDate(tarikhAsal.getDate() + 14); // Tambah 14 Hari
+        tarikhAsal.setDate(tarikhAsal.getDate() + 14); 
         let yyyy = tarikhAsal.getFullYear();
         let mm = String(tarikhAsal.getMonth() + 1).padStart(2, '0');
         let dd = String(tarikhAsal.getDate()).padStart(2, '0');
         window.tempTarikhMatangAdhoc = `${yyyy}-${mm}-${dd}`;
-        window.tempAmaunDiperintahAdhoc = info.jumlah || 0; // Extract amaun dipersetujui
+        window.tempAmaunDiperintahAdhoc = info.jumlah || 0;
 
         let rekodPemantauan = kes.pemantauan?.rekod || [];
-        
-        // Cipta baris pertama jika kosong
         if (rekodPemantauan.length === 0) {
             rekodPemantauan = [{
-                tarikhMestiBayar: window.tempTarikhMatangAdhoc,
-                amaunDiperintah: window.tempAmaunDiperintahAdhoc,
+                tarikhMestiBayar: window.tempTarikhMatangAdhoc, amaunDiperintah: window.tempAmaunDiperintahAdhoc,
                 amaunDibayar: '', status: 'Belum Dibayar', tarikhDibayar: '', resit: ''
             }];
         }
         
+        // SUSUNAN KOLUM LEBAR BARU (%): Tarikh dikecilkan ke 12%, Status dibesarkan ke 18%
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
                 <div style="font-size: 0.9em; font-weight: 600;">Rekod Bayaran (MOU Penuh / Borang C)</div>
@@ -16024,13 +16029,13 @@ window.bukaModalPemantauanMou = function() {
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
                     <tr>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 4%;">Bil.</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Tempoh Perintah Bayar (14 Hari)</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 5%;">Bil.</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 12%;">Tempoh Perintah Bayar</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Amaun Diperintah (RM)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Tarikh Bayaran</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 12%;">Tarikh Bayaran</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Amaun Dibayar (RM)</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Status</th>
-                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 15%;">Resit</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 18%;">Status</th>
+                        <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 14%;">Resit</th>
                         <th style="padding: 10px; border-bottom: 1px solid var(--border-color); width: 9%; text-align: center;">Hapus</th>
                     </tr>
                 </thead>
@@ -16056,12 +16061,10 @@ window.bukaModalPemantauanMou = function() {
             
         document.getElementById('kandungan_jadual_pemantauan').innerHTML = htmlJadual;
         document.getElementById('modalPemantauanMou').style.display = 'flex';
-        
         setTimeout(() => { kiraStatusAdhoc(); }, 50);
     }
 };
 
-// GENERATOR BARIS AD-HOC (MOU PENUH)
 window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     let tMatang = rekod.tarikhMestiBayar || window.tempTarikhMatangAdhoc || '';
     let aDiperintahRaw = rekod.amaunDiperintah !== undefined ? rekod.amaunDiperintah : window.tempAmaunDiperintahAdhoc;
@@ -16074,6 +16077,7 @@ window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     let resit = rekod.resit || '';
     let status = rekod.status || 'Belum Dibayar';
 
+    // FONT SAIZ DIKEMBALIKAN KE NORMAL
     return `
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-adhoc">${index + 1}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
@@ -16105,7 +16109,51 @@ window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     `;
 };
 
-// ENJIN AUTO KIRA AD-HOC (MOU PENUH / BORANG C)
+window.tambahBarisAnsuranManual = function() {
+    const tbody = document.getElementById('body_jadual_pemantauan_ansuran');
+    if (!tbody) return;
+
+    const barisKosong = tbody.querySelector('.empty-row');
+    if (barisKosong) barisKosong.closest('tr').remove();
+
+    const currentCount = tbody.querySelectorAll('.baris-ansuran').length;
+    
+    // FONT SAIZ DIKEMBALIKAN KE NORMAL
+    let tr = document.createElement('tr');
+    tr.className = 'baris-ansuran';
+    tr.innerHTML = `
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${currentCount + 1}</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="date" class="inp-tarikh-matang" style="padding: 4px; width: 100%; box-sizing: border-box;" onchange="kiraStatusAnsuran()">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="number" class="inp-amaun-setuju" placeholder="0.00" style="padding: 4px; width: 100%; box-sizing: border-box; background: #fff; border: 1px solid #cbd5e1;" oninput="kiraStatusAnsuran()">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="date" class="inp-tarikh-bayar" style="padding: 4px; width: 100%; box-sizing: border-box;">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="number" class="inp-amaun-bayar" placeholder="0.00" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold; color: var(--primary-blue);" oninput="kiraStatusAnsuran()">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <select class="inp-status" style="padding: 4px; width: 100%; font-size: 0.9em; font-weight: bold; pointer-events: none; background: transparent; border: none; cursor: not-allowed; appearance: none; -moz-appearance: none; -webkit-appearance: none;" tabindex="-1">
+                <option value="Belum Dibayar">Belum Dibayar</option>
+                <option value="Separa">Separa</option>
+                <option value="Tertunggak">Tertunggak</option>
+                <option value="Selesai">Selesai</option>
+            </select>
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <input type="text" class="inp-resit" placeholder="No. Resit" style="padding: 4px; width: 100%; box-sizing: border-box;">
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">
+            <button class="btn-delete-tbl" onclick="hapusBarisAnsuran(this)">🗑️</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    kemaskiniBilanganAnsuran();
+    kiraStatusAnsuran();
+};
 // ENJIN AUTO KIRA AD-HOC (MOU PENUH / BORANG C) YANG DIPERBAIKI
 window.kiraStatusAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
@@ -16416,53 +16464,6 @@ window.kiraStatusAnsuran = function() {
     }
 };
 
-window.tambahBarisAnsuranManual = function() {
-    const tbody = document.getElementById('body_jadual_pemantauan_ansuran');
-    if (!tbody) return;
-
-    const barisKosong = tbody.querySelector('.empty-row');
-    if (barisKosong) barisKosong.closest('tr').remove();
-
-    const currentCount = tbody.querySelectorAll('.baris-ansuran').length;
-    
-    // Untuk baris manual, input mesti editable supaya user boleh masukkan data tambahan.
-    let tr = document.createElement('tr');
-    tr.className = 'baris-ansuran';
-    tr.innerHTML = `
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-ansuran">${currentCount + 1}</td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="date" class="inp-tarikh-matang" style="padding: 4px; width: 100%; box-sizing: border-box;" onchange="kiraStatusAnsuran()">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="number" class="inp-amaun-setuju" placeholder="0.00" style="padding: 4px; width: 100%; box-sizing: border-box; background: #fff; border: 1px solid #cbd5e1;" oninput="kiraStatusAnsuran()">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="date" class="inp-tarikh-bayar" style="padding: 4px; width: 100%; box-sizing: border-box;">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="number" class="inp-amaun-bayar" placeholder="0.00" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold; color: var(--primary-blue);" oninput="kiraStatusAnsuran()">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <select class="inp-status" style="padding: 4px; font-size: 0.9em; font-weight: bold; pointer-events: none; background: #f1f5f9; cursor: not-allowed;" tabindex="-1">
-                <option value="Belum Dibayar">Belum Dibayar</option>
-                <option value="Separa">Separa</option>
-                <option value="Tertunggak">Tertunggak</option>
-                <option value="Selesai">Selesai</option>
-            </select>
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="text" class="inp-resit" placeholder="No. Resit" style="padding: 4px; width: 100%; box-sizing: border-box;">
-        </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;">
-            <button class="btn-delete-tbl" onclick="hapusBarisAnsuran(this)">🗑️</button>
-        </td>
-    `;
-    tbody.appendChild(tr);
-    kemaskiniBilanganAnsuran();
-    kiraStatusAnsuran(); // Kemaskini nilai jadual serta-merta
-};
-
-       
 window.renderKadPemantauan = function(kes) {
     const info = semakJenisPemantauan(kes);
     const kad = document.getElementById('kad_pemantauan_mou');
