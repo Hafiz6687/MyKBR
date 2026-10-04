@@ -15015,64 +15015,28 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
         }
     }
 
-    // 4. Bina teks lalai (Keseluruhan)
-    let jumRM = `RM ${jumRMRaw.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`;
-    let teksTuntutanMOU = `wang berjumlah <strong>${jumRM}</strong>`;
+    // 4. PENYEDUT BAKI SEMASA DARI MODUL KEMASKINI PEMANTAUAN BAYARAN TERKINI
+    let bakiSemasa = jumRMRaw;
 
-    // 5. PENYEDUT BAKI ANSURAN (KALIS-GAGAL)
-    let adaTunggakanDikesan = false; // PEMBETULAN: Isytihar pembolehubah ini
-    
-    // Curi baca terus dari kotak 'Baki Tertunggak' yang wujud di skrin profil sistem
-    const teksSkrin = document.body.innerText;
-    const perlawananBaki = teksSkrin.match(/Baki Tertunggak:\s*RM\s*([\d,]+\.\d{2})/i);
-    
-    if (perlawananBaki && perlawananBaki[1]) {
-        // Jika teks Baki Tertunggak wujud di skrin, terus override teks surat
-        let bakiSemasa = parseFloat(perlawananBaki[1].replace(/,/g, ''));
-        if (bakiSemasa > 0 && bakiSemasa < jumRMRaw) {
-            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBaki[1]}</strong>`;
-            adaTunggakanDikesan = true; // Tandakan dah jumpa
-        }
-    } else if (kes.rekodPemantauanMou && kes.rekodPemantauanMou.length > 0) {
-        // Sandaran: Jika skrin gagal dibaca, kira dari memori jadual
-        let telahDibayar = 0;
-        kes.rekodPemantauanMou.forEach(r => {
-            if (r.status === "Telah Bayar" || r.status === "Selesai") {
-                telahDibayar += parseFloat((r.amaun || "0").toString().replace(/,/g, ''));
-            }
+    if (kes.pemantauan && kes.pemantauan.rekod && kes.pemantauan.rekod.length > 0) {
+        let totalDibayar = 0;
+        kes.pemantauan.rekod.forEach(r => {
+            // Ekstrak amaun yang telah dibayar dari memori (menyokong format baru dan lama)
+            let dibayar = parseFloat(r.amaunDibayar || r.amaun || 0);
+            totalDibayar += dibayar;
         });
-        let baki = jumRMRaw - telahDibayar;
-        if (baki > 0 && baki < jumRMRaw) {
-            teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${baki.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
-            adaTunggakanDikesan = true; // Tandakan dah jumpa
-        }
+        bakiSemasa = jumRMRaw - totalDibayar;
+        if (bakiSemasa < 0) bakiSemasa = 0;
     }
 
-    // Langkah 5B: Jika jadual kosong (sebab refresh), paksa cari dari teks Sejarah Tindakan
-    if (!adaTunggakanDikesan && kes.sejarahTindakan) {
-        // Cari rekod terakhir dalam sejarah yang menyebut 'baki', 'tunggakan', atau 'ansuran' beserta nilai RM
-        const rekodTunggakanSejarah = kes.sejarahTindakan.slice().reverse().find(s => 
-            s.butiran && 
-            (s.butiran.toLowerCase().includes("baki") || s.butiran.toLowerCase().includes("tunggakan") || s.tindakan.toLowerCase().includes("mou")) && 
-            s.butiran.match(/RM\s*[\d,]+\.\d{2}/i)
-        );
-
-        if (rekodTunggakanSejarah) {
-            // Tangkap RM yang berada dekat dengan perkataan Baki/Tunggakan
-            let perlawananBakiSejarah = rekodTunggakanSejarah.butiran.match(/(?:baki|tunggak).*?RM\s*([\d,]+\.\d{2})/i);
-            if (perlawananBakiSejarah && perlawananBakiSejarah[1]) {
-                teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${perlawananBakiSejarah[1]}</strong>`;
-            } else {
-                // Jika tiada perkataan khusus, ambil sahaja RM terakhir yang dipaparkan dalam rekod update tersebut
-                let semuaRM = [...rekodTunggakanSejarah.butiran.matchAll(/RM\s*([\d,]+\.\d{2})/gi)];
-                if (semuaRM.length > 0) {
-                    let nilaiRMTerakhir = semuaRM[semuaRM.length - 1][1];
-                    if (parseFloat(nilaiRMTerakhir.replace(/,/g, '')) < jumRMRaw) {
-                        teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${nilaiRMTerakhir}</strong>`;
-                    }
-                }
-            }
-        }
+    // 5. BINA TEKS TUNTUTAN UNTUK PERENGGAN 2
+    let teksTuntutanMOU = "";
+    if (bakiSemasa < jumRMRaw) {
+        // Jika ada bayaran separa, surat akan sebut "baki bayaran tertunggak"
+        teksTuntutanMOU = `baki bayaran tertunggak berjumlah <strong>RM ${bakiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
+    } else {
+        // Jika belum ada bayaran, surat sebut "wang berjumlah"
+        teksTuntutanMOU = `wang berjumlah <strong>RM ${bakiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
     }
 
     // LOGIK PENJANAAN S.K. DAN NOTIS WAKIL BERDASARKAN CHECKBOX
