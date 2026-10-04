@@ -1685,58 +1685,6 @@ Portal rasmi : jtksm.mohr.gov.my
     </div>
 </div>
 
-<!-- ======================================================= -->
-<!-- SCRIPT TAMBAHAN KHAS UNTUK TEMPAT SEBUTAN               -->
-<!-- Sila biarkan ia berada betul-betul di bawah kad ini     -->
-<!-- ======================================================= -->
-<script>
-    function autoSemakPoskodTempat() {
-        const poskod = document.getElementById('mk_poskod_tempat').value;
-        const elDaerah = document.getElementById('mk_daerah_tempat');
-        const elNegeri = document.getElementById('mk_negeri_tempat');
-        
-        if (poskod.length === 5) {
-            // Logik Poskod Ringkas Negeri Johor (Boleh ditambah kemudian jika perlu)
-            if (poskod.startsWith("86")) {
-                elDaerah.value = "Kluang"; elNegeri.value = "Johor";
-            } else if (poskod.startsWith("80") || poskod.startsWith("81") || poskod.startsWith("82")) {
-                elDaerah.value = "Johor Bahru"; elNegeri.value = "Johor";
-            } else if (poskod.startsWith("83")) {
-                elDaerah.value = "Batu Pahat"; elNegeri.value = "Johor";
-            } else if (poskod.startsWith("84")) {
-                elDaerah.value = "Muar"; elNegeri.value = "Johor";
-            } else if (poskod.startsWith("85")) {
-                elDaerah.value = "Segamat"; elNegeri.value = "Johor";
-            } else {
-                // Biarkan kosong jika tiada dalam senarai, pengguna boleh taip sendiri
-            }
-        }
-    }
-
-    function kemaskiniTempatSebutanLatar() {
-        const nama = document.getElementById('mk_nama_tempat').value.trim();
-        const a1 = document.getElementById('mk_alamat1_tempat').value.trim();
-        const a2 = document.getElementById('mk_alamat2_tempat').value.trim();
-        const a3 = document.getElementById('mk_alamat3_tempat').value.trim();
-        const poskod = document.getElementById('mk_poskod_tempat').value.trim();
-        const daerah = document.getElementById('mk_daerah_tempat').value.trim();
-        const negeri = document.getElementById('mk_negeri_tempat').value.trim();
-
-        // Gabung semua menjadi alamat penuh (Abaikan koma jika kotak kosong)
-        let alamatPenuh = [nama, a1, a2, a3, (poskod + " " + daerah).trim(), negeri]
-            .filter(val => val !== "") 
-            .join(", ");
-        
-        // Simpan semula ke dalam kotak input tersembunyi supaya diproses oleh sistem sedia ada
-        document.getElementById('mk_tempat_sebutan').value = alamatPenuh;
-        
-        // Periksa jika butang Jana Notis sudah boleh ditekan
-        if(typeof semakButangSebutan === 'function') {
-            semakButangSebutan();
-        }
-    }
-</script>
-
 <!-- KAD-KAD TAMBAHAN NOTIS (GENERIK) -->
 <!-- MODAL POP-UP KHAS UNTUK SEBUTAN KES (TANGGUH) -->
 <div class="modal-overlay" id="modalSebutanTangguh">
@@ -3206,6 +3154,51 @@ async function simpanSenaraiKeLokal() {
         localStorage.setItem('eLC_senaraiKes', JSON.stringify(memoriSenaraiKes));
     }
 }
+
+function autoSemakPoskodTempat() {
+    const poskod = document.getElementById('mk_poskod_tempat').value;
+    const elDaerah = document.getElementById('mk_daerah_tempat');
+    const elNegeri = document.getElementById('mk_negeri_tempat');
+    
+    if (poskod.length === 5) {
+        // Logik Poskod Ringkas Negeri Johor
+        if (poskod.startsWith("86")) {
+            elDaerah.value = "Kluang"; elNegeri.value = "Johor";
+        } else if (poskod.startsWith("80") || poskod.startsWith("81") || poskod.startsWith("82")) {
+            elDaerah.value = "Johor Bahru"; elNegeri.value = "Johor";
+        } else if (poskod.startsWith("83")) {
+            elDaerah.value = "Batu Pahat"; elNegeri.value = "Johor";
+        } else if (poskod.startsWith("84")) {
+            elDaerah.value = "Muar"; elNegeri.value = "Johor";
+        } else if (poskod.startsWith("85")) {
+            elDaerah.value = "Segamat"; elNegeri.value = "Johor";
+        }
+    }
+}
+
+function kemaskiniTempatSebutanLatar() {
+    const nama = document.getElementById('mk_nama_tempat').value.trim();
+    const a1 = document.getElementById('mk_alamat1_tempat').value.trim();
+    const a2 = document.getElementById('mk_alamat2_tempat').value.trim();
+    const a3 = document.getElementById('mk_alamat3_tempat').value.trim();
+    const poskod = document.getElementById('mk_poskod_tempat').value.trim();
+    const daerah = document.getElementById('mk_daerah_tempat').value.trim();
+    const negeri = document.getElementById('mk_negeri_tempat').value.trim();
+
+    // Gabung semua menjadi alamat penuh (Abaikan koma jika kotak kosong)
+    let alamatPenuh = [nama, a1, a2, a3, (poskod + " " + daerah).trim(), negeri]
+        .filter(val => val !== "") 
+        .join(", ");
+    
+    // Simpan semula ke dalam kotak input tersembunyi supaya diproses oleh sistem sedia ada
+    document.getElementById('mk_tempat_sebutan').value = alamatPenuh;
+    
+    // Periksa jika butang Jana Notis sudah boleh ditekan
+    if(typeof semakButangSebutan === 'function') {
+        semakButangSebutan();
+    }
+}
+       
 function bukaMaklumatKes(index) {
     isSelesaiDaftar = false;
     isEditMode = true; 
