@@ -1623,8 +1623,8 @@ Portal rasmi : jtksm.mohr.gov.my
         <!-- INPUT TERSEMBUNYI (Penyelamat Fungsi Asal supaya sistem surat tidak error) -->
         <input type="hidden" id="mk_tempat_sebutan" value="Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor">
 
-        <!-- Baris 1: Tarikh & Masa -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <!-- Baris 1: Grid 3 Kolum (Tarikh, Masa & Butang Jana Notis) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; align-items: end; margin-bottom: 15px;">
             <div>
                 <label class="info-label" style="display:block; margin-bottom: 5px;">Tarikh Sebutan</label>
                 <input type="date" id="mk_tarikh_sebutan" onchange="semakButangSebutan()" style="width: 100%; height: 42px; box-sizing: border-box; padding: 8px;">
@@ -1633,10 +1633,15 @@ Portal rasmi : jtksm.mohr.gov.my
                 <label class="info-label" style="display:block; margin-bottom: 5px;">Masa Sebutan</label>
                 <input type="time" id="mk_masa_sebutan" onchange="semakButangSebutan()" style="width: 100%; height: 42px; box-sizing: border-box; padding: 8px;">
             </div>
+            <div>
+                <button id="btnTindakanSebutan" class="btn-save" style="width: 100%; height: 42px; padding: 0 10px; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 8px; margin:0; opacity: 0.5; cursor: not-allowed; box-sizing: border-box;" onclick="tindakanSebutan()" disabled>
+                    📄 Jana Notis Sebutan
+                </button>
+            </div>
         </div>
 
         <!-- Baris 2: Kotak Maklumat Alamat Berpusat -->
-        <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 0px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
                 <div style="font-weight: 600; color: var(--primary-blue); font-size: 0.95em;">Maklumat Tempat Sebutan</div>
                 <label style="display: flex; align-items: center; gap: 5px; font-size: 0.85em; cursor: pointer; font-weight: 600; color: #b91c1c;">
@@ -1688,6 +1693,9 @@ Portal rasmi : jtksm.mohr.gov.my
             </div>
             <!-- TAMAT KONTENA INPUT -->
         </div> <!-- Penutup untuk kotak kelabu Maklumat Tempat Sebutan -->
+        
+    </div> <!-- Penutup card-body -->
+</div> <!-- Penutup kad_sebutan_kes keseluruhan -->
         
         <!-- PEMBETULAN: <div> pembuka butang tanpa tanda palang -->
         <div>
