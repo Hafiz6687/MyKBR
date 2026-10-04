@@ -15980,7 +15980,35 @@ window.renderKadPemantauan = function(kes) {
     `;
     document.getElementById('body_pemantauan_mou').innerHTML = html;
 };
+// =========================================================================
+// PENCETUS BUTANG PEMANTAUAN BAYARAN (DARI MENU TINDAKAN PENGURUSAN)
+// =========================================================================
+window.bukaPemantauanMou = function() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) {
+        alert("Sila pilih atau buka kes terlebih dahulu.");
+        return;
+    }
 
+    // Semak sama ada kes ini layak mempunyai pemantauan (MOU atau Borang C)
+    const info = semakJenisPemantauan(kes);
+    if (!info.aktif) {
+        alert("Modul pemantauan bayaran hanya aktif untuk kes yang mempunyai rekod Persetujuan Bersama (MOU) atau Perintah Bayar (Borang C).");
+        return;
+    }
+
+    // Panggil fungsi modal pemantauan yang sebenar
+    if (typeof window.bukaModalPemantauanMou === 'function') {
+        window.bukaModalPemantauanMou();
+    } else {
+        const modal = document.getElementById('modalPemantauanMou');
+        if (modal) {
+            modal.style.display = 'flex';
+        } else {
+            alert("Ralat: Elemen antara muka (UI) modal pemantauan bayaran tidak dijumpai dalam dokumen.");
+        }
+    }
+};
 window.bukaModalPemantauanMou = function() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
