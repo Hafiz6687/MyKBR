@@ -4173,17 +4173,35 @@ function tindakanSamanA() {
     }
 }
 
-// VALIDASI BUTANG SEBUTAN (ASAL)
+// Fungsi menyemak butang Jana Notis Sebutan
 function semakButangSebutan() {
-    const elTarikh = document.getElementById('mk_tarikh_sebutan');
-    const elMasa = document.getElementById('mk_masa_sebutan');
-    const btn = document.getElementById('btnTindakanSebutan');
-    if (!elTarikh || !elMasa || !btn) return; // <-- PERLINDUNGAN CRASH
+    const tarikhNotis = document.getElementById('mk_tarikh_notis')?.value;
+    const tarikhSebutan = document.getElementById('mk_tarikh_sebutan')?.value;
+    const masaSebutan = document.getElementById('mk_masa_sebutan')?.value;
+    const btnSebutan = document.getElementById('btnTindakanSebutan');
 
-    if (elTarikh.value && elMasa.value) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; } 
-    else { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; }
+    if (btnSebutan) {
+        // Butang HANYA akan aktif jika ketiga-tiga kotak mempunyai nilai
+        if (tarikhNotis && tarikhSebutan && masaSebutan) {
+            btnSebutan.disabled = false;
+            btnSebutan.style.opacity = "1";
+            btnSebutan.style.cursor = "pointer";
+        } else {
+            btnSebutan.disabled = true;
+            btnSebutan.style.opacity = "0.5";
+            btnSebutan.style.cursor = "not-allowed";
+        }
+    }
 }
 
+// Fungsi automatik letak tarikh hari ini pada Tarikh Notis (Kad Sebutan)
+document.addEventListener("DOMContentLoaded", function() {
+    let tarikhNotis = document.getElementById('mk_tarikh_notis');
+    if(tarikhNotis && !tarikhNotis.value) {
+        tarikhNotis.value = new Date().toISOString().split('T')[0];
+    }
+});
+       
 // VALIDASI BUTANG GENERIK (Tangguh, Bicara, Keputusan)
 function semakButangNotis(idPrefix) {
     const elTarikh = document.getElementById(`mk_tarikh_${idPrefix}`);
