@@ -14514,24 +14514,20 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
     let senaraiPenerimaMou = (window.tempDataMou && window.tempDataMou.senaraiPenerima) ? window.tempDataMou.senaraiPenerima : [];
 
     // --- LOGIK LABEL ID DINAMIK (PENGADU & DEFENDAN) ---
-    let labelIdPengaduMOU = "No. Kad Pengenalan";
-    let labelIdDefendanMOU = "No. Kad Pengenalan";
+    function tentukanLabelID(nomborID) {
+        if (!nomborID) return "No. Kad Pengenalan";
+        let bersih = String(nomborID).trim();
+        let isMyKad = /^\d{6}-\d{2}-\d{4}$/.test(bersih) || /^\d{12}$/.test(bersih);
+        
+        if (isMyKad) {
+            return "No. Kad Pengenalan";
+        } else {
+            return "No. Pasport";
+        }
+    }
 
-    // Semak jenis pendaftaran wakil Pengadu
-    if (kes.senaraiPerwakilan) {
-        let wPengadu = kes.senaraiPerwakilan.find(w => w.kategori && w.kategori.includes("Wakil"));
-        if (wPengadu && wPengadu.jenisDaftar === "Pasport") {
-            labelIdPengaduMOU = "No. Pasport";
-        }
-    }
-    
-    // Semak jenis pendaftaran wakil Defendan
-    if (kes.senaraiPerwakilanDefendan) {
-        let wDefendan = kes.senaraiPerwakilanDefendan.find(w => w.kategori && w.kategori.includes("Wakil"));
-        if (wDefendan && wDefendan.jenisDaftar === "Pasport") {
-            labelIdDefendanMOU = "No. Pasport";
-        }
-    }
+    let labelIdPengaduMOU = tentukanLabelID(signKpP);
+    let labelIdDefendanMOU = tentukanLabelID(signKpD);
     // ---------------------------------------------------
     // EKSTRAK MAKLUMAT PEGUAM UNTUK S.K.
     let peguamPengaduHTML = '';
