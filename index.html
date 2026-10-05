@@ -14513,6 +14513,26 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
     // Dapatkan data checkbox yang ditanda dari memori
     let senaraiPenerimaMou = (window.tempDataMou && window.tempDataMou.senaraiPenerima) ? window.tempDataMou.senaraiPenerima : [];
 
+    // --- LOGIK LABEL ID DINAMIK (PENGADU & DEFENDAN) ---
+    let labelIdPengaduMOU = "No. Kad Pengenalan";
+    let labelIdDefendanMOU = "No. Kad Pengenalan";
+
+    // Semak jenis pendaftaran wakil Pengadu
+    if (kes.senaraiPerwakilan) {
+        let wPengadu = kes.senaraiPerwakilan.find(w => w.kategori && w.kategori.includes("Wakil"));
+        if (wPengadu && wPengadu.jenisDaftar === "Pasport") {
+            labelIdPengaduMOU = "No. Pasport";
+        }
+    }
+    
+    // Semak jenis pendaftaran wakil Defendan
+    if (kes.senaraiPerwakilanDefendan) {
+        let wDefendan = kes.senaraiPerwakilanDefendan.find(w => w.kategori && w.kategori.includes("Wakil"));
+        if (wDefendan && wDefendan.jenisDaftar === "Pasport") {
+            labelIdDefendanMOU = "No. Pasport";
+        }
+    }
+    // ---------------------------------------------------
     // EKSTRAK MAKLUMAT PEGUAM UNTUK S.K.
     let peguamPengaduHTML = '';
     let labelWakilPengadu = '(Peguamcara bagi Pengadu)';
@@ -14735,9 +14755,9 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                             <div style="margin-bottom: 5px;">Tandatangan Pengadu</div>
                             <div style="text-align: left; line-height: 1.5; font-size: 10pt; display: inline-block; width: 100%;">
                                 Nama: ${signNamaP ? `<strong>${signNamaP.toUpperCase()}</strong>` : '.................................................................'}<br>
-                                No. Kad Pengenalan: ${signKpP ? `<strong>${signKpP}</strong>` : '........................................'}<br>
+                                ${labelIdPengaduMOU}:${signKpP ? `<strong>${signKpP}</strong>` : '........................................'}<br>
                                 ${isMajikan ? `Jawatan: ${signJawatanP ? `<strong>${signJawatanP.toUpperCase()}</strong>` : '.................................................................'}<br>` : ''}
-                                Tarikh: <strong>${tarikhSebutanDD} ${tarikhSebutanMMYYYY}</strong>
+                                Tarikh: <strong>${tarikhSebutanDD}${tarikhSebutanMMYYYY}</strong>
                             </div>
                         </div>
                         <div style="text-align: center;">
@@ -14745,9 +14765,9 @@ let teksTempohBayaran = `<div style="page-break-inside: avoid; text-indent: 40px
                             <div style="margin-bottom: 5px;">Tandatangan Defendan</div>
                             <div style="text-align: left; line-height: 1.5; font-size: 10pt; display: inline-block; width: 100%;">
                                 Nama: ${signNamaD ? `<strong>${signNamaD.toUpperCase()}</strong>` : '.................................................................'}<br>
-                                No. Kad Pengenalan: ${signKpD ? `<strong>${signKpD}</strong>` : '........................................'}<br>
+                                ${labelIdDefendanMOU}:${signKpD ? `<strong>${signKpD}</strong>` : '........................................'}<br>
                                 ${!isMajikan ? `Jawatan: ${signJawatanD ? `<strong>${signJawatanD.toUpperCase()}</strong>` : '.................................................................'}<br>` : ''}
-                                Tarikh: <strong>${tarikhSebutanDD} ${tarikhSebutanMMYYYY}</strong>
+                                Tarikh: <strong>${tarikhSebutanDD}${tarikhSebutanMMYYYY}</strong>
                             </div>
                         </div>
                     </div>
