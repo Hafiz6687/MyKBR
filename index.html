@@ -5296,8 +5296,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             </tr>`;
         }
 
-        let tempatSamanRaw = 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim';
-        
         // INTERCEPT DATA ALAMAT & PEGAWAI DARI POP-UP SEBUTAN SEMULA
         if (window.tempDataSebutanSemula) {
             let dSemula = window.tempDataSebutanSemula;
@@ -10099,7 +10097,7 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     // TARIK TARIKH & MASA SAMAN BAHARU
     const tarikhRaw = memoData.tarikh !== undefined ? memoData.tarikh : document.getElementById('mk_tarikh_saman')?.value;
     const masaRaw = memoData.masa !== undefined ? memoData.masa : document.getElementById('mk_masa_saman')?.value;
-    const tempatSamanRaw = memoData.tempat !== undefined ? memoData.tempat : (document.getElementById('mk_tempat_saman')?.value || 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim');
+    const tempatSamanRaw = memoData.tempat !== undefined && memoData.tempat !== "" ? memoData.tempat : (document.getElementById('mk_tempat_sebutan')?.value || 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim');
     
     let tarikhSebutanDD = ".......";
     let tarikhSebutanMMYYYY = "........................";
