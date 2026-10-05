@@ -5296,14 +5296,26 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             </tr>`;
         }
 
+        // ---------------------------------------------------------
         // INTERCEPT DATA ALAMAT & PEGAWAI DARI POP-UP SEBUTAN SEMULA
+        // ---------------------------------------------------------
+        let tempatSamanRaw = "PEJABAT TENAGA KERJA KLUANG, JALAN PEJABAT KERAJAAN, 86000 KLUANG, JOHOR DARUL TAKZIM"; // Alamat Lalai Selamat
+
         if (window.tempDataSebutanSemula) {
             let dSemula = window.tempDataSebutanSemula;
-            let arrTpt = [dSemula.tempatNama, dSemula.a1, dSemula.a2, dSemula.a3].filter(Boolean);
-            let posBdr = [dSemula.pos, dSemula.bdr].filter(Boolean).join(' ');
-            if (posBdr) arrTpt.push(posBdr);
-            if (dSemula.ngr) arrTpt.push(dSemula.ngr);
-            tempatSamanRaw = arrTpt.join(', ').toUpperCase();
+            
+            // SEMAK: Adakah pengguna tanda kotak "Tempat Berbeza"?
+            if (dSemula.isBerbeza) {
+                let arrTpt = [dSemula.tempatNama, dSemula.a1, dSemula.a2, dSemula.a3].filter(Boolean);
+                let posBdr = [dSemula.pos, dSemula.bdr].filter(Boolean).join(' ');
+                if (posBdr) arrTpt.push(posBdr);
+                if (dSemula.ngr) arrTpt.push(dSemula.ngr);
+                
+                if (arrTpt.length > 0) {
+                    tempatSamanRaw = arrTpt.join(', ').toUpperCase();
+                }
+            } 
+            // Jika TIDAK ditanda, ia akan kekal menggunakan Alamat Lalai Selamat di atas.
 
             // Override Tarikh Surat & Nama Pegawai
             let tN = new Date(dSemula.tarikhNotis);
@@ -5312,6 +5324,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiSemula = dSemula.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSemula);
         }
+        // ---------------------------------------------------------
 
         let tarikhSebutanDD = ".......";
         let tarikhSebutanMMYYYY = "........................";
