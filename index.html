@@ -10097,8 +10097,12 @@ function bukaPreviewSamanA(dataSimpanan = null) {
     // TARIK TARIKH & MASA SAMAN BAHARU
     const tarikhRaw = memoData.tarikh !== undefined ? memoData.tarikh : document.getElementById('mk_tarikh_saman')?.value;
     const masaRaw = memoData.masa !== undefined ? memoData.masa : document.getElementById('mk_masa_saman')?.value;
-    const tempatSamanRaw = memoData.tempat !== undefined && memoData.tempat !== "" ? memoData.tempat : (document.getElementById('mk_tempat_sebutan')?.value || 'Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim');
-    
+    // Logik kebal untuk pastikan alamat Tempat Saman tidak akan pernah kosong
+    let alamatLalaiSaman = "Pejabat Tenaga Kerja Kluang, Jalan Pejabat Kerajaan, 86000 Kluang, Johor";
+    let rekodMemoSaman = (typeof memoData !== 'undefined' && memoData.tempat) ? memoData.tempat.trim() : "";
+    let rekodInputSaman = document.getElementById('mk_tempat_sebutan') ? document.getElementById('mk_tempat_sebutan').value.trim() : "";
+
+    const tempatSamanRaw = rekodMemoSaman !== "" ? rekodMemoSaman : (rekodInputSaman !== "" ? rekodInputSaman : alamatLalaiSaman);
     let tarikhSebutanDD = ".......";
     let tarikhSebutanMMYYYY = "........................";
     if (tarikhRaw && tarikhRaw !== "") {
