@@ -13642,11 +13642,19 @@ function kiraJumlahTuntutanMOU() {
         }
     });
 
-    // 3. Masukkan subtotal ke dalam kad/bahagian individu masing-masing
+    // 3. Masukkan subtotal ke dalam kad/bahagian individu masing-masing berserta label dinamik
     for (let kat in pecahIndividu) {
         let elSubtotal = document.getElementById(`subtotal_mou_${kat}`);
         if (elSubtotal) {
-            elSubtotal.innerHTML = `Jumlah Tuntutan Terpilih: <strong style="color: var(--primary-blue); font-size: 1.1em;">RM ${pecahIndividu[kat].toLocaleString('en-MY', {minimumFractionDigits:2})}</strong>`;
+            let labelTeks = "Jum. Tuntutan";
+            if (kat === 'ketua') {
+                labelTeks = "Jum. Tuntutan Ketua Pengadu";
+            } else if (kat.startsWith('tambahan_')) {
+                let num = kat.split('_')[1]; // Dapatkan nombor pengadu
+                labelTeks = `Jum. Tuntutan Pengadu Ke-${num}`;
+            }
+            
+            elSubtotal.innerHTML = `${labelTeks}: <strong style="color: var(--primary-blue); font-size: 1.1em;">RM ${pecahIndividu[kat].toLocaleString('en-MY', {minimumFractionDigits:2})}</strong>`;
         }
     }
 
@@ -13731,8 +13739,8 @@ function bukaModalMou() {
                 `;
             });
             
-            // RUANGAN BARU: Subtotal Ketua (Diletakkan di bawah senarai Ketua)
-            containerTuntutan.innerHTML += `<div id="subtotal_mou_ketua" style="text-align: right; background-color: #f8fafc; padding: 6px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jumlah Tuntutan Terpilih: <strong>RM 0.00</strong></div>`;
+            // RUANGAN BARU: Subtotal Ketua (Latar belakang digelapkan ke #e2e8f0)
+            containerTuntutan.innerHTML += `<div id="subtotal_mou_ketua" style="text-align: right; background-color: #e2e8f0; padding: 8px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jum. Tuntutan Ketua Pengadu: <strong>RM 0.00</strong></div>`;
         }
 
         // 2. PENGADU TAMBAHAN
@@ -13779,8 +13787,8 @@ function bukaModalMou() {
                     `;
                 });
                 
-                // RUANGAN BARU: Subtotal Pengadu Tambahan (Diletakkan di bawah senarai masing-masing)
-                containerTuntutan.innerHTML += `<div id="subtotal_mou_tambahan_${i}" style="text-align: right; background-color: #f8fafc; padding: 6px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jumlah Tuntutan Terpilih: <strong>RM 0.00</strong></div>`;
+                // RUANGAN BARU: Subtotal Pengadu Tambahan (Latar belakang digelapkan ke #e2e8f0)
+                containerTuntutan.innerHTML += `<div id="subtotal_mou_tambahan_${i}" style="text-align: right; background-color: #e2e8f0; padding: 8px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jum. Tuntutan Pengadu Ke-${i}: <strong>RM 0.00</strong></div>`;
             }
         }
 
