@@ -13619,44 +13619,49 @@ window.cetakDokumenBorangC = function(jenis) {
 // FUNGSI KIRA JUMLAH TUNTUTAN MOU SECARA LIVE (CHECKBOX)
 // =========================================================================
 function kiraJumlahTuntutanMOU() {
-    const cbs = document.querySelectorAll('input[name="mou_tuntutan_cb"]:checked');
+    const cbsAll = document.querySelectorAll('input[name="mou_tuntutan_cb"]');
     let grandTotal = 0;
     let pecahIndividu = {};
-    let isGroup = false;
 
-    cbs.forEach(cb => {
+    // 1. Reset semua pecahan individu ke 0 dahulu
+    cbsAll.forEach(cb => {
+        let kat = cb.getAttribute('data-kategori');
+        if (kat && kat !== 'individu') pecahIndividu[kat] = 0;
+    });
+
+    // 2. Kira nilai yang ditanda (checked) sahaja
+    const cbsChecked = document.querySelectorAll('input[name="mou_tuntutan_cb"]:checked');
+    cbsChecked.forEach(cb => {
         let jum = parseFloat(cb.getAttribute('data-jumlah')) || 0;
-        let nama = cb.getAttribute('data-nama');
         let kat = cb.getAttribute('data-kategori');
         
         grandTotal += jum;
         
-        if (kat !== 'individu') {
-            isGroup = true;
-            if (!pecahIndividu[nama]) pecahIndividu[nama] = 0;
-            pecahIndividu[nama] += jum;
+        if (kat && kat !== 'individu') {
+            pecahIndividu[kat] += jum;
         }
     });
 
-    let htmlPaparan = `<div style="font-weight: bold; color: var(--primary-blue); font-size: 1.1em; margin-bottom: 5px;">Jumlah Keseluruhan Asal: RM ${grandTotal.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>`;
-    
-    // Jika kes berkumpulan, tunjuk pecahan setiap orang
-    if (isGroup && Object.keys(pecahIndividu).length > 0) {
-        htmlPaparan += `<div style="font-size: 0.9em; color: #475569; padding-left: 10px; border-left: 3px solid #cbd5e1; margin-top: 5px;">`;
-        for (let nama in pecahIndividu) {
-            htmlPaparan += `<div style="margin-bottom: 2px;">${nama.toUpperCase()}: <strong>RM ${pecahIndividu[nama].toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>`;
+    // 3. Masukkan subtotal ke dalam kad/bahagian individu masing-masing
+    for (let kat in pecahIndividu) {
+        let elSubtotal = document.getElementById(`subtotal_mou_${kat}`);
+        if (elSubtotal) {
+            elSubtotal.innerHTML = `Jumlah Tuntutan Terpilih: <strong style="color: var(--primary-blue); font-size: 1.1em;">RM ${pecahIndividu[kat].toLocaleString('en-MY', {minimumFractionDigits:2})}</strong>`;
         }
-        htmlPaparan += `</div>`;
     }
 
+    // 4. Papar jumlah keseluruhan (Grand Total) di kotak hijau bawah
     const bekasPaparan = document.getElementById('paparan_jumlah_mou_auto');
-    if (bekasPaparan) bekasPaparan.innerHTML = grandTotal > 0 ? htmlPaparan : `<div style="font-weight: bold; color: var(--danger); font-size: 1em;">Tiada Tuntutan Dipilih (RM 0.00)</div>`;
+    if (bekasPaparan) {
+        bekasPaparan.innerHTML = grandTotal > 0 
+            ? `<div style="font-weight: bold; color: #15803d; font-size: 1.15em;">JUMLAH KESELURUHAN ASAL: RM ${grandTotal.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>` 
+            : `<div style="font-weight: bold; color: var(--danger); font-size: 1em;">Tiada Tuntutan Dipilih (RM 0.00)</div>`;
+    }
 }
 
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN MOU (PERSETUJUAN BERSAMA & NOTIS)
 // =========================================================================
-
 function bukaModalMou() {
     document.getElementById('mk_tarikh_mou').value = '';
     document.getElementById('mk_jumlah_mou').value = '';
@@ -13667,7 +13672,6 @@ function bukaModalMou() {
     document.getElementById('auto_tarikh_mula').value = '';
     document.getElementById('ruangan_ansuran_mou').style.display = 'none';
 
-    // Reset paparan checkbox penerima notis MOU
     document.querySelectorAll('input[name="mou_penerima"]').forEach(cb => cb.checked = false);
     
     const kes = memoriSenaraiKes[indexKesSemasa];
@@ -13684,7 +13688,6 @@ function bukaModalMou() {
     containerTuntutan.innerHTML = '';
 
     if (isAutoGroup) {
-        // LOGIK UNTUK ADUAN BERKUMPULAN (ASINGKAN IKUT INDIVIDU)
         let adaTuntutan = false;
 
         // 1. KETUA PENGADU
@@ -13693,7 +13696,6 @@ function bukaModalMou() {
             adaTuntutan = true;
             let namaKetua = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengadu']) || document.getElementById('namaPengadu').value || "Ketua Pengadu";
             
-            // KOTAK NAMA, INPUT NILAI KETUA & JADUAL MINI
             containerTuntutan.innerHTML += `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
                     <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaKetua.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Ketua)</span></div>
@@ -13721,7 +13723,6 @@ function bukaModalMou() {
             senaraiKetua.forEach((item, index) => {
                 const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                 let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
-                // ADDED: data-jumlah, data-nama, data-kategori AND kiraJumlahTuntutanMOU() in onchange
                 containerTuntutan.innerHTML += `
                     <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85em; font-weight: 500; color: var(--text-main); margin: 5px 0;">
                         <input type="checkbox" name="mou_tuntutan_cb" value="ketua_${index}" data-jumlah="${item.jumlah}" data-nama="${namaKetua}" data-kategori="ketua" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
@@ -13729,6 +13730,9 @@ function bukaModalMou() {
                     </label>
                 `;
             });
+            
+            // RUANGAN BARU: Subtotal Ketua (Diletakkan di bawah senarai Ketua)
+            containerTuntutan.innerHTML += `<div id="subtotal_mou_ketua" style="text-align: right; background-color: #f8fafc; padding: 6px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jumlah Tuntutan Terpilih: <strong>RM 0.00</strong></div>`;
         }
 
         // 2. PENGADU TAMBAHAN
@@ -13740,9 +13744,8 @@ function bukaModalMou() {
                 adaTuntutan = true;
                 let namaP = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengaduTambahan'+i]) || document.getElementById('namaPengaduTambahan'+i)?.value || `Pengadu ${i}`;
                 
-                // KOTAK NAMA, INPUT NILAI TAMBAHAN & JADUAL MINI
                 containerTuntutan.innerHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
                         <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaP.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Pengadu ${i})</span></div>
                         <div style="display: flex; align-items: center; gap: 5px;">
                             <span style="font-size: 0.8em; color: var(--text-muted); font-weight: bold;">Persetujuan: RM</span>
@@ -13768,7 +13771,6 @@ function bukaModalMou() {
                 senaraiTambahan.forEach((item, index) => {
                     const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                     let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
-                    // ADDED: data-jumlah, data-nama, data-kategori AND kiraJumlahTuntutanMOU() in onchange
                     containerTuntutan.innerHTML += `
                         <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85em; font-weight: 500; color: var(--text-main); margin: 5px 0;">
                             <input type="checkbox" name="mou_tuntutan_cb" value="tambahan_${i}_${index}" data-jumlah="${item.jumlah}" data-nama="${namaP}" data-kategori="tambahan_${i}" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
@@ -13776,6 +13778,9 @@ function bukaModalMou() {
                         </label>
                     `;
                 });
+                
+                // RUANGAN BARU: Subtotal Pengadu Tambahan (Diletakkan di bawah senarai masing-masing)
+                containerTuntutan.innerHTML += `<div id="subtotal_mou_tambahan_${i}" style="text-align: right; background-color: #f8fafc; padding: 6px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jumlah Tuntutan Terpilih: <strong>RM 0.00</strong></div>`;
             }
         }
 
@@ -13792,7 +13797,6 @@ function bukaModalMou() {
             senaraiTuntutan.forEach((item, index) => {
                 const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                 let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
-                // ADDED: data-jumlah AND kiraJumlahTuntutanMOU() in onchange
                 containerTuntutan.innerHTML += `
                     <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.9em; font-weight: 500; color: var(--text-main); margin: 0;">
                         <input type="checkbox" name="mou_tuntutan_cb" value="${index}" data-jumlah="${item.jumlah}" data-nama="Keseluruhan" data-kategori="individu" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;">
@@ -13803,11 +13807,11 @@ function bukaModalMou() {
         }
     }
     
-    // ADDED: Container untuk paparan jumlah dan laksanakan pengiraan kali pertama
-    containerTuntutan.innerHTML += `<div id="paparan_jumlah_mou_auto" style="margin-top: 15px; padding: 12px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;"></div>`;
+    // KOTAK HIJAU: Kini hanya memaparkan Jumlah Keseluruhan (Grand Total)
+    containerTuntutan.innerHTML += `<div id="paparan_jumlah_mou_auto" style="margin-top: 15px; padding: 12px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; text-align: center;"></div>`;
     
     semakButangMou(); 
-    kiraJumlahTuntutanMOU(); // Panggil fungsi kira-kira ini masa pop-up dibuka
+    kiraJumlahTuntutanMOU(); 
     
     document.getElementById('modalMou').style.display = 'flex';
 }
