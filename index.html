@@ -14221,19 +14221,6 @@ function tindakanMou() {
             senaraiPenerima: senaraiPenerimaMou 
         };
 
-        // --- TAMBAH KODING INI DI DALAM function tindakanMou() ---
-        const kes = memoriSenaraiKes[indexKesSemasa];
-        if (!kes.mou) kes.mou = {};
-        
-        // Tangkap data dari borang MOU
-        kes.mou.kaedah = document.getElementById('mk_kaedah_mou').value;
-        kes.mou.jumlahMou = document.getElementById('mk_jumlah_mou').value.replace(/,/g, ''); // Buang koma jika ada
-        
-        // Simpan ke memori dan paksa kad pemantauan muncul
-        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
-        if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
-        // ---------------------------------------------------------
-
         bukaPreviewMou();
     } else {
         alert("Sila lengkapkan semua maklumat Persetujuan Bersama & Jadual Ansuran (jika ada).");
@@ -15080,6 +15067,14 @@ function bukaPreviewMou(dataSimpanan = null) {
         rekodSejarahTindakan(indexKesSemasa, "MOU / Persetujuan Bersama", `Dokumen ${tjk} telah dicetak. [DATA_MOU:${d64}]`);
 
         if (window.isMouPrinted && window.isMouPengaduPrinted && window.isMouDefendanPrinted) {
+            // LOGIK DIBETULKAN: Simpan pemantauan HANYA SELEPAS semua cetakan berjaya dan direkodkan
+            if (!kes.mou) kes.mou = {};
+            kes.mou.kaedah = kaedahBayaran;
+            kes.mou.jumlahMou = String(jumlahRaw).replace(/,/g, '');
+            
+            if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+            if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
+
             setTimeout(() => {
                 document.getElementById('modalPreview').style.display = 'none';
                 tukarView('senarai');
