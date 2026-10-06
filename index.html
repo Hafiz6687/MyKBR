@@ -13725,9 +13725,16 @@ function bukaModalMou() {
                 <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
                     <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('ketua')">🗓️ Set Jadual Ansuran</button>
                 </div>
+                
+                <!-- KOTAK AUTO-JANA INDIVIDU DWI-MOD UNTUK KETUA -->
                 <div class="mou-ansuran-individu-container" id="container_ansuran_ketua" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
+                    <div style="display: flex; gap: 15px; margin-bottom: 8px;">
+                        <label style="font-size: 0.75em; font-weight: bold; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_individu_ketua" value="bulan" checked onchange="tukarModJanaIndividu('ketua')" style="margin-top:2px;"> Ikut Bil. Bulan</label>
+                        <label style="font-size: 0.75em; font-weight: bold; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_individu_ketua" value="rm" onchange="tukarModJanaIndividu('ketua')" style="margin-top:2px;"> Ikut Bayaran (RM)</label>
+                    </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
-                        <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div id="ruangan_mod_bulan_ketua"><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div id="ruangan_mod_rm_ketua" style="display: none;"><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">RM Sebulan</label><input type="text" id="auto_rm_ketua" placeholder="Cth: 500" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
                         <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
                         <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('ketua')">Jana</button>
                     </div>
@@ -13749,7 +13756,6 @@ function bukaModalMou() {
                 `;
             });
             
-            // RUANGAN BARU: Subtotal Ketua (Latar belakang digelapkan ke #e2e8f0)
             containerTuntutan.innerHTML += `<div id="subtotal_mou_ketua" style="text-align: right; background-color: #e2e8f0; padding: 8px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jum. Tuntutan Ketua Pengadu: <strong>RM 0.00</strong></div>`;
         }
 
@@ -13773,9 +13779,16 @@ function bukaModalMou() {
                     <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
                         <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('tambahan_${i}')">🗓️ Set Jadual Ansuran</button>
                     </div>
+                    
+                    <!-- KOTAK AUTO-JANA INDIVIDU DWI-MOD UNTUK TAMBAHAN -->
                     <div class="mou-ansuran-individu-container" id="container_ansuran_tambahan_${i}" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
+                        <div style="display: flex; gap: 15px; margin-bottom: 8px;">
+                            <label style="font-size: 0.75em; font-weight: bold; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_individu_tambahan_${i}" value="bulan" checked onchange="tukarModJanaIndividu('tambahan_${i}')" style="margin-top:2px;"> Ikut Bil. Bulan</label>
+                            <label style="font-size: 0.75em; font-weight: bold; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_individu_tambahan_${i}" value="rm" onchange="tukarModJanaIndividu('tambahan_${i}')" style="margin-top:2px;"> Ikut Bayaran (RM)</label>
+                        </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
-                            <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                            <div id="ruangan_mod_bulan_tambahan_${i}"><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                            <div id="ruangan_mod_rm_tambahan_${i}" style="display: none;"><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">RM Sebulan</label><input type="text" id="auto_rm_tambahan_${i}" placeholder="Cth: 500" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
                             <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
                             <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('tambahan_${i}')">Jana</button>
                         </div>
@@ -13797,7 +13810,6 @@ function bukaModalMou() {
                     `;
                 });
                 
-                // RUANGAN BARU: Subtotal Pengadu Tambahan (Latar belakang digelapkan ke #e2e8f0)
                 containerTuntutan.innerHTML += `<div id="subtotal_mou_tambahan_${i}" style="text-align: right; background-color: #e2e8f0; padding: 8px 12px; margin-top: 10px; margin-bottom: 25px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85em; color: #334155;">Jum. Tuntutan Pengadu Ke-${i}: <strong>RM 0.00</strong></div>`;
             }
         }
@@ -13832,6 +13844,94 @@ function bukaModalMou() {
     kiraJumlahTuntutanMOU(); 
     
     document.getElementById('modalMou').style.display = 'flex';
+}
+
+// =========================================================================
+// FUNGSI BARU: TOGOL MOD PENJANAAN INDIVIDU (BULAN vs RM)
+// =========================================================================
+function tukarModJanaIndividu(id) {
+    const modEl = document.querySelector(`input[name="mod_jana_individu_${id}"]:checked`);
+    if (!modEl) return;
+    const mod = modEl.value;
+    
+    if (mod === 'bulan') {
+        document.getElementById(`ruangan_mod_bulan_${id}`).style.display = 'block';
+        document.getElementById(`ruangan_mod_rm_${id}`).style.display = 'none';
+        document.getElementById(`auto_rm_${id}`).value = '';
+    } else {
+        document.getElementById(`ruangan_mod_bulan_${id}`).style.display = 'none';
+        document.getElementById(`ruangan_mod_rm_${id}`).style.display = 'block';
+        document.getElementById(`auto_bil_${id}`).value = '';
+    }
+}
+
+// =========================================================================
+// FUNGSI JANA JADUAL INDIVIDU SECARA AUTO (DWI-MOD)
+// =========================================================================
+function janaAnsuranAutoIndividu(id) {
+    const mula = document.getElementById(`auto_mula_${id}`).value;
+    const totalStr = document.querySelector(`.input-mou-individu[data-id="${id}"]`).value;
+    const bakiTuntutan = parseFloat(totalStr.replace(/,/g, '')) || 0;
+
+    if (bakiTuntutan <= 0) { alert("Sila masukkan Nilai Persetujuan untuk pengadu ini terlebih dahulu."); return; }
+    if (!mula) { alert("Sila masukkan Tarikh Mula."); return; }
+
+    const mod = document.querySelector(`input[name="mod_jana_individu_${id}"]:checked`).value;
+    let bilBulan = 0;
+    let bayaranBulanan = 0;
+    let bayaranAkhir = 0;
+
+    // KIRAAN BERGANTUNG KEPADA MOD
+    if (mod === 'bulan') {
+        bilBulan = parseInt(document.getElementById(`auto_bil_${id}`).value);
+        if (!bilBulan || bilBulan <= 0) { alert("Sila masukkan bilangan bulan."); return; }
+        if (bilBulan > 120) { alert("Maksimum 120 bulan dibenarkan."); return; }
+        bayaranBulanan = bakiTuntutan / bilBulan;
+        bayaranAkhir = bayaranBulanan;
+    } else {
+        const rmRaw = document.getElementById(`auto_rm_${id}`).value;
+        bayaranBulanan = parseFloat(rmRaw.replace(/,/g, ''));
+        if (!bayaranBulanan || bayaranBulanan <= 0) { alert("Sila masukkan nilai Bayaran (RM) yang sah."); return; }
+        
+        if (bayaranBulanan >= bakiTuntutan) {
+            bilBulan = 1;
+            bayaranBulanan = bakiTuntutan;
+            bayaranAkhir = bakiTuntutan;
+        } else {
+            bilBulan = Math.floor(bakiTuntutan / bayaranBulanan);
+            let bakiLebihan = bakiTuntutan - (bayaranBulanan * bilBulan);
+            
+            if (bakiLebihan > 0.01) { // elak ralat pecahan kecil
+                bilBulan += 1;
+                bayaranAkhir = bakiLebihan;
+            } else {
+                bayaranAkhir = bayaranBulanan;
+            }
+        }
+        if (bilBulan > 120) { alert("Jumlah bulan ansuran terlalu besar (melebihi 120 bulan). Sila besarkan nilai bayaran bulanan."); return; }
+    }
+
+    const container = document.getElementById(`senarai_ansuran_${id}`);
+    container.innerHTML = '';
+
+    let currentTarikh = new Date(mula); 
+    let startDay = currentTarikh.getDate();
+
+    for (let i = 0; i < bilBulan; i++) {
+        // Logik tarik tepat (elak lompat 31hb)
+        let nextTarikh = new Date(currentTarikh.getFullYear(), currentTarikh.getMonth() + i, startDay);
+        if (nextTarikh.getDate() !== startDay) nextTarikh.setDate(0); 
+
+        let yyyy = nextTarikh.getFullYear(); 
+        let mm = String(nextTarikh.getMonth() + 1).padStart(2, '0'); 
+        let dd = String(nextTarikh.getDate()).padStart(2, '0');
+        let tarikhFormat = `${yyyy}-${mm}-${dd}`;
+        
+        let amaunBulanIni = (i === bilBulan - 1) ? bayaranAkhir : bayaranBulanan;
+        let amaunFormat = amaunBulanIni.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        tambahAnsuranIndividu(id, tarikhFormat, amaunFormat);
+    }
 }
 
 function kawalAnsuranMou() {
@@ -14070,37 +14170,6 @@ function kiraTotalAnsuranIndividu(id) {
     if (statusEl) {
         statusEl.innerText = `Baki: RM ${baki.toLocaleString('en-MY', {minimumFractionDigits:2})}`;
         statusEl.style.color = Math.abs(baki) < 0.01 ? 'var(--success)' : 'var(--danger)';
-    }
-}
-
-function janaAnsuranAutoIndividu(id) {
-    const bil = parseInt(document.getElementById(`auto_bil_${id}`).value);
-    const mula = document.getElementById(`auto_mula_${id}`).value;
-    const totalStr = document.querySelector(`.input-mou-individu[data-id="${id}"]`).value;
-    const jumlahTotal = parseFloat(totalStr.replace(/,/g, '')) || 0;
-
-    if (!bil || bil <= 0) { alert("Sila masukkan bilangan bulan."); return; }
-    if (!mula) { alert("Sila masukkan tarikh mula."); return; }
-    if (jumlahTotal <= 0) { alert("Sila masukkan Nilai Persetujuan untuk pengadu ini."); return; }
-
-    const container = document.getElementById(`senarai_ansuran_${id}`);
-    container.innerHTML = '';
-
-    let baseAmaun = Math.floor((jumlahTotal / bil) * 100) / 100;
-    let baki = jumlahTotal - (baseAmaun * (bil - 1));
-    let currentTarikh = new Date(mula); let startDay = currentTarikh.getDate();
-
-    for (let i = 0; i < bil; i++) {
-        let nextTarikh = new Date(currentTarikh.getFullYear(), currentTarikh.getMonth() + i, startDay);
-        if (nextTarikh.getDate() !== startDay) nextTarikh.setDate(0); 
-
-        let yyyy = nextTarikh.getFullYear(); let mm = String(nextTarikh.getMonth() + 1).padStart(2, '0'); let dd = String(nextTarikh.getDate()).padStart(2, '0');
-        let tarikhFormat = `${yyyy}-${mm}-${dd}`;
-        
-        let amaunBulanIni = (i === bil - 1) ? baki : baseAmaun;
-        let amaunFormat = amaunBulanIni.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        
-        tambahAnsuranIndividu(id, tarikhFormat, amaunFormat);
     }
 }
        
