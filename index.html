@@ -8298,10 +8298,19 @@ function bukaKesDidaftar(index) {
         
         if(formData['jenisDaftarPengadu']) document.getElementById('jenisDaftarPengadu').value = formData['jenisDaftarPengadu'];
         kawalJenisDaftarPengadu(); // Akan bina options dropdown Warganegara
-        
+       
         if(formData['jenisDaftarDefendan']) document.getElementById('jenisDaftarDefendan').value = formData['jenisDaftarDefendan'];
         kawalJenisDaftarDefendan();
         
+        // --- BINA SEMULA KOTAK PENGADU TAMBAHAN SEBELUM DATA DISUNTIK ---
+        const bilPengaduRekod = parseInt(formData['bilPengadu']) || 1;
+        const isBknMajikan = formData['majikan'] === false || formData['majikan'] === 'false' || !formData['majikan'];
+        if (formData['aduan'] === 'Berkumpulan' && isBknMajikan) {
+            if (bilPengaduRekod > 1) {
+                janaJadualPengaduTambahan(bilPengaduRekod);
+            }
+        }
+      
         // --- LOGIK KEKALKAN STATUS EDIT KENYATAAN MANUAL ---
         isKenyataanEdited = formData['isKenyataanEdited'] === true || formData['isKenyataanEdited'] === "true";
         const txtKenyataan = document.getElementById('kenyataanAwal');
@@ -8389,15 +8398,6 @@ for (const key in formData) {
         memoriTuntutan = kes.dataBorang.tuntutanBiasa ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanBiasa)) : [];
         memoriTuntutanKetua = kes.dataBorang.tuntutanKetua ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanKetua)) : [];
         memoriTuntutanTambahan = kes.dataBorang.tuntutanTambahan ? JSON.parse(JSON.stringify(kes.dataBorang.tuntutanTambahan)) : {};
-        
-        // BINA SEMULA KOTAK-KOTAK PENGADU TAMBAHAN
-        const bilPengaduRekod = parseInt(formData['bilPengadu']) || 1;
-        const isBknMajikan = formData['majikan'] === false || formData['majikan'] === 'false' || !formData['majikan'];
-        if (formData['aduan'] === 'Berkumpulan' && isBknMajikan) {
-            if (bilPengaduRekod > 1) {
-                janaJadualPengaduTambahan(bilPengaduRekod);
-            }
-        }
         
         renderJadualTuntutan();
         
