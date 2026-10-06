@@ -13956,6 +13956,10 @@ function janaAnsuranAuto() {
             alert("Sila masukkan Bil. Ansuran (Bulan) yang sah.");
             return;
         }
+        if (bilBulan > 120) { // Hadkan 10 tahun (120 bulan)
+            alert("Jumlah bulan ansuran terlalu besar. Maksimum 120 bulan dibenarkan.");
+            return;
+        }
         bayaranBulanan = bakiTuntutan / bilBulan;
         bayaranAkhir = bayaranBulanan; 
     } else {
@@ -13982,36 +13986,40 @@ function janaAnsuranAuto() {
                 bayaranAkhir = bayaranBulanan;
             }
         }
+        
+        if (bilBulan > 120) {
+            alert("Jumlah bulan ansuran terlalu besar (melebihi 120 bulan). Sila besarkan nilai bayaran bulanan.");
+            return;
+        }
     }
 
     // Padam senarai lama
     senarai.innerHTML = '';
-    let tarikhSemasa = new Date(tarikhMulaStr);
+    
+    let currentTarikh = new Date(tarikhMulaStr);
+    let startDay = currentTarikh.getDate();
     
     // Mula jana baris
     for (let i = 0; i < bilBulan; i++) {
-        let nilaiSemasa = (i === bilBulan - 1) ? bayaranAkhir : bayaranBulanan;
-        
-        let yyyy = tarikhSemasa.getFullYear();
-        let mm = String(tarikhSemasa.getMonth() + 1).padStart(2, '0');
-        let dd = String(tarikhSemasa.getDate()).padStart(2, '0');
+        // Logik Tarikh (elak isu 31hb lompat bulan)
+        let nextTarikh = new Date(currentTarikh.getFullYear(), currentTarikh.getMonth() + i, startDay);
+        if (nextTarikh.getDate() !== startDay) {
+            nextTarikh.setDate(0); 
+        }
+
+        let yyyy = nextTarikh.getFullYear();
+        let mm = String(nextTarikh.getMonth() + 1).padStart(2, '0');
+        let dd = String(nextTarikh.getDate()).padStart(2, '0');
         let tarikhFormat = `${yyyy}-${mm}-${dd}`;
         
-        // Panggil fungsi asal tambah baris
-        if (typeof tambahAnsuranMou === 'function') {
-            tambahAnsuranMou(); 
-            let lastRow = senarai.lastElementChild;
-            if (lastRow) {
-                let inputTarikh = lastRow.querySelector('.input-ansuran-tarikh');
-                let inputJumlah = lastRow.querySelector('.input-ansuran-jumlah');
-                
-                if (inputTarikh) inputTarikh.value = tarikhFormat;
-                if (inputJumlah) inputJumlah.value = nilaiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            }
-        }
+        // Tentukan jumlah bayaran (Bulan terakhir ambil baki)
+        let nilaiSemasa = (i === bilBulan - 1) ? bayaranAkhir : bayaranBulanan;
+        let amaunFormat = nilaiSemasa.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
-        // Tambah 1 bulan ke hadapan
-        tarikhSemasa.setMonth(tarikhSemasa.getMonth() + 1);
+        // Panggil fungsi asal tambah baris dengan parameter yang TEPAT
+        if (typeof tambahAnsuranMou === 'function') {
+            tambahAnsuranMou(tarikhFormat, amaunFormat); 
+        }
     }
     
     if (typeof semakButangMou === 'function') semakButangMou();
