@@ -14559,7 +14559,7 @@ function bukaPreviewMou(dataSimpanan = null) {
         if (isAutoGroup && jenisAnsuran === 'Individu') {
             
             // =========================================================================
-            //  MOD INDIVIDU ANSURAN - DIBETULKAN TANPA ROWSPAN (MENGGUNAKAN NESTED TABLE)
+            //  MOD INDIVIDU ANSURAN - KEMBALI KEPADA KODING ASAL YANG KEMAS (TIADA NESTED)
             // =========================================================================
             let rowsLampiran = ""; let totalSemua = 0; let bil = 1;
             for (let pId in dataPengadu) {
@@ -14569,37 +14569,34 @@ function bukaPreviewMou(dataSimpanan = null) {
                     let kpCetak = d.kp ? `<br><span style="font-size: 0.9em; color: #475569;">No. Kad Pengenalan: ${d.kp}</span>` : '';
                     let unikTuntutan = [...new Set(d.tuntutanList)].join('<br>');
                     let ansuranKhusus = ansuranIndividuMap[pId] || [];
+                    let personRowspan = ansuranKhusus.length > 0 ? ansuranKhusus.length : 1;
                     
                     let butiranHtml = `<strong style="color: var(--primary-blue); font-size: 1.05em; text-transform: uppercase;">${d.nama}</strong>${kpCetak}<div style="margin-top: 8px;">${unikTuntutan}</div>`;
 
-                    // Bina jadual kecil bersarang (nested table) khas untuk Tarikh & Amaun
-                    let nestedAnsuran = `<table style="width: 100%; border-collapse: collapse; height: 100%;">`;
+                    // GUNA TBODY SEBAGAI PELINDUNG PAGE-BREAK
+                    rowsLampiran += `<tbody style="page-break-inside: avoid; break-inside: avoid;">`;
                     if (ansuranKhusus.length === 0) {
-                        nestedAnsuran += `<tr><td style="width: 50%; padding: 6px; text-align: center; border-right: 1px solid #000; vertical-align: top;">-</td><td style="width: 50%; padding: 6px; text-align: right; vertical-align: top;">-</td></tr>`;
+                        rowsLampiran += `<tr><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">${bil++}</td><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${butiranHtml}</td><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; text-align: center;">-</td><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; text-align: right;">-</td></tr>`;
                     } else {
                         ansuranKhusus.forEach((ans, ansIdx) => {
                             let tarikhCetak = "..................";
                             if (ans.tarikh) { let t = new Date(ans.tarikh); if (!isNaN(t.getTime())) tarikhCetak = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`; }
                             let amaunCetak = parseFloat(ans.amaun.replace(/,/g, '')).toLocaleString('en-MY', {minimumFractionDigits: 2});
                             
-                            let btmBorder = (ansIdx === ansuranKhusus.length - 1) ? "none" : "1px dashed #cbd5e1";
-                            nestedAnsuran += `<tr>
-                                <td style="width: 50%; padding: 6px; text-align: center; border-right: 1px solid #000; border-bottom: ${btmBorder}; vertical-align: top;">${tarikhCetak}</td>
-                                <td style="width: 50%; padding: 6px; text-align: right; border-bottom: ${btmBorder}; vertical-align: top;">RM ${amaunCetak}</td>
-                            </tr>`;
+                            if (ansIdx === 0) {
+                                let btmBorder = ansuranKhusus.length === 1 ? "1px solid #000" : "1px dashed #cbd5e1";
+                                rowsLampiran += `<tr><td rowspan="${personRowspan}" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">${bil++}</td><td rowspan="${personRowspan}" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${butiranHtml}</td><td style="border-top: 1px solid #000; border-bottom: ${btmBorder}; padding: 6px; text-align: center; vertical-align: top;">${tarikhCetak}</td><td style="border-top: 1px solid #000; border-bottom: ${btmBorder}; padding: 6px; text-align: right; vertical-align: top;">RM ${amaunCetak}</td></tr>`;
+                            } else {
+                                let btmBorder = ansIdx === ansuranKhusus.length - 1 ? "1px solid #000" : "1px dashed #cbd5e1";
+                                rowsLampiran += `<tr><td style="border-bottom: ${btmBorder}; padding: 6px; text-align: center; vertical-align: top;">${tarikhCetak}</td><td style="border-bottom: ${btmBorder}; padding: 6px; text-align: right; vertical-align: top;">RM ${amaunCetak}</td></tr>`;
+                            }
                         });
                     }
-                    nestedAnsuran += `</table>`;
-
-                    // Masukkan seluruh maklumat pekerja dalam satu baris (<tr>) sahaja!
-                    rowsLampiran += `<tr class="protect-row">
-                        <td style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">${bil++}</td>
-                        <td style="border: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${butiranHtml}</td>
-                        <td colspan="2" style="border: 1px solid #000; padding: 0; vertical-align: top;">${nestedAnsuran}</td>
-                    </tr>`;
+                    rowsLampiran += `</tbody>`;
                 }
             }
-            htmlLampiranA = `<div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;"><div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;"><div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div><table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; margin-top: 15px; color: #000;">${headerJadualA_Ansuran}<tbody>${rowsLampiran}<tr class="protect-row"><td colspan="3" style="border: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalSemua.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</td></tr></tbody></table></div></div>`;
+            // TOTAL KESELURUHAN YANG TEPAT & KEMAS
+            htmlLampiranA = `<div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;"><div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;"><div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div><table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; margin-top: 15px; color: #000;">${headerJadualA_Ansuran}${rowsLampiran}<tbody><tr><td colspan="3" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalSemua.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</td></tr></tbody></table></div></div>`;
         
         } else {
             let rowsLampiran = ""; 
@@ -14702,13 +14699,14 @@ function bukaPreviewMou(dataSimpanan = null) {
             } else {
                 
                 // =========================================================================
-                //  MOD SINGLE ANSURAN - DIBETULKAN TANPA ROWSPAN (MENGGUNAKAN NESTED TABLE)
+                //  MOD SINGLE ANSURAN - KEMBALI KEPADA KODING ASAL YANG KEMAS (TIADA NESTED)
                 // =========================================================================
+                let bilRowspan = ansuranDetails.length > 0 ? ansuranDetails.length : 1;
                 let gabunganTuntutanCetak = tuntutanDipilih.map(t => { let k = t.keterangan === "(Keterangan Berbeza)" ? "" : t.keterangan; return `<strong>${t.jenis}</strong> <span style="font-size: 0.9em; color: #333; white-space: nowrap;">${k}</span>`; }).join('<br><br>');
                 
-                let nestedAnsuran = `<table style="width: 100%; border-collapse: collapse; height: 100%;">`;
+                let rowsLampiran = "<tbody style='page-break-inside: avoid; break-inside: avoid;'>";
                 if (ansuranDetails.length === 0) {
-                    nestedAnsuran += `<tr><td style="width: 50%; padding: 6px; text-align: center; border-right: 1px solid #000; vertical-align: top;">-</td><td style="width: 50%; padding: 6px; text-align: right; vertical-align: top;">-</td></tr>`;
+                    rowsLampiran += `<tr><td style="border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">1</td><td style="border-bottom: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${gabunganTuntutanCetak}</td><td style="border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">-</td><td style="border-bottom: 1px solid #000; padding: 6px; text-align: right; vertical-align: top;">-</td></tr>`;
                 } else {
                     ansuranDetails.forEach((ans, idx) => {
                         let valNum = parseFloat(String(ans.amaun).replace(/,/g, '')) || 0;
@@ -14719,24 +14717,17 @@ function bukaPreviewMou(dataSimpanan = null) {
                             if (!isNaN(t.getTime())) tarikhCetak = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`; 
                         }
                         
-                        let btmBorder = (idx === ansuranDetails.length - 1) ? "none" : "1px dashed #cbd5e1";
-                        nestedAnsuran += `<tr>
-                            <td style="width: 50%; padding: 6px; text-align: center; border-right: 1px solid #000; border-bottom: ${btmBorder}; vertical-align: top;">${tarikhCetak}</td>
-                            <td style="width: 50%; padding: 6px; text-align: right; border-bottom: ${btmBorder}; vertical-align: top;">RM ${amaunCantik}</td>
-                        </tr>`;
+                        if (idx === 0) {
+                            rowsLampiran += `<tr><td rowspan="${bilRowspan}" style="border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">1</td><td rowspan="${bilRowspan}" style="border-bottom: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${gabunganTuntutanCetak}</td><td style="border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">${tarikhCetak}</td><td style="border-bottom: 1px solid #000; padding: 6px; text-align: right; vertical-align: top;">RM ${amaunCantik}</td></tr>`;
+                        } else {
+                            rowsLampiran += `<tr><td style="border-bottom: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">${tarikhCetak}</td><td style="border-bottom: 1px solid #000; padding: 6px; text-align: right; vertical-align: top;">RM ${amaunCantik}</td></tr>`;
+                        }
                     });
                 }
-                nestedAnsuran += `</table>`;
-
-                let rowsLampiran = `
-                <tr class="protect-row">
-                    <td style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: top;">1</td>
-                    <td style="border: 1px solid #000; padding: 6px; vertical-align: top; line-height: 1.3;">${gabunganTuntutanCetak}</td>
-                    <td colspan="2" style="border: 1px solid #000; padding: 0; vertical-align: top;">${nestedAnsuran}</td>
-                </tr>`;
+                rowsLampiran += "</tbody>";
                 
                 let totalAnsStr = totalAns.toLocaleString('en-MY', { minimumFractionDigits: 2 });
-                htmlLampiranA = `<div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;"><div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;"><div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div><table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; margin-top: 15px; color: #000;">${headerJadualA_Ansuran}<tbody>${rowsLampiran}<tr class="protect-row"><td colspan="3" style="border: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td><td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalAnsStr}</td></tr></tbody></table></div></div>`;
+                htmlLampiranA = `<div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;"><div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;"><div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div><table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; margin-top: 15px; color: #000;">${headerJadualA_Ansuran}${rowsLampiran}<tbody><tr><td colspan="3" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td><td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalAnsStr}</td></tr></tbody></table></div></div>`;
             }
         }
     }
@@ -14750,7 +14741,7 @@ function bukaPreviewMou(dataSimpanan = null) {
     function tentukanLabelID(nomborID) {
         if (!nomborID) return "No. Kad Pengenalan";
         let bersih = String(nomborID).trim();
-        let isMyKad = /^\d{6}-\d{2}-\d{4}$/.test(bersih) || /^\d{12}$/.test(bersih);
+        let isMyKad = /^\d{6}-\d{2}-\d{4}$/.test(bersih) \vert{}\vert{} /^\d{12}$/.test(bersih);
         
         if (isMyKad) {
             return "No. Kad Pengenalan";
@@ -14922,6 +14913,7 @@ function bukaPreviewMou(dataSimpanan = null) {
                 /* ========================================= */
                 .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
                 .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+                .mou-print-table tbody { page-break-inside: avoid !important; break-inside: avoid !important; }
             }
             .kertas-notis { background: white; width: 210mm; min-height: 297mm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; font-size: 10pt; line-height: 1.4; box-sizing: border-box; position: relative; }
             #kertasMouDraf { padding: 0.8cm 1.27cm !important; }
