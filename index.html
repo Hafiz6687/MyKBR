@@ -13481,7 +13481,8 @@ if (isPanjang) {
 const htmlPenuh = `
         <style>
             @media print {
-                @page { margin: 0; } 
+                @page { margin: 0; }
+                tr, tbody, th, td { page-break-inside: avoid !important; break-inside: avoid !important; }
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
