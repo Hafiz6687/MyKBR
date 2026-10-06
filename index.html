@@ -3568,15 +3568,30 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                     const senaraiTambahan = kes.dataBorang.tuntutanTambahan[key];
                     if (senaraiTambahan && senaraiTambahan.length > 0) {
                         
-                        // Dapatkan nama Pengadu Tambahan
+                        // Dapatkan nama Pengadu Tambahan (Carian Kebal)
                         let namaPengaduTambahan = "";
                         let namaDitemui = null;
                         
+                        // 1. Cari dalam ruang inputs biasa
                         if (kes.dataBorang && kes.dataBorang.inputs) {
-                            namaDitemui = kes.dataBorang.inputs['namaPengadu' + key] || 
-                                          kes.dataBorang.inputs['namaPengadu_' + key] || 
-                                          kes.dataBorang.inputs['namaTambahan' + key] ||
-                                          kes.dataBorang.inputs['namaPengaduTambahan' + key];
+                            namaDitemui = kes.dataBorang.inputs['namaPengaduTambahan' + key] || 
+                                          kes.dataBorang.inputs['namaPengadu' + key] || 
+                                          kes.dataBorang.inputs['namaTambahan' + key];
+                        }
+                        
+                        // 2. Jika tak jumpa, cari dalam tatasusunan (array) pengaduTambahan (kerana borang sering simpan di sini)
+                        if (!namaDitemui && kes.pengaduTambahan) {
+                            let ptIndex = parseInt(key) - 2;
+                            if (kes.pengaduTambahan[ptIndex] && kes.pengaduTambahan[ptIndex].nama) {
+                                namaDitemui = kes.pengaduTambahan[ptIndex].nama;
+                            }
+                        }
+                        // 3. Cari juga di dalam dataBorang.pengaduTambahan
+                        if (!namaDitemui && kes.dataBorang && kes.dataBorang.pengaduTambahan) {
+                            let ptIndex = parseInt(key) - 2;
+                            if (kes.dataBorang.pengaduTambahan[ptIndex] && kes.dataBorang.pengaduTambahan[ptIndex].nama) {
+                                namaDitemui = kes.dataBorang.pengaduTambahan[ptIndex].nama;
+                            }
                         }
                         
                         if (namaDitemui && namaDitemui.trim() !== "") {
@@ -3627,7 +3642,7 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                         // Masukkan BARIS SUBTOTAL (Sentiasa Kelihatan, tiada kelas togol)
                         tbodyTuntutan.innerHTML += `
                             <tr style="background-color: #f1f5f9;">
-                                <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN PENGADU ${key}</td>
+                                <td colspan="3" style="text-align:right; padding: 8px 15px; font-weight: 600; font-size: 0.9em; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">JUMLAH TUNTUTAN ${namaPengaduTambahan}</td>
                                 <td style="text-align: right; padding: 8px 10px; font-weight: 600; font-size: 0.9em; border-bottom: 1px solid var(--border-color);">RM ${jumlahPengadu.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                         `;
