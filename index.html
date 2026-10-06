@@ -13587,6 +13587,45 @@ window.cetakDokumenBorangC = function(jenis) {
     document.getElementById('modalBorangC').style.display = 'none'; 
     document.getElementById('modalPreview').style.display = 'flex';
 }
+
+// =========================================================================
+// FUNGSI KIRA JUMLAH TUNTUTAN MOU SECARA LIVE (CHECKBOX)
+// =========================================================================
+function kiraJumlahTuntutanMOU() {
+    const cbs = document.querySelectorAll('input[name="mou_tuntutan_cb"]:checked');
+    let grandTotal = 0;
+    let pecahIndividu = {};
+    let isGroup = false;
+
+    cbs.forEach(cb => {
+        let jum = parseFloat(cb.getAttribute('data-jumlah')) || 0;
+        let nama = cb.getAttribute('data-nama');
+        let kat = cb.getAttribute('data-kategori');
+        
+        grandTotal += jum;
+        
+        if (kat !== 'individu') {
+            isGroup = true;
+            if (!pecahIndividu[nama]) pecahIndividu[nama] = 0;
+            pecahIndividu[nama] += jum;
+        }
+    });
+
+    let htmlPaparan = `<div style="font-weight: bold; color: var(--primary-blue); font-size: 1.1em; margin-bottom: 5px;">Jumlah Keseluruhan Asal: RM ${grandTotal.toLocaleString('en-MY', {minimumFractionDigits:2})}</div>`;
+    
+    // Jika kes berkumpulan, tunjuk pecahan setiap orang
+    if (isGroup && Object.keys(pecahIndividu).length > 0) {
+        htmlPaparan += `<div style="font-size: 0.9em; color: #475569; padding-left: 10px; border-left: 3px solid #cbd5e1; margin-top: 5px;">`;
+        for (let nama in pecahIndividu) {
+            htmlPaparan += `<div style="margin-bottom: 2px;">${nama.toUpperCase()}: <strong>RM ${pecahIndividu[nama].toLocaleString('en-MY', {minimumFractionDigits:2})}</strong></div>`;
+        }
+        htmlPaparan += `</div>`;
+    }
+
+    const bekasPaparan = document.getElementById('paparan_jumlah_mou_auto');
+    if (bekasPaparan) bekasPaparan.innerHTML = grandTotal > 0 ? htmlPaparan : `<div style="font-weight: bold; color: var(--danger); font-size: 1em;">Tiada Tuntutan Dipilih (RM 0.00)</div>`;
+}
+
 // =========================================================================
 // FUNGSI MENJANA DAN MEMAPARKAN MOU (PERSETUJUAN BERSAMA & NOTIS)
 // =========================================================================
@@ -13613,7 +13652,7 @@ function bukaModalMou() {
         isMajikan = kes.jenisAduan === 'Majikan'; isBerkumpulan = kes.jenisAduan === 'Berkumpulan';
     }
     
-const isAutoGroup = isBerkumpulan && !isMajikan;
+    const isAutoGroup = isBerkumpulan && !isMajikan;
     const containerTuntutan = document.getElementById('mou_senarai_tuntutan');
     containerTuntutan.innerHTML = '';
 
@@ -13621,89 +13660,91 @@ const isAutoGroup = isBerkumpulan && !isMajikan;
         // LOGIK UNTUK ADUAN BERKUMPULAN (ASINGKAN IKUT INDIVIDU)
         let adaTuntutan = false;
 
-// 1. KETUA PENGADU
-            let senaraiKetua = kes && kes.dataBorang ? (kes.dataBorang.tuntutanKetua || []) : memoriTuntutanKetua;
-            if (senaraiKetua && senaraiKetua.length > 0) {
-                adaTuntutan = true;
-                let namaKetua = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengadu']) || document.getElementById('namaPengadu').value || "Ketua Pengadu";
-                
-                // KOTAK NAMA, INPUT NILAI KETUA & JADUAL MINI
-                containerTuntutan.innerHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
-                        <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaKetua.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Ketua)</span></div>
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <span style="font-size: 0.8em; color: var(--text-muted); font-weight: bold;">Persetujuan: RM</span>
-                            <input type="text" class="input-mou-individu" data-id="ketua" placeholder="0.00" oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); kiraTotalMouIndividu(); semakButangMou();" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width: 90px; padding: 4px 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary-blue); text-align: right;">
-                        </div>
+        // 1. KETUA PENGADU
+        let senaraiKetua = kes && kes.dataBorang ? (kes.dataBorang.tuntutanKetua || []) : memoriTuntutanKetua;
+        if (senaraiKetua && senaraiKetua.length > 0) {
+            adaTuntutan = true;
+            let namaKetua = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengadu']) || document.getElementById('namaPengadu').value || "Ketua Pengadu";
+            
+            // KOTAK NAMA, INPUT NILAI KETUA & JADUAL MINI
+            containerTuntutan.innerHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
+                    <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaKetua.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Ketua)</span></div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 0.8em; color: var(--text-muted); font-weight: bold;">Persetujuan: RM</span>
+                        <input type="text" class="input-mou-individu" data-id="ketua" placeholder="0.00" oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); kiraTotalMouIndividu(); semakButangMou();" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width: 90px; padding: 4px 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary-blue); text-align: right;">
                     </div>
-                    <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
-                        <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('ketua')">🗓️ Set Jadual Ansuran</button>
+                </div>
+                <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
+                    <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('ketua')">🗓️ Set Jadual Ansuran</button>
+                </div>
+                <div class="mou-ansuran-individu-container" id="container_ansuran_ketua" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
+                        <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                        <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                        <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('ketua')">Jana</button>
                     </div>
-                    <div class="mou-ansuran-individu-container" id="container_ansuran_ketua" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
-                            <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
-                            <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_ketua" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
-                            <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('ketua')">Jana</button>
-                        </div>
-                        <div id="senarai_ansuran_ketua" style="display:flex; flex-direction:column; gap:5px;"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px;">
-                            <button type="button" class="btn-add" style="padding: 4px 8px; font-size: 0.75em; background-color: #475569;" onclick="tambahAnsuranIndividu('ketua')">+ Manual</button>
-                            <div style="font-size:0.85em; font-weight:bold; color:var(--danger);" id="status_ansuran_ketua">Baki: RM 0.00</div>
-                        </div>
-                    </div>`;
+                    <div id="senarai_ansuran_ketua" style="display:flex; flex-direction:column; gap:5px;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px;">
+                        <button type="button" class="btn-add" style="padding: 4px 8px; font-size: 0.75em; background-color: #475569;" onclick="tambahAnsuranIndividu('ketua')">+ Manual</button>
+                        <div style="font-size:0.85em; font-weight:bold; color:var(--danger);" id="status_ansuran_ketua">Baki: RM 0.00</div>
+                    </div>
+                </div>`;
 
             senaraiKetua.forEach((item, index) => {
                 const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                 let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
+                // ADDED: data-jumlah, data-nama, data-kategori AND kiraJumlahTuntutanMOU() in onchange
                 containerTuntutan.innerHTML += `
                     <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85em; font-weight: 500; color: var(--text-main); margin: 5px 0;">
-                        <input type="checkbox" name="mou_tuntutan_cb" value="ketua_${index}" checked onchange="semakButangMou();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
+                        <input type="checkbox" name="mou_tuntutan_cb" value="ketua_${index}" data-jumlah="${item.jumlah}" data-nama="${namaKetua}" data-kategori="ketua" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
                         <span style="line-height: 1.3;"><strong>${item.jenis}</strong> ${ketCetak}<br><span style="color: #64748b;">(Asal: RM ${jumCantik})</span></span>
                     </label>
                 `;
             });
         }
 
-// 2. PENGADU TAMBAHAN
-            const bilPengadu = parseInt((kes && kes.dataBorang && kes.dataBorang.inputs['bilPengadu']) || document.getElementById('bilPengadu')?.value) || 1;
-            for (let i = 2; i <= bilPengadu; i++) {
-                let senaraiTambahan = (kes && kes.dataBorang && kes.dataBorang.tuntutanTambahan) ? kes.dataBorang.tuntutanTambahan[i] : memoriTuntutanTambahan[i];
+        // 2. PENGADU TAMBAHAN
+        const bilPengadu = parseInt((kes && kes.dataBorang && kes.dataBorang.inputs['bilPengadu']) || document.getElementById('bilPengadu')?.value) || 1;
+        for (let i = 2; i <= bilPengadu; i++) {
+            let senaraiTambahan = (kes && kes.dataBorang && kes.dataBorang.tuntutanTambahan) ? kes.dataBorang.tuntutanTambahan[i] : memoriTuntutanTambahan[i];
+            
+            if (senaraiTambahan && senaraiTambahan.length > 0) {
+                adaTuntutan = true;
+                let namaP = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengaduTambahan'+i]) || document.getElementById('namaPengaduTambahan'+i)?.value || `Pengadu ${i}`;
                 
-                if (senaraiTambahan && senaraiTambahan.length > 0) {
-                    adaTuntutan = true;
-                    let namaP = (kes && kes.dataBorang && kes.dataBorang.inputs['namaPengaduTambahan'+i]) || document.getElementById('namaPengaduTambahan'+i)?.value || `Pengadu ${i}`;
-                    
-                    // KOTAK NAMA, INPUT NILAI TAMBAHAN & JADUAL MINI
-                    containerTuntutan.innerHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
-                            <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaP.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Pengadu ${i})</span></div>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.8em; color: var(--text-muted); font-weight: bold;">Persetujuan: RM</span>
-                                <input type="text" class="input-mou-individu" data-id="tambahan_${i}" placeholder="0.00" oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); kiraTotalMouIndividu(); semakButangMou();" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width: 90px; padding: 4px 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary-blue); text-align: right;">
-                            </div>
+                // KOTAK NAMA, INPUT NILAI TAMBAHAN & JADUAL MINI
+                containerTuntutan.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 5px;">
+                        <div style="font-size: 0.9em; font-weight: bold; color: var(--primary-blue); line-height: 1.3;">${namaP.toUpperCase()}<br><span style="font-size: 0.85em; color: var(--text-muted); font-weight: 500;">(Pengadu ${i})</span></div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 0.8em; color: var(--text-muted); font-weight: bold;">Persetujuan: RM</span>
+                            <input type="text" class="input-mou-individu" data-id="tambahan_${i}" placeholder="0.00" oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); kiraTotalMouIndividu(); semakButangMou();" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width: 90px; padding: 4px 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; color: var(--primary-blue); text-align: right;">
                         </div>
-                        <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
-                            <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('tambahan_${i}')">🗓️ Set Jadual Ansuran</button>
+                    </div>
+                    <div style="text-align: right; margin-bottom: 10px; display: none;" class="btn-togol-ansuran-individu">
+                        <button type="button" style="background: none; border: none; color: var(--primary-blue); font-size: 0.85em; font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="toggleJadualAnsuranIndividu('tambahan_${i}')">🗓️ Set Jadual Ansuran</button>
+                    </div>
+                    <div class="mou-ansuran-individu-container" id="container_ansuran_tambahan_${i}" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
+                            <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                            <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                            <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('tambahan_${i}')">Jana</button>
                         </div>
-                        <div class="mou-ansuran-individu-container" id="container_ansuran_tambahan_${i}" style="display:none; margin-bottom:15px; padding:10px; background:#f0f9ff; border:1px dashed #0284c7; border-radius:6px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 10px;">
-                                <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Bil. Bulan</label><input type="number" id="auto_bil_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
-                                <div><label style="font-size: 0.75em; font-weight:bold; color:var(--text-muted);">Tarikh Mula</label><input type="date" id="auto_mula_tambahan_${i}" style="width:100%; padding:4px; font-size:0.85em; border:1px solid #cbd5e1; border-radius:4px;"></div>
-                                <button type="button" class="btn-save" style="padding: 5px 12px; font-size: 0.8em;" onclick="janaAnsuranAutoIndividu('tambahan_${i}')">Jana</button>
-                            </div>
-                            <div id="senarai_ansuran_tambahan_${i}" style="display:flex; flex-direction:column; gap:5px;"></div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px;">
-                                <button type="button" class="btn-add" style="padding: 4px 8px; font-size: 0.75em; background-color: #475569;" onclick="tambahAnsuranIndividu('tambahan_${i}')">+ Manual</button>
-                                <div style="font-size:0.85em; font-weight:bold; color:var(--danger);" id="status_ansuran_tambahan_${i}">Baki: RM 0.00</div>
-                            </div>
-                        </div>`;
+                        <div id="senarai_ansuran_tambahan_${i}" style="display:flex; flex-direction:column; gap:5px;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top:8px;">
+                            <button type="button" class="btn-add" style="padding: 4px 8px; font-size: 0.75em; background-color: #475569;" onclick="tambahAnsuranIndividu('tambahan_${i}')">+ Manual</button>
+                            <div style="font-size:0.85em; font-weight:bold; color:var(--danger);" id="status_ansuran_tambahan_${i}">Baki: RM 0.00</div>
+                        </div>
+                    </div>`;
 
                 senaraiTambahan.forEach((item, index) => {
                     const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                     let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
+                    // ADDED: data-jumlah, data-nama, data-kategori AND kiraJumlahTuntutanMOU() in onchange
                     containerTuntutan.innerHTML += `
                         <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.85em; font-weight: 500; color: var(--text-main); margin: 5px 0;">
-                            <input type="checkbox" name="mou_tuntutan_cb" value="tambahan_${i}_${index}" checked onchange="semakButangMou();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
+                            <input type="checkbox" name="mou_tuntutan_cb" value="tambahan_${i}_${index}" data-jumlah="${item.jumlah}" data-nama="${namaP}" data-kategori="tambahan_${i}" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer;">
                             <span style="line-height: 1.3;"><strong>${item.jenis}</strong> ${ketCetak}<br><span style="color: #64748b;">(Asal: RM ${jumCantik})</span></span>
                         </label>
                     `;
@@ -13724,10 +13765,10 @@ const isAutoGroup = isBerkumpulan && !isMajikan;
             senaraiTuntutan.forEach((item, index) => {
                 const jumCantik = Number(item.jumlah).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                 let ketCetak = item.keterangan === "(Keterangan Berbeza)" ? "" : item.keterangan;
-                
+                // ADDED: data-jumlah AND kiraJumlahTuntutanMOU() in onchange
                 containerTuntutan.innerHTML += `
                     <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.9em; font-weight: 500; color: var(--text-main); margin: 0;">
-                        <input type="checkbox" name="mou_tuntutan_cb" value="${index}" checked onchange="semakButangMou();" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;">
+                        <input type="checkbox" name="mou_tuntutan_cb" value="${index}" data-jumlah="${item.jumlah}" data-nama="Keseluruhan" data-kategori="individu" checked onchange="semakButangMou(); kiraJumlahTuntutanMOU();" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; cursor: pointer;">
                         <span style="line-height: 1.3;"><strong>${item.jenis}</strong> ${ketCetak}<br><span style="color: var(--primary-blue); font-weight: bold;">(Asal: RM ${jumCantik})</span></span>
                     </label>
                 `;
@@ -13735,7 +13776,12 @@ const isAutoGroup = isBerkumpulan && !isMajikan;
         }
     }
     
+    // ADDED: Container untuk paparan jumlah dan laksanakan pengiraan kali pertama
+    containerTuntutan.innerHTML += `<div id="paparan_jumlah_mou_auto" style="margin-top: 15px; padding: 12px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;"></div>`;
+    
     semakButangMou(); 
+    kiraJumlahTuntutanMOU(); // Panggil fungsi kira-kira ini masa pop-up dibuka
+    
     document.getElementById('modalMou').style.display = 'flex';
 }
 
