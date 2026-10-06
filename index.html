@@ -709,23 +709,33 @@
                     <button type="button" class="btn-add btn-terapung" style="padding: 4px 10px; font-size: 0.8em; background-color: #475569;" onclick="tambahAnsuranMou()">+ Tambah Manual</button>
                 </div>
                 
-                <!-- KOTAK AUTO-JANA ANSURAN PUKAL -->
-                <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
-                    <div style="font-size: 0.85em; font-weight: 600; color: var(--primary-blue); margin-bottom: 8px;">⚡ Auto-Jana Jadual Ansuran</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
-                        <div>
-                            <label style="font-size: 0.8em; color: var(--text-muted); display: block; margin-bottom: 4px;">Bil. Ansuran (Bulan)</label>
-                            <input type="number" id="auto_bil_ansuran" placeholder="Cth: 5" min="1" style="width: 100%; padding: 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.8em; color: var(--text-muted); display: block; margin-bottom: 4px;">Tarikh Bayaran Pertama</label>
-                            <input type="date" id="auto_tarikh_mula" style="width: 100%; padding: 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                        <div>
-                            <button type="button" class="btn-save btn-terapung" style="padding: 6px 15px; font-size: 0.85em; border-radius: 4px; background-color: #0ea5e9; font-weight: 600;" onclick="janaAnsuranAuto()">Jana</button>
-                        </div>
-                    </div>
-                </div>
+<!-- KOTAK AUTO-JANA ANSURAN PUKAL (DWI-MOD) -->
+<div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="font-size: 0.85em; font-weight: 600; color: var(--primary-blue);">⚡ Auto-Jana Jadual Ansuran</div>
+        <div class="radio-group" style="gap: 12px; height: auto;">
+            <label style="font-size: 0.8em; font-weight: 600; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_mou" value="bulan" checked onchange="tukarModJanaMou()" style="margin-top:2px;"> Ikut Bil. Bulan</label>
+            <label style="font-size: 0.8em; font-weight: 600; color: #475569; cursor: pointer;"><input type="radio" name="mod_jana_mou" value="rm" onchange="tukarModJanaMou()" style="margin-top:2px;"> Ikut Bayaran (RM)</label>
+        </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+        <div id="ruangan_mod_bulan">
+            <label style="font-size: 0.8em; color: var(--text-muted); display: block; margin-bottom: 4px;">Bil. Ansuran (Bulan)</label>
+            <input type="number" id="auto_bil_ansuran" placeholder="Cth: 5" min="1" style="width: 100%; padding: 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div id="ruangan_mod_rm" style="display: none;">
+            <label style="font-size: 0.8em; color: var(--text-muted); display: block; margin-bottom: 4px;">Bayaran Sebulan (RM)</label>
+            <input type="text" id="auto_rm_ansuran" placeholder="Cth: 2000.00" oninput="this.value = this.value.replace(/[^0-9.,]/g, '')" onfocus="unformatDuit(this)" onblur="formatDuit(this)" style="width: 100%; padding: 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+            <label style="font-size: 0.8em; color: var(--text-muted); display: block; margin-bottom: 4px;">Tarikh Bayaran Pertama</label>
+            <input type="date" id="auto_tarikh_mula" style="width: 100%; padding: 6px; font-size: 0.85em; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+            <button type="button" class="btn-save btn-terapung" style="padding: 6px 15px; font-size: 0.85em; border-radius: 4px; background-color: #0ea5e9; font-weight: 600;" onclick="janaAnsuranAuto()">Jana</button>
+        </div>
+    </div>
+</div>
 
                 <div id="mou_senarai_ansuran" style="display: flex; flex-direction: column; gap: 8px; background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px dashed var(--primary-blue);">
                     <!-- Input tarikh & amaun dijana di sini -->
@@ -13897,67 +13907,117 @@ function tambahAnsuranMou(tarikhVal = '', amaunVal = '') {
     semakButangMou();
 }
 
-function janaAnsuranAuto() {
-    const bilBulan = parseInt(document.getElementById('auto_bil_ansuran').value);
-// TAMBAHKAN KOD INI SELEPAS VALIDASI SEDIA ADA:
-if (bilBulan > 120) { // Hadkan maksimum kepada 10 tahun (120 bulan)
-    alert("Jumlah bulan ansuran terlalu besar. Maksimum 120 bulan dibenarkan.");
-    return;
+// Fungsi baru untuk togol mod antara Bulan vs RM
+function tukarModJanaMou() {
+    const mod = document.querySelector('input[name="mod_jana_mou"]:checked').value;
+    if (mod === 'bulan') {
+        document.getElementById('ruangan_mod_bulan').style.display = 'block';
+        document.getElementById('ruangan_mod_rm').style.display = 'none';
+        document.getElementById('auto_rm_ansuran').value = '';
+    } else {
+        document.getElementById('ruangan_mod_bulan').style.display = 'none';
+        document.getElementById('ruangan_mod_rm').style.display = 'block';
+        document.getElementById('auto_bil_ansuran').value = '';
+    }
 }
-    const tarikhMula = document.getElementById('auto_tarikh_mula').value;
-    const jumTotalStr = document.getElementById('mk_jumlah_mou').value;
+
+// Fungsi jana jadual ansuran yang telah dikemaskini (Dwi-Mod)
+function janaAnsuranAuto() {
+    const senarai = document.getElementById('mou_senarai_ansuran');
+    const tarikhMulaStr = document.getElementById('auto_tarikh_mula').value;
     
-    if (!bilBulan || bilBulan <= 0) {
-        alert("Sila masukkan Bilangan Ansuran (Bulan) yang sah.");
+    // Dapatkan Jumlah Keseluruhan
+    let valMou = document.getElementById('mk_jumlah_mou').value;
+    let valPejabat = document.getElementById('mk_dibayar_pejabat') ? document.getElementById('mk_dibayar_pejabat').value : "0";
+    
+    const totalMou = parseFloat(valMou.replace(/,/g, '')) || 0;
+    const totalPejabat = parseFloat(valPejabat.replace(/,/g, '')) || 0;
+    const bakiTuntutan = totalMou - totalPejabat; // Baki sebenar untuk dijadualkan
+
+    const mod = document.querySelector('input[name="mod_jana_mou"]:checked') ? document.querySelector('input[name="mod_jana_mou"]:checked').value : 'bulan';
+
+    if (bakiTuntutan <= 0) {
+        alert("Sila masukkan Jumlah Keseluruhan Dipersetujui yang sah. Pastikan ada baki untuk dibuat jadual ansuran.");
         return;
     }
-    if (!tarikhMula) {
-        alert("Sila tetapkan Tarikh Bayaran Pertama.");
-        return;
-    }
-    if (!jumTotalStr || parseFloat(jumTotalStr.replace(/,/g, '')) <= 0) {
-        alert("Sila isi 'Jumlah Keseluruhan Dipersetujui' di atas terlebih dahulu untuk membolehkan sistem mengira pembahagian bayaran.");
+    if (!tarikhMulaStr) {
+        alert("Sila pilih Tarikh Bayaran Pertama.");
         return;
     }
 
-    const jumlahTotal = parseFloat(jumTotalStr.replace(/,/g, ''));
-    const container = document.getElementById('mou_senarai_ansuran');
-    
-    // Kosongkan senarai lama jika pengguna tekan jana berulang kali
-    container.innerHTML = '';
-    
-    // Bahagikan secara sama rata (hingga 2 titik perpuluhan)
-    let baseAmaun = Math.floor((jumlahTotal / bilBulan) * 100) / 100;
-    // Kira baki tepat untuk bulan yang terakhir (supaya total ngam 100% sama dengan MOU)
-    let baki = jumlahTotal - (baseAmaun * (bilBulan - 1));
-    
-    let currentTarikh = new Date(tarikhMula);
-    let startDay = currentTarikh.getDate();
+    let bilBulan = 0;
+    let bayaranBulanan = 0;
+    let bayaranAkhir = 0;
 
-    for (let i = 0; i < bilBulan; i++) {
-        // Unjak bulan demi bulan
-        let nextTarikh = new Date(currentTarikh.getFullYear(), currentTarikh.getMonth() + i, startDay);
-        
-        // Kes Khas: Jika tarikh 31hb tapi bulan depan cuma ada 30 hari (atau 28 hari utk Feb)
-        if (nextTarikh.getDate() !== startDay) {
-            nextTarikh.setDate(0); // Undur ke hari terakhir bulan tersebut
+    // KIRAAN MATEMATIK BERGANTUNG KEPADA MOD
+    if (mod === 'bulan') {
+        bilBulan = parseInt(document.getElementById('auto_bil_ansuran').value);
+        if (isNaN(bilBulan) || bilBulan <= 0) {
+            alert("Sila masukkan Bil. Ansuran (Bulan) yang sah.");
+            return;
         }
+        bayaranBulanan = bakiTuntutan / bilBulan;
+        bayaranAkhir = bayaranBulanan; 
+    } else {
+        const rmRaw = document.getElementById('auto_rm_ansuran').value;
+        bayaranBulanan = parseFloat(rmRaw.replace(/,/g, ''));
+        if (isNaN(bayaranBulanan) || bayaranBulanan <= 0) {
+            alert("Sila masukkan nilai Bayaran Sebulan (RM) yang sah.");
+            return;
+        }
+        
+        if (bayaranBulanan >= bakiTuntutan) {
+            bilBulan = 1;
+            bayaranBulanan = bakiTuntutan;
+            bayaranAkhir = bakiTuntutan;
+        } else {
+            bilBulan = Math.floor(bakiTuntutan / bayaranBulanan);
+            let bakiLebihan = bakiTuntutan - (bayaranBulanan * bilBulan);
+            
+            // Jika ada lebihan yang perlu dibayar pada bulan seterusnya
+            if (bakiLebihan > 0.01) { // 0.01 untuk elak ralat decimal kecil
+                bilBulan += 1; 
+                bayaranAkhir = bakiLebihan;
+            } else {
+                bayaranAkhir = bayaranBulanan;
+            }
+        }
+    }
 
-        let yyyy = nextTarikh.getFullYear();
-        let mm = String(nextTarikh.getMonth() + 1).padStart(2, '0');
-        let dd = String(nextTarikh.getDate()).padStart(2, '0');
+    // Padam senarai lama
+    senarai.innerHTML = '';
+    let tarikhSemasa = new Date(tarikhMulaStr);
+    
+    // Mula jana baris
+    for (let i = 0; i < bilBulan; i++) {
+        let nilaiSemasa = (i === bilBulan - 1) ? bayaranAkhir : bayaranBulanan;
+        
+        let yyyy = tarikhSemasa.getFullYear();
+        let mm = String(tarikhSemasa.getMonth() + 1).padStart(2, '0');
+        let dd = String(tarikhSemasa.getDate()).padStart(2, '0');
         let tarikhFormat = `${yyyy}-${mm}-${dd}`;
         
-        // Tentukan jumlah bayaran (Bulan terakhir ambil baki)
-        let amaunBulanIni = (i === bilBulan - 1) ? baki : baseAmaun;
-        let amaunFormat = amaunBulanIni.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // Panggil fungsi asal tambah baris
+        if (typeof tambahAnsuranMou === 'function') {
+            tambahAnsuranMou(); 
+            let lastRow = senarai.lastElementChild;
+            if (lastRow) {
+                let inputTarikh = lastRow.querySelector('.input-ansuran-tarikh');
+                let inputJumlah = lastRow.querySelector('.input-ansuran-jumlah');
+                
+                if (inputTarikh) inputTarikh.value = tarikhFormat;
+                if (inputJumlah) inputJumlah.value = nilaiSemasa.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+        }
         
-        // Panggil fungsi tambah kotak dengan nilai auto-isi
-        tambahAnsuranMou(tarikhFormat, amaunFormat);
+        // Tambah 1 bulan ke hadapan
+        tarikhSemasa.setMonth(tarikhSemasa.getMonth() + 1);
     }
+    
+    if (typeof semakButangMou === 'function') semakButangMou();
 }
 
-       // FUNGSI BARU: Auto-kira jumlah individu ke dalam Jumlah Keseluruhan MOU
+// FUNGSI BARU: Auto-kira jumlah individu ke dalam Jumlah Keseluruhan MOU
 function kiraTotalMouIndividu() {
     const inputs = document.querySelectorAll('.input-mou-individu');
     let total = 0;
