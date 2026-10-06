@@ -3568,33 +3568,45 @@ const tbodyTuntutan = document.getElementById('mk_body_tuntutan');
                     const senaraiTambahan = kes.dataBorang.tuntutanTambahan[key];
                     if (senaraiTambahan && senaraiTambahan.length > 0) {
                         
-                        // Dapatkan nama Pengadu Tambahan (Carian Kebal)
+                        // Dapatkan nama Pengadu Tambahan (Carian Ekstrem)
                         let namaPengaduTambahan = "";
                         let namaDitemui = null;
                         
-                        // 1. Cari dalam ruang inputs biasa
+                        // 1. Cari secara spesifik dahulu
                         if (kes.dataBorang && kes.dataBorang.inputs) {
-                            namaDitemui = kes.dataBorang.inputs['namaPengaduTambahan' + key] || 
-                                          kes.dataBorang.inputs['namaPengadu' + key] || 
-                                          kes.dataBorang.inputs['namaTambahan' + key];
+                            namaDitemui = kes.dataBorang.inputs['namaPengadu' + key] || 
+                                          kes.dataBorang.inputs['namaPengaduTambahan' + key] || 
+                                          kes.dataBorang.inputs['namaTambahan' + key] ||
+                                          kes.dataBorang.inputs['nama_pengadu_' + key];
                         }
                         
-                        // 2. Jika tak jumpa, cari dalam tatasusunan (array) pengaduTambahan (kerana borang sering simpan di sini)
-                        if (!namaDitemui && kes.pengaduTambahan) {
+                        // 2. Jika tak jumpa, paksa sistem selongkar semua data inputs
+                        if (!namaDitemui && kes.dataBorang && kes.dataBorang.inputs) {
+                            for (let prop in kes.dataBorang.inputs) {
+                                // Jika nama variable ada perkataan 'nama' DAN ada nombor pengadu (contoh: '2')
+                                if (prop.toLowerCase().includes('nama') && prop.includes(key)) {
+                                    namaDitemui = kes.dataBorang.inputs[prop];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 3. Jika tak jumpa, cari dalam tatasusunan (array)
+                        if (!namaDitemui && kes.pengaduTambahan && Array.isArray(kes.pengaduTambahan)) {
                             let ptIndex = parseInt(key) - 2;
                             if (kes.pengaduTambahan[ptIndex] && kes.pengaduTambahan[ptIndex].nama) {
                                 namaDitemui = kes.pengaduTambahan[ptIndex].nama;
                             }
                         }
-                        // 3. Cari juga di dalam dataBorang.pengaduTambahan
-                        if (!namaDitemui && kes.dataBorang && kes.dataBorang.pengaduTambahan) {
-                            let ptIndex = parseInt(key) - 2;
-                            if (kes.dataBorang.pengaduTambahan[ptIndex] && kes.dataBorang.pengaduTambahan[ptIndex].nama) {
-                                namaDitemui = kes.dataBorang.pengaduTambahan[ptIndex].nama;
-                            }
+
+                        // 4. Fallback terakhir: Cari terus dari skrin HTML jika borang sedang aktif
+                        if (!namaDitemui) {
+                            let inputEl = document.getElementById('namaPengaduTambahan' + key) || document.getElementById('namaPengadu' + key);
+                            if (inputEl) namaDitemui = inputEl.value;
                         }
                         
-                        if (namaDitemui && namaDitemui.trim() !== "") {
+                        // Kemaskini nama untuk dipaparkan
+                        if (namaDitemui && typeof namaDitemui === 'string' && namaDitemui.trim() !== "") {
                             namaPengaduTambahan = namaDitemui.trim().toUpperCase();
                         } else {
                             namaPengaduTambahan = "PENGADU " + key;
