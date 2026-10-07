@@ -14645,40 +14645,27 @@ function bukaPreviewMou(dataSimpanan = null) {
                 let styleHeader = "border: 1px solid #000; background-color: #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px;";
                 let styleFooter = "border: 1px solid #000; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px;";
 
-            htmlLampiranA = `
-            <style>
-                @media print {
-                    /* Cipta margin atas fizikal KHAS untuk Lampiran A dan muka surat sambungannya */
-                    @page lampiranA_page {
-                        margin-top: 1.5cm !important;
+                htmlLampiranA = `
+                <style>
+                    @media print {
+                        table.mou-print-table { page-break-inside: auto; }
+                        table.mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+                        table.mou-print-table thead { display: table-header-group !important; }
                     }
-                    #kertasLampiranA {
-                        page: lampiranA_page;
-                        padding-top: 0 !important; /* Padam padding asal Muka 1 supaya jarak tak jadi berganda */
-                    }
-                    table.mou-print-table {
-                        page-break-inside: auto;
-                    }
-                    table.mou-print-table tr {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
-                    table.mou-print-table thead {
-                        display: table-header-group !important;
-                    }
-                }
-            </style>
-            <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
-                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
-                    <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
-                    
-                    <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
-                    
-                    <!-- BUNGKUSAN HELAH (Mengekalkan kedudukan jadual pada M/S 1) -->
-                    <div style="padding-top: 1.5cm;">
-                        <table class="mou-print-table" style="margin-top: -1.5cm; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
+                </style>
+                <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
+                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
+                        
+                        <!-- BUNGKUSAN PELINDUNG TEKS SUPAYA BERADA DI ATAS JADUAL (Z-INDEX) -->
+                        <div style="position: relative; z-index: 10;">
+                            <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
+                            <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
+                        </div>
+
+                        <!-- JADUAL A DITARIK KE ATAS (Tenggelam di bawah teks untuk elak cacat pada M/S 1) -->
+                        <table class="mou-print-table" style="margin-top: -1.5cm; position: relative; z-index: 1; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
                             <thead style="display: table-header-group;">
-                                <!-- BARIS PENJARAK (Mewujudkan ruang kosong 1.5cm dari atas kertas pada M/S seterusnya) -->
+                                <!-- BARIS PENJARAK HALIMUNAN 1.5cm -->
                                 <tr style="height: 1.5cm; border: none !important; background: transparent !important;">
                                     <th colspan="3" style="border: none !important; background: transparent !important; padding: 0;"></th>
                                 </tr>
@@ -14690,16 +14677,15 @@ function bukaPreviewMou(dataSimpanan = null) {
                             </thead>
                             <tbody>${rowsPengadu}</tbody>
                         </table>
-                    </div>
 
-                    <div style="${gayaBahagianB}">
-                        <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">B. MAKLUMAT BAYARAN</div>
-                        
-                        <!-- BUNGKUSAN HELAH -->
-                        <div style="padding-top: 1.5cm;">
-                            <table class="mou-print-table" style="margin-top: -1.5cm; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
+                        <!-- BAHAGIAN B DITOLAK KE BAWAH DENGAN PADDING UNTUK MEMBERI RUANG KEPADA JADUAL KEDUA -->
+                        <div style="${gayaBahagianB} padding-top: 1.5cm;">
+                            <div style="position: relative; z-index: 10;">
+                                <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">B. MAKLUMAT BAYARAN</div>
+                            </div>
+                            
+                            <table class="mou-print-table" style="margin-top: -1.5cm; position: relative; z-index: 1; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
                                 <thead style="display: table-header-group;">
-                                    <!-- BARIS PENJARAK -->
                                     <tr style="height: 1.5cm; border: none !important; background: transparent !important;">
                                         <th colspan="3" style="border: none !important; background: transparent !important; padding: 0;"></th>
                                     </tr>
@@ -14718,15 +14704,13 @@ function bukaPreviewMou(dataSimpanan = null) {
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
-                </div>
-            </div>`;
+                </div>`;
                 
             } else {
                 
                 // =========================================================================
-                //  MOD SINGLE ANSURAN - KEMBALI KEPADA KODING ASAL YANG KEMAS (TIADA NESTED)
+                //  MOD SINGLE ANSURAN - DIPERBAIKI DENGAN HELAH Z-INDEX & PENJARAK M/S 2
                 // =========================================================================
                 let bilRowspan = ansuranDetails.length > 0 ? ansuranDetails.length : 1;
                 let gabunganTuntutanCetak = tuntutanDipilih.map(t => { let k = t.keterangan === "(Keterangan Berbeza)" ? "" : t.keterangan; return `<strong>${t.jenis}</strong> <span style="font-size: 0.9em; color: #333; white-space: nowrap;">${k}</span>`; }).join('<br><br>');
@@ -14784,23 +14768,26 @@ function bukaPreviewMou(dataSimpanan = null) {
                 </style>
                 <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
                     <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
-                        <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
                         
-                        <!-- BUNGKUSAN HELAH (Mengekalkan kedudukan jadual pada M/S 1 dan menolak M/S seterusnya) -->
-                        <div style="padding-top: 1.5cm;">
-                            <table class="mou-print-table" style="margin-top: -1.5cm; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; color: #000;">
-                                ${headerJadualA_Ansuran_Baru}
-                                ${rowsLampiran}
-                                <tbody>
-                                    <tr>
-                                        <td colspan="3" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td>
-                                        <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalAnsStr}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <!-- BUNGKUSAN PELINDUNG TEKS -->
+                        <div style="position: relative; z-index: 10;">
+                            <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
                         </div>
+
+                        <!-- JADUAL DITARIK KE BAWAH TEKS UNTUK M/S 1 -->
+                        <table class="mou-print-table" style="margin-top: -1.5cm; position: relative; z-index: 1; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.3; color: #000;">
+                            ${headerJadualA_Ansuran_Baru}
+                            ${rowsLampiran}
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; padding-right: 15px; text-align: right; font-weight: bold; background-color: #f8fafc;">JUMLAH KESELURUHAN</td>
+                                    <td style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; background-color: #f8fafc; font-size: 1.05em;">RM ${totalAnsStr}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>`;
+            }
             }
         }
     }
