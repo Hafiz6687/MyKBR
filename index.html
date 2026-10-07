@@ -14884,7 +14884,7 @@ function bukaPreviewMou(dataSimpanan = null) {
     const htmlMou = `
         <style>
             @media print { 
-                @page { margin: 0; } 
+                @page { margin: 10mm 0; } 
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
@@ -14895,6 +14895,9 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body.print-only-pengadu .kumpulan-mou, body.print-only-pengadu .kumpulan-defendan { display: none !important; }
                 body.print-only-defendan .kumpulan-mou, body.print-only-defendan .kumpulan-pengadu { display: none !important; }
                 
+                thead { display: table-header-group; }
+                .mou-print-table { border-top: 1px solid #000; }
+
                 /* ========================================= */
                 /* PELINDUNG CETAKAN TERAKHIR (ANTI-TERPOTONG) */
                 /* ========================================= */
