@@ -14881,15 +14881,15 @@ function bukaPreviewMou(dataSimpanan = null) {
         </div>
     `;
 
-    const htmlMou = `
+   const htmlMou = `
         <style>
             @media print { 
                 @page { margin: 10mm 0; } 
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
-                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
-                .kertas-notis:last-child { page-break-after: auto; }
+                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always !important; position: relative !important; box-sizing: border-box !important; } 
+                .kertas-notis:last-child { page-break-after: auto !important; }
                 
                 body.print-only-mou .kumpulan-pengadu, body.print-only-mou .kumpulan-defendan { display: none !important; }
                 body.print-only-pengadu .kumpulan-mou, body.print-only-pengadu .kumpulan-defendan { display: none !important; }
@@ -14898,8 +14898,8 @@ function bukaPreviewMou(dataSimpanan = null) {
                 thead { display: table-header-group; }
                 .mou-print-table { 
                     border-top: 1px solid #000; 
-                    page-break-before: avoid !important; 
-                    break-before: avoid !important;
+                    page-break-before: auto !important; 
+                    break-before: auto !important;
                 }
 
                 /* ========================================= */
@@ -14910,6 +14910,15 @@ function bukaPreviewMou(dataSimpanan = null) {
                 h1, h2, h3, h4, h5, h6, b, strong, p { 
                     page-break-after: avoid !important; 
                     break-after: avoid !important; 
+                }
+                
+                /* BUNUH MUKA SURAT KOSONG (WASIAT) DI HUJUNG DOKUMEN */
+                .kertas-notis > *:last-child,
+                .kertas-notis > *:last-child p,
+                .kertas-notis > *:last-child b,
+                .kertas-notis > *:last-child strong {
+                    page-break-after: auto !important;
+                    break-after: auto !important;
                 }
                 
                 .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
