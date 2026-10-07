@@ -14888,41 +14888,30 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
-                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always !important; position: relative !important; box-sizing: border-box !important; } 
-                .kertas-notis:last-child { page-break-after: auto !important; }
+                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
+                .kertas-notis:last-child { page-break-after: auto; }
                 
                 body.print-only-mou .kumpulan-pengadu, body.print-only-mou .kumpulan-defendan { display: none !important; }
                 body.print-only-pengadu .kumpulan-mou, body.print-only-pengadu .kumpulan-defendan { display: none !important; }
                 body.print-only-defendan .kumpulan-mou, body.print-only-defendan .kumpulan-pengadu { display: none !important; }
                 
                 thead { display: table-header-group; }
+                
+                /* GAM JADUAL SUPAYA LEKAT DI BAWAH LAMPIRAN A */
                 .mou-print-table { 
                     border-top: 1px solid #000; 
-                    page-break-before: auto !important; 
-                    break-before: auto !important;
+                    page-break-before: avoid !important; 
+                    break-before: avoid !important;
                 }
 
                 /* ========================================= */
                 /* PELINDUNG CETAKAN TERAKHIR (ANTI-TERPOTONG) */
                 /* ========================================= */
                 
-                /* IKAT TAJUK LAMPIRAN A SUPAYA DIGAM BERSAMA JADUAL */
-                h1, h2, h3, h4, h5, h6, b, strong, p { 
-                    page-break-after: avoid !important; 
-                    break-after: avoid !important; 
-                }
-                
-                /* BUNUH MUKA SURAT KOSONG (WASIAT) DI HUJUNG DOKUMEN */
-                .kertas-notis > *:last-child,
-                .kertas-notis > *:last-child p,
-                .kertas-notis > *:last-child b,
-                .kertas-notis > *:last-child strong {
-                    page-break-after: auto !important;
-                    break-after: auto !important;
-                }
-                
                 .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
                 .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+                
+                /* BENARKAN JADUAL PECAH SUPAYA TAK MELOMPAT KE M/S LAIN */
                 .mou-print-table tbody, .mou-print-table table { 
                     page-break-inside: auto !important; 
                     break-inside: auto !important; 
