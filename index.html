@@ -14645,24 +14645,28 @@ function bukaPreviewMou(dataSimpanan = null) {
                 let styleHeader = "border: 1px solid #000; background-color: #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px;";
                 let styleFooter = "border: 1px solid #000; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px;";
 
-            htmlLampiranA = `
+           htmlLampiranA = `
             <style>
                 @media print {
                     table.mou-print-table {
-                        page-break-inside: auto;
+                        width: 100% !important;
                         border-collapse: collapse !important;
-                    }
-                    table.mou-print-table tr {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
+                        page-break-inside: auto !important;
                     }
                     table.mou-print-table thead {
                         display: table-header-group !important;
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
                     }
-                    /* Menambah jarak ruang (1 baris enter) di bahagian atas header jadual agar tidak terpotong atau rapat ke margin atas */
+                    /* Tambah ruang lega (1 baris enter/jarak) di atas tajuk header berulang supaya tidak terpotong di margin atas */
                     table.mou-print-table thead th {
-                        padding-top: 15px !important;
+                        padding-top: 18px !important;
                         padding-bottom: 8px !important;
+                        vertical-align: bottom !important;
+                    }
+                    table.mou-print-table tbody tr {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
                     table.mou-print-table tfoot {
                         display: table-row-group !important;
@@ -14670,7 +14674,7 @@ function bukaPreviewMou(dataSimpanan = null) {
                 }
             </style>
             <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
-                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
+            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
                     <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
                     
                     <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
