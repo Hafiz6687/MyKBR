@@ -437,35 +437,43 @@
         .sortable-th:hover { background-color: #cbd5e1 !important; }
         .sort-icon { position: absolute; right: 8px; font-size: 0.85em; color: #94a3b8; top: 50%; transform: translateY(-50%); }
         
+       /* KELAS KHUSUS UNTUK CETAKAN ASING (Custom Print Media Queries) */
         @media print {
-    @page { 
-        size: A4 portrait; 
-        margin: 0; 
-    }
-    body { 
-        background: white; 
-        margin: 0; 
-        padding: 0; 
-    }
-    body > *:not(#printArea) { 
-        display: none !important; 
-    }
-    #printArea { 
-        display: block !important; 
-        width: 100%; 
-    }
-    .kertas-a4 {
-        margin: 0 auto !important;
-        box-shadow: none !important;
-        page-break-after: always;
-    }
-    .kertas-a4:last-child {
-        page-break-after: auto;
-    }
-    
-    body.print-only-akuan .page-borang, body.print-only-akuan .page-kenyataan { display: none !important; }
-    body.print-only-kenyataan .page-akuan { display: none !important; } 
-}
+            @page { 
+                size: A4 portrait; 
+                margin: 0; /* Matikan margin default dari Chrome/Edge supaya ia tak tambah margin berganda */
+            }
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                font-family: Arial, sans-serif; 
+                color: black; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            body > *:not(#printArea) { 
+                display: none !important; 
+            }
+            #printArea { 
+                display: block !important; 
+            }
+            
+            /* KUNCI PENYELESAIAN 100%: 
+               Kekalkan saiz 21cm dan padding asal dari preview. Hanya buang shadow dan auto-margin skrin. */
+            .kertas-a4, .kertas-tb, .kertas-notis, .g1-kertas {
+                margin: 0 !important;
+                box-shadow: none !important;
+                page-break-after: always;
+            }
+            .kertas-a4:last-child, .kertas-tb:last-child, .kertas-notis:last-child, .g1-kertas:last-child {
+                page-break-after: auto;
+            }
+
+            /* Logik sembunyikan muka surat berdasarkan pilihan cetakan */
+            body.print-only-akuan .page-borang, body.print-only-akuan .page-kenyataan { display: none !important; }
+            body.print-only-kenyataan .page-akuan { display: none !important; } 
+        }
     </style>
 </head>
 <body>
