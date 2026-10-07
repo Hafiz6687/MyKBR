@@ -14645,82 +14645,42 @@ function bukaPreviewMou(dataSimpanan = null) {
                 let styleHeader = "border: 1px solid #000; background-color: #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px;";
                 let styleFooter = "border: 1px solid #000; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px;";
 
-           htmlLampiranA = `
+            htmlLampiranA = `
             <style>
                 @media print {
-                    /* Tetapkan jarak margin kertas yang selamat untuk melindung header berulang */
-                    @page {
-                        margin-top: 1.5cm !important;
-                        margin-bottom: 1.5cm !important;
-                    }
-                    #kertasLampiranA {
-                        padding-top: 0.5cm !important; /* Kurangkan padding atas kertas supaya header berulang ada ruang bernafas */
-                    }
                     table.mou-print-table {
-                        width: 100% !important;
-                        border-collapse: collapse !important;
-                        page-break-inside: auto !important;
-                        margin-top: 10px !important;
+                        page-break-inside: auto;
+                    }
+                    table.mou-print-table tr {
+                        page-break-inside: avoid !important;
+                        break-inside: avoid !important;
                     }
                     table.mou-print-table thead {
                         display: table-header-group !important;
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
-                    }
-                    /* Berikan ruang lega ekstra dan height pada sel header semasa cetakan */
-                    table.mou-print-table thead th {
-                        height: 35px !important;
-                        padding-top: 10px !important;
-                        padding-bottom: 6px !important;
-                        vertical-align: middle !important;
-                        box-sizing: border-box !important;
-                    }
-                    table.mou-print-table tbody tr {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
-                    table.mou-print-table tfoot {
-                        display: table-row-group !important;
                     }
                 }
             </style>
             <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
-            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
+                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
                     <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
                     
                     <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
-                    <table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
-                        <thead style="display: table-header-group; page-break-inside: avoid; break-inside: avoid;">
-                            <tr class="protect-row">
-                                <th style="${styleHeader} text-align: center; width: 5%;">Bil.</th>
-                                <th style="${styleHeader} text-align: left; width: 65%;">Butiran Pengadu & Jenis Tuntutan</th>
-                                <th style="${styleHeader} text-align: right; width: 30%;">Persetujuan (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rowsPengadu}</tbody>
-                    </table>
-
-                        <div style="${gayaBahagianB}">
-                            <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">B. MAKLUMAT BAYARAN</div>
-                            <table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
-                                <thead style="display: table-header-group;">
-                                    <tr class="protect-row">
-                                        <th style="${styleHeader} text-align: center; width: 5%;">Bil.</th>
-                                        <th style="${styleHeader} text-align: center; width: 65%;">Tarikh Bayaran</th>
-                                        <th style="${styleHeader} text-align: right; width: 30%;">Amaun (RM)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rowsAnsuran}
-                                    <tr class="protect-row">
-                                        <td colspan="2" style="${styleFooter} text-align: right; font-weight: bold; padding-right: 15px;">JUMLAH KESELURUHAN</td>
-                                        <td style="${styleFooter} text-align: right; font-weight: bold; font-size: 1.05em;">RM ${totalAnsStr}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>`;
+                    
+                    <!-- BUNGKUSAN HELAH (Mengekalkan kedudukan jadual pada M/S 1) -->
+                    <div style="padding-top: 1.5cm;">
+                        <table class="mou-print-table" style="margin-top: -1.5cm; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
+                            <thead style="display: table-header-group;">
+                                <!-- BARIS PENJARAK (Mewujudkan ruang kosong 1.5cm dari atas kertas pada M/S seterusnya) -->
+                                <tr style="height: 1.5cm; border: none !important; background: transparent !important;">
+                                    <th colspan="3" style="border: none !important; background: transparent !important; padding: 0;"></th>
+                                </tr>
+                                <tr class="protect-row">
+                                    <th style="${styleHeader} text-align: center; width: 5%;">Bil.</th>
+                                    <th style="${styleHeader} text-align: left; width: 65%;">Butiran Pengadu & Jenis Tuntutan</th>
+                                    <th style="${styleHeader} text-align: right; width: 30%;">Persetujuan (RM)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsPengadu}</tbody>
                 
             } else {
                 
