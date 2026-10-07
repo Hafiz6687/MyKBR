@@ -14648,21 +14648,32 @@ function bukaPreviewMou(dataSimpanan = null) {
            htmlLampiranA = `
             <style>
                 @media print {
+                    /* Tetapkan jarak margin kertas yang selamat untuk melindung header berulang */
+                    @page {
+                        margin-top: 1.5cm !important;
+                        margin-bottom: 1.5cm !important;
+                    }
+                    #kertasLampiranA {
+                        padding-top: 0.5cm !important; /* Kurangkan padding atas kertas supaya header berulang ada ruang bernafas */
+                    }
                     table.mou-print-table {
                         width: 100% !important;
                         border-collapse: collapse !important;
                         page-break-inside: auto !important;
+                        margin-top: 10px !important;
                     }
                     table.mou-print-table thead {
                         display: table-header-group !important;
                         break-inside: avoid !important;
                         page-break-inside: avoid !important;
                     }
-                    /* Tambah ruang lega (1 baris enter/jarak) di atas tajuk header berulang supaya tidak terpotong di margin atas */
+                    /* Berikan ruang lega ekstra dan height pada sel header semasa cetakan */
                     table.mou-print-table thead th {
-                        padding-top: 18px !important;
-                        padding-bottom: 8px !important;
-                        vertical-align: bottom !important;
+                        height: 35px !important;
+                        padding-top: 10px !important;
+                        padding-bottom: 6px !important;
+                        vertical-align: middle !important;
+                        box-sizing: border-box !important;
                     }
                     table.mou-print-table tbody tr {
                         page-break-inside: avoid !important;
