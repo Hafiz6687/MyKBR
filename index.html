@@ -14648,6 +14648,14 @@ function bukaPreviewMou(dataSimpanan = null) {
             htmlLampiranA = `
             <style>
                 @media print {
+                    /* Cipta margin atas fizikal KHAS untuk Lampiran A dan muka surat sambungannya */
+                    @page lampiranA_page {
+                        margin-top: 1.5cm !important;
+                    }
+                    #kertasLampiranA {
+                        page: lampiranA_page;
+                        padding-top: 0 !important; /* Padam padding asal Muka 1 supaya jarak tak jadi berganda */
+                    }
                     table.mou-print-table {
                         page-break-inside: auto;
                     }
