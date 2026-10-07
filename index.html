@@ -14645,22 +14645,28 @@ function bukaPreviewMou(dataSimpanan = null) {
                 let styleHeader = "border: 1px solid #000; background-color: #e2e8f0; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 6px;";
                 let styleFooter = "border: 1px solid #000; background-color: #f8fafc; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px;";
 
-                htmlLampiranA = `
-                <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
-                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
-                        <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 25px; text-decoration: underline;">Lampiran A</div>
-                        
-                        <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
-                        <table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
-                            <thead style="display: table-header-group;">
-                                <tr class="protect-row">
-                                    <th style="${styleHeader} text-align: center; width: 5%;">Bil.</th>
-                                    <th style="${styleHeader} text-align: left; width: 65%;">Butiran Pengadu & Jenis Tuntutan</th>
-                                    <th style="${styleHeader} text-align: right; width: 30%;">Persetujuan (RM)</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rowsPengadu}</tbody>
-                        </table>
+            htmlLampiranA = `
+            <style>
+                @media print {
+                    .mou-print-table thead { display: table-header-group !important; }
+                    .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+                }
+            </style>
+            <div class="kertas-notis" id="kertasLampiranA" style="padding: 1.5cm 2.5cm !important; page-break-before: always;">
+                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.25; padding: 0 !important;">
+                    <div style="text-align: right; font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 30px; text-decoration: underline;">Lampiran A</div>
+                    
+                    <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">A. MAKLUMAT PENGADU & TUNTUTAN</div>
+                    <table class="mou-print-table" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; color: #000;">
+                        <thead style="display: table-header-group; page-break-inside: avoid; break-inside: avoid;">
+                            <tr class="protect-row">
+                                <th style="${styleHeader} text-align: center; width: 5%;">Bil.</th>
+                                <th style="${styleHeader} text-align: left; width: 65%;">Butiran Pengadu & Jenis Tuntutan</th>
+                                <th style="${styleHeader} text-align: right; width: 30%;">Persetujuan (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsPengadu}</tbody>
+                    </table>
 
                         <div style="${gayaBahagianB}">
                             <div style="font-weight: bold; margin-bottom: 5px; font-size: 10pt; page-break-after: avoid;">B. MAKLUMAT BAYARAN</div>
