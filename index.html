@@ -14903,7 +14903,9 @@ function bukaPreviewMou(dataSimpanan = null) {
                 /* ========================================= */
                 .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
                 .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-                .mou-print-table tbody { page-break-inside: avoid !important; break-inside: avoid !important; }
+                
+                /* BENARKAN JADUAL BERPECAH SUPAYA TIDAK MENINGGALKAN LABEL LAMPIRAN A */
+                .mou-print-table tbody { page-break-inside: auto !important; break-inside: auto !important; }
             }
             .kertas-notis { background: white; width: 210mm; min-height: 297mm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; font-size: 10pt; line-height: 1.4; box-sizing: border-box; position: relative; }
             #kertasMouDraf { padding: 0.8cm 1.27cm !important; }
