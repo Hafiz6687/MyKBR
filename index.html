@@ -14650,6 +14650,7 @@ function bukaPreviewMou(dataSimpanan = null) {
                 @media print {
                     table.mou-print-table {
                         page-break-inside: auto;
+                        border-collapse: collapse !important;
                     }
                     table.mou-print-table tr {
                         page-break-inside: avoid !important;
@@ -14657,18 +14658,11 @@ function bukaPreviewMou(dataSimpanan = null) {
                     }
                     table.mou-print-table thead {
                         display: table-header-group !important;
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
                     }
-                    /* Memberikan jarak renggang (1 baris kosong) dari margin atas apabila header berulang di muka surat seterusnya */
-                    table.mou-print-table thead tr {
-                        break-before: page;
-                        page-break-before: always;
-                    }
-                    /* Kecualikan baris pertama supaya tidak teranjak ke page lain jika ia di muka surat asal Lampiran A */
-                    table.mou-print-table tr:first-child thead tr {
-                        break-before: auto;
-                        page-break-before: auto;
+                    /* Menambah jarak ruang (1 baris enter) di bahagian atas header jadual agar tidak terpotong atau rapat ke margin atas */
+                    table.mou-print-table thead th {
+                        padding-top: 15px !important;
+                        padding-bottom: 8px !important;
                     }
                     table.mou-print-table tfoot {
                         display: table-row-group !important;
