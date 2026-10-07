@@ -7,6 +7,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+    /* ========================================================
+   MEMBUAT PREVIEW SKRIN SEBIJI MACAM KERTAS A4 (FIZIKAL)
+   ======================================================== */
+@media screen {
+    .kertas-notis {
+        width: 21cm !important;          /* Lebar standard A4 */
+        min-height: 29.7cm !important;   /* Tinggi standard A4 */
+        padding: 2cm 2.5cm !important;   /* Margin selamat (Atas/Bawah 2cm, Kiri/Kanan 2.5cm) */
+        margin: 30px auto !important;    /* Jadikan kertas duduk di tengah-tengah skrin */
+        background-color: #ffffff !important;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important; /* Efek bayang-bayang kertas */
+        box-sizing: border-box !important;
+    }
+}
 :root {
             --primary-blue: #2563eb;
             --primary-hover: #1d4ed8;
