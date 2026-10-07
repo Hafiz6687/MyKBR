@@ -14888,8 +14888,6 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
-                
-                /* SAHIH: min-height ditukar ke auto untuk hapus m/s kosong */
                 .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: auto !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
                 .kertas-notis:last-child { page-break-after: auto; }
                 
@@ -14898,26 +14896,7 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body.print-only-defendan .kumpulan-mou, body.print-only-defendan .kumpulan-pengadu { display: none !important; }
                 
                 thead { display: table-header-group; }
-                
-                /* GAM JADUAL SUPAYA LEKAT DI BAWAH LAMPIRAN A (TIDAK DIUSIK) */
-                .mou-print-table { 
-                    border-top: 1px solid #000; 
-                    page-break-before: avoid !important; 
-                    break-before: avoid !important;
-                }
-
-                /* ========================================= */
-                /* PELINDUNG CETAKAN TERAKHIR (ANTI-TERPOTONG) (TIDAK DIUSIK) */
-                /* ========================================= */
-                
-                .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
-                .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-                
-                /* BENARKAN JADUAL PECAH SUPAYA TAK MELOMPAT KE M/S LAIN (TIDAK DIUSIK) */
-                .mou-print-table tbody, .mou-print-table table { 
-                    page-break-inside: auto !important; 
-                    break-inside: auto !important; 
-                }
+                tr, th, td { page-break-inside: avoid !important; break-inside: avoid !important; }
             }
             .kertas-notis { background: white; width: 210mm; min-height: 297mm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, Helvetica, sans-serif; color: black; font-size: 10pt; line-height: 1.4; box-sizing: border-box; position: relative; }
             #kertasMouDraf { padding: 0.8cm 1.27cm !important; }
