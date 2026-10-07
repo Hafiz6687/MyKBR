@@ -14647,8 +14647,12 @@ function bukaPreviewMou(dataSimpanan = null) {
 
                 htmlLampiranA = `
                 <style>
+                    /* Padam garisan kelabu pudar (border lalai sistem) di sekeliling jadual */
+                    table.mou-print-table { 
+                        border: none !important; 
+                    }
                     @media print {
-                        table.mou-print-table { page-break-inside: auto; }
+                        table.mou-print-table { page-break-inside: auto; border: none !important; }
                         table.mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
                         table.mou-print-table thead { display: table-header-group !important; }
                     }
@@ -14760,8 +14764,12 @@ function bukaPreviewMou(dataSimpanan = null) {
 
                 htmlLampiranA = `
                 <style>
+                    /* Padam garisan kelabu pudar (border lalai sistem) di sekeliling jadual */
+                    table.mou-print-table { 
+                        border: none !important; 
+                    }
                     @media print {
-                        table.mou-print-table { page-break-inside: auto; }
+                        table.mou-print-table { page-break-inside: auto; border: none !important; }
                         table.mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
                         table.mou-print-table thead { display: table-header-group !important; }
                     }
