@@ -14888,7 +14888,9 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
-                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
+                
+                /* SAHIH: min-height ditukar ke auto untuk hapus m/s kosong */
+                .kertas-notis { margin: 0 !important; padding: 1.5cm 1.27cm !important; box-shadow: none !important; width: 100% !important; min-height: auto !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
                 .kertas-notis:last-child { page-break-after: auto; }
                 
                 body.print-only-mou .kumpulan-pengadu, body.print-only-mou .kumpulan-defendan { display: none !important; }
@@ -14897,7 +14899,7 @@ function bukaPreviewMou(dataSimpanan = null) {
                 
                 thead { display: table-header-group; }
                 
-                /* GAM JADUAL SUPAYA LEKAT DI BAWAH LAMPIRAN A */
+                /* GAM JADUAL SUPAYA LEKAT DI BAWAH LAMPIRAN A (TIDAK DIUSIK) */
                 .mou-print-table { 
                     border-top: 1px solid #000; 
                     page-break-before: avoid !important; 
@@ -14905,13 +14907,13 @@ function bukaPreviewMou(dataSimpanan = null) {
                 }
 
                 /* ========================================= */
-                /* PELINDUNG CETAKAN TERAKHIR (ANTI-TERPOTONG) */
+                /* PELINDUNG CETAKAN TERAKHIR (ANTI-TERPOTONG) (TIDAK DIUSIK) */
                 /* ========================================= */
                 
                 .protect-row { page-break-inside: avoid !important; break-inside: avoid !important; }
                 .mou-print-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
                 
-                /* BENARKAN JADUAL PECAH SUPAYA TAK MELOMPAT KE M/S LAIN */
+                /* BENARKAN JADUAL PECAH SUPAYA TAK MELOMPAT KE M/S LAIN (TIDAK DIUSIK) */
                 .mou-print-table tbody, .mou-print-table table { 
                     page-break-inside: auto !important; 
                     break-inside: auto !important; 
