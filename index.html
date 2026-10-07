@@ -12777,25 +12777,49 @@ function bukaPreviewNotisLain(senaraiPenerima, tajukRaw, isiRaw) {
         }
         else if (penerima === 'Peguam Pengadu') {
             let peg = kes.senaraiPerwakilan?.find(p => p.kategori === 'Peguam');
-            if (peg) { nPenerima = peg.firma.toUpperCase(); aPenerima = peg.alamat.toUpperCase().replace(/,\s*/g, '<br>'); }
+            if (peg) { 
+                nPenerima = peg.firma.toUpperCase(); 
+                let arr = [peg.a1, peg.a2, peg.a3].filter(Boolean);
+                let pb = [peg.poskod, peg.bandar].filter(Boolean).join(' ');
+                if (pb) arr.push(pb); if (peg.negeri) arr.push(peg.negeri);
+                aPenerima = arr.join('<br>').toUpperCase();
+            }
             else { nPenerima = "[NAMA FIRMA PEGUAM PENGADU]"; aPenerima = "[MAKLUMAT TIDAK DIREKODKAN]"; }
             lTambahan = `<br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Pengadu)</span>`;
         }
         else if (penerima === 'Peguam Defendan') {
             let peg = kes.senaraiPerwakilanDefendan?.find(p => p.kategori === 'Peguam');
-            if (peg) { nPenerima = peg.firma.toUpperCase(); aPenerima = peg.alamat.toUpperCase().replace(/,\s*/g, '<br>'); }
+            if (peg) { 
+                nPenerima = peg.firma.toUpperCase(); 
+                let arr = [peg.a1, peg.a2, peg.a3].filter(Boolean);
+                let pb = [peg.poskod, peg.bandar].filter(Boolean).join(' ');
+                if (pb) arr.push(pb); if (peg.negeri) arr.push(peg.negeri);
+                aPenerima = arr.join('<br>').toUpperCase(); 
+            }
             else { nPenerima = "[NAMA FIRMA PEGUAM DEFENDAN]"; aPenerima = "[MAKLUMAT TIDAK DIREKODKAN]"; }
             lTambahan = `<br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Peguamcara bagi Defendan)</span>`;
         }
         else if (penerima === 'Wakil Kesatuan Pengadu') {
             let peg = kes.senaraiPerwakilan?.find(p => p.kategori === 'Wakil Kesatuan');
-            if (peg) { nPenerima = peg.firma.toUpperCase(); aPenerima = peg.alamat.toUpperCase().replace(/,\s*/g, '<br>'); }
+            if (peg) { 
+                nPenerima = peg.firma.toUpperCase(); 
+                let arr = [peg.a1, peg.a2, peg.a3].filter(Boolean);
+                let pb = [peg.poskod, peg.bandar].filter(Boolean).join(' ');
+                if (pb) arr.push(pb); if (peg.negeri) arr.push(peg.negeri);
+                aPenerima = arr.join('<br>').toUpperCase();
+            }
             else { nPenerima = "[NAMA KESATUAN PENGADU]"; aPenerima = "[MAKLUMAT TIDAK DIREKODKAN]"; }
             lTambahan = `<br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Wakil Kesatuan bagi Pengadu)</span>`;
         }
         else if (penerima === 'Wakil Kesatuan Defendan') {
             let peg = kes.senaraiPerwakilanDefendan?.find(p => p.kategori === 'Wakil Kesatuan');
-            if (peg) { nPenerima = peg.firma.toUpperCase(); aPenerima = peg.alamat.toUpperCase().replace(/,\s*/g, '<br>'); }
+            if (peg) { 
+                nPenerima = peg.firma.toUpperCase(); 
+                let arr = [peg.a1, peg.a2, peg.a3].filter(Boolean);
+                let pb = [peg.poskod, peg.bandar].filter(Boolean).join(' ');
+                if (pb) arr.push(pb); if (peg.negeri) arr.push(peg.negeri);
+                aPenerima = arr.join('<br>').toUpperCase();
+            }
             else { nPenerima = "[NAMA KESATUAN DEFENDAN]"; aPenerima = "[MAKLUMAT TIDAK DIREKODKAN]"; }
             lTambahan = `<br><span style="font-size: 0.9em; font-style: italic; font-weight: bold;">(Wakil Kesatuan bagi Defendan)</span>`;
         }
