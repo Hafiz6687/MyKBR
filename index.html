@@ -16367,9 +16367,9 @@ function semakJenisPemantauan(kes) {
     let jumlah = 0;
     let tajuk = 'Pemantauan Bayaran';
 
-    // 1. SENTIASA DAHULUKAN SEJARAH TINDAKAN TERKINI (Sumber Paling Tepat)
-    if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
-        // Cari rekod Perintah / MOU yang paling terkini dicetak
+    // 1. SISTEM BAHARU: Hanya bergantung 100% kepada Sejarah Tindakan!
+    // Asalkan array sejarahTindakan wujud (walaupun kosong sebab kau dah delete semua), ia takkan baca Lapis 2.
+    if (Array.isArray(kes.sejarahTindakan)) {
         const rekodTerkini = [...kes.sejarahTindakan].reverse().find(s => s.tindakan && (
             s.tindakan.toLowerCase().includes('borang c') || 
             s.tindakan.toLowerCase().includes('perintah') || 
@@ -16383,23 +16383,21 @@ function semakJenisPemantauan(kes) {
                 jenis = 'borang_c';
                 tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
                 
-                // Ekstrak data dari Base64
                 let dMatch = rekodTerkini.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
                 if (dMatch && dMatch[1]) {
                     try {
                         let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
                         jumlah = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
-                        if (memoData.jenis === 'Buang') aktif = false; // Tiada pemantauan jika kes dibuang
+                        if (memoData.jenis === 'Buang') aktif = false; 
                     } catch(e) {}
                 }
-                if (jumlah === 0) jumlah = parseFloat(kes.borangC?.jumlahPerintah) || parseFloat(kes.dataBorang?.inputs?.bc_jumlah_perintah?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
+                if (jumlah === 0) jumlah = parseFloat(kes.borangC?.jumlahPerintah) || parseFloat(kes.dataBorang?.inputs?.bc_jumlah_perintah?.toString().replace(/,/g, '')) || 0;
                 
                 return { aktif, jenis, jumlah, tajuk };
             } else {
                 aktif = true;
                 let isAnsuran = false;
                 
-                // Ekstrak data sebenar (Kaedah & Amaun) dari Base64 MOU
                 let dMatch = rekodTerkini.butiran.match(/\[DATA_MOU:(.*?)\]/);
                 if (dMatch && dMatch[1]) {
                     try {
@@ -16412,14 +16410,18 @@ function semakJenisPemantauan(kes) {
                 jenis = isAnsuran ? 'ansuran' : 'penuh';
                 tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
                 
-                if (jumlah === 0) jumlah = parseFloat(kes.mou?.jumlahMou) || parseFloat(kes.dataBorang?.inputs?.mk_jumlah_mou?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
+                if (jumlah === 0) jumlah = parseFloat(kes.mou?.jumlahMou) || parseFloat(kes.dataBorang?.inputs?.mk_jumlah_mou?.toString().replace(/,/g, '')) || 0;
                 
                 return { aktif, jenis, jumlah, tajuk };
             }
+        } else {
+            // KUNCI UTAMA: Jika Sejarah Tindakan wujud tapi rekod MOU/Borang C tiada (sebab DIBUANG/HAPUS), 
+            // MATIKAN KAD TERUS. Jangan pergi ke Lapis 2.
+            return { aktif: false, jenis: '', jumlah: 0, tajuk: 'Pemantauan Bayaran' };
         }
     }
 
-    // 2. JIKA TIADA SEJARAH (FALLBACK UNTUK KES LAMA)
+    // 2. LAPIS 2: JIKA TIADA SEJARAH LANGSUNG (FALLBACK UNTUK KES SANGAT LAMA SEBELUM UPDATE)
     if (kes.borangC && kes.borangC.jenisPerintah === 'Bayar') {
         aktif = true;
         jenis = 'borang_c';
@@ -16440,7 +16442,6 @@ function semakJenisPemantauan(kes) {
     
     return { aktif, jenis, jumlah, tajuk };
 }
-
 function kiraJumlahTuntutanLegacy(kes) {
     let total = 0;
     if (kes.dataBorang) {
