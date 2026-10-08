@@ -13086,6 +13086,9 @@ function semakButangBorangC() {
 function tindakanBorangC() {
     if (!document.getElementById('btnTindakanBorangC').disabled) {
         
+        // Panggil pembolehubah kes di awal fungsi supaya boleh diguna pakai oleh semua logik
+        const kes = memoriSenaraiKes[indexKesSemasa];
+
         // Tangkap pilihan checkbox penerima notis Borang C
         const penerimaNodeBC = document.querySelectorAll('input[name="bc_penerima"]:checked');
         let senaraiPenerimaBC = Array.from(penerimaNodeBC).map(cb => cb.value);
@@ -13093,8 +13096,29 @@ function tindakanBorangC() {
         // Simpan senarai penerima ke memori global untuk ditarik oleh enjin preview Borang C
         window.tempDataBorangC = { senaraiPenerima: senaraiPenerimaBC };
 
-        // --- TAMBAH KODING INI DI DALAM function tindakanBorangC() ---
-        const kes = memoriSenaraiKes[indexKesSemasa];
+        // =========================================================================
+        // AUTO-REKOD BAYARAN DI PEJABAT (BORANG C) KE DALAM PEMANTAUAN
+        // =========================================================================
+        let elemenBayarBC = document.getElementById('bc_dibayar_pejabat');
+        let bayarPejabatBorangC = elemenBayarBC ? (parseFloat(elemenBayarBC.value.replace(/,/g, '')) || 0) : 0;
+        
+        if (bayarPejabatBorangC > 0 && kes) {
+            if (!kes.pemantauan) kes.pemantauan = {};
+            if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
+            
+            // Elakkan rekod bertindih jika pegawai klik 'Jana' banyak kali
+            let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (Borang C)");
+            if (!rekodSediaAda) {
+                let elemenTarikh = document.getElementById('bc_tarikh');
+                kes.pemantauan.rekod.push({
+                    tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
+                    jumlah: bayarPejabatBorangC,
+                    catatan: "Bayaran Pendahuluan di Pejabat (Borang C)"
+                });
+            }
+        }
+        // =========================================================================
+
         if (!kes.borangC) kes.borangC = {};
         
         // Tangkap data dari Borang C
@@ -13102,14 +13126,19 @@ function tindakanBorangC() {
         kes.borangC.jumlahPerintah = document.getElementById('bc_jumlah_perintah').value.replace(/,/g, ''); 
         
         // Simpan ke memori dan paksa kad pemantauan muncul
-        if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+        if (typeof simpanSenaraiKeLokal === 'function') {
+            simpanSenaraiKeLokal();
+        } else if (typeof simpanSenaraiKes === 'function') {
+            simpanSenaraiKes(); // Fallback jika menggunakan fungsi simpanSenaraiKes
+        }
+        
         if (typeof renderKadPemantauan === 'function') renderKadPemantauan(kes);
         // -------------------------------------------------------------
 
         bukaPreviewBorangC();
     }
 }
-
+       
 function bukaPreviewBorangC(dataSimpanan = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -14249,13 +14278,44 @@ function semakButangMou() {
 
 function tindakanMou() {
     if (!document.getElementById('btnTindakanMou').disabled) {
+        
+        // Panggil pembolehubah kes semasa
+        const kes = memoriSenaraiKes[indexKesSemasa]; 
+        
         // Baca checkbox penerima notis MOU yang ditanda
         const penerimaNodeMou = document.querySelectorAll('input[name="mou_penerima"]:checked');
         let senaraiPenerimaMou = Array.from(penerimaNodeMou).map(cb => cb.value);
         
+        // =========================================================================
+        // AUTO-REKOD BAYARAN DI PEJABAT (MOU) KE DALAM PEMANTAUAN
+        // =========================================================================
+        let elemenBayar = document.getElementById('mk_dibayar_pejabat');
+        let bayarPejabatMou = elemenBayar ? (parseFloat(elemenBayar.value.replace(/,/g, '')) || 0) : 0;
+        
+        if (bayarPejabatMou > 0 && kes) {
+            if (!kes.pemantauan) kes.pemantauan = {};
+            if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
+            
+            // Elakkan rekod bertindih jika pegawai klik 'Jana' banyak kali
+            let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (MOU)");
+            
+            if (!rekodSediaAda) {
+                let elemenTarikh = document.getElementById('mk_tarikh_mou');
+                kes.pemantauan.rekod.push({
+                    tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
+                    jumlah: bayarPejabatMou,
+                    catatan: "Bayaran Pendahuluan di Pejabat (MOU)"
+                });
+                
+                // Simpan perubahan ke dalam pangkalan data
+                if (typeof simpanSenaraiKes === "function") simpanSenaraiKes();
+            }
+        }
+        // =========================================================================
+
         // Simpan ke dalam memori global untuk dibaca oleh fungsi Preview MOU
         window.tempDataMou = { 
-            // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini (cth: tarikh, jumlah, dll)
+            // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini
             senaraiPenerima: senaraiPenerimaMou 
         };
 
