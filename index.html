@@ -14279,52 +14279,56 @@ function semakButangMou() {
 function tindakanMou() {
     if (!document.getElementById('btnTindakanMou').disabled) {
         
+        // 1. Ambil Kes Semasa
         const kes = memoriSenaraiKes[indexKesSemasa]; 
+        
+        // 2. Baca checkbox penerima
         const penerimaNodeMou = document.querySelectorAll('input[name="mou_penerima"]:checked');
         let senaraiPenerimaMou = Array.from(penerimaNodeMou).map(cb => cb.value);
         
         // =========================================================================
-        // AUTO-REKOD BAYARAN DI PEJABAT (MOU)
+        // 3. LOGIK AUTO-REKOD BAYARAN (Mesti Berjaya!)
         // =========================================================================
-        // Cari ID input. Sila pastikan ID ini tepat dengan HTML modal MOU anda!
         let elemenBayar = document.getElementById('mk_dibayar_pejabat');
         
-        // Jika tak jumpa, kita cuba cari guna ID alternatif
-        if (!elemenBayar) elemenBayar = document.getElementById('mou_dibayar_pejabat'); 
+        // Tangkap nombor yang kau taip (Pastikan kau betul-betul taip > 0 sebelum tekan Jana)
+        let bayarPejabatMou = elemenBayar ? (parseFloat(elemenBayar.value.replace(/,/g, '')) || 0) : 0;
         
-        if (elemenBayar && elemenBayar.value) {
-            let bayarPejabatMou = parseFloat(elemenBayar.value.replace(/,/g, '')) || 0;
+        if (bayarPejabatMou > 0 && kes) {
+            // Pastikan objek pemantauan wujud
+            if (!kes.pemantauan) kes.pemantauan = {};
+            if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
             
-            if (bayarPejabatMou > 0 && kes) {
-                if (!kes.pemantauan) kes.pemantauan = {};
-                if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
+            // Check kalau dah pernah rekod untuk elak duplicate
+            let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (MOU)");
+            
+            if (!rekodSediaAda) {
+                let elemenTarikh = document.getElementById('mk_tarikh_mou');
+                kes.pemantauan.rekod.push({
+                    tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
+                    jumlah: bayarPejabatMou,
+                    catatan: "Bayaran Pendahuluan di Pejabat (MOU)"
+                });
                 
-                let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (MOU)");
-                
-                if (!rekodSediaAda) {
-                    let elemenTarikh = document.getElementById('mk_tarikh_mou');
-                    kes.pemantauan.rekod.push({
-                        tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
-                        jumlah: bayarPejabatMou,
-                        catatan: "Bayaran Pendahuluan di Pejabat (MOU)"
-                    });
-                    
-                    // Simpan data
-                    if (typeof simpanSenaraiKes === "function") simpanSenaraiKes();
-                    
-                    // KUNCI UTAMA: Paksa kad pemantauan di skrin untuk refresh on-the-spot!
-                    if (typeof renderKadPemantauan === "function") {
-                        renderKadPemantauan(kes);
-                    } else if (typeof paparMaklumatKes === "function") {
-                        paparMaklumatKes(indexKesSemasa);
-                    }
-                }
+                // SIMPAN KE DATABASE (Tiga fungsi lazim, kita panggil semua untuk gerenti simpan)
+                if (typeof simpanSenaraiKes === "function") simpanSenaraiKes();
+                if (typeof simpanSenaraiKeLokal === "function") simpanSenaraiKeLokal();
+                if (typeof kemaskiniLokal === "function") kemaskiniLokal();
             }
         }
         // =========================================================================
 
+        // 4. Simpan ke memori global untuk Preview
         window.tempDataMou = { senaraiPenerima: senaraiPenerimaMou };
+        
+        // 5. Buka Preview
         bukaPreviewMou();
+
+        // 6. PAKSA SKRIN REFRESH (Ini yang buat RM 0.00 tu berubah!)
+        setTimeout(() => {
+            if (typeof paparMaklumatKes === "function") paparMaklumatKes(indexKesSemasa);
+            else if (typeof renderKadPemantauan === "function") renderKadPemantauan(kes);
+        }, 500); // Delay sikit bagi data selamat tersimpan dulu
         
     } else {
         alert("Sila lengkapkan semua maklumat Persetujuan Bersama & Jadual Ansuran (jika ada).");
