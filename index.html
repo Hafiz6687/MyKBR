@@ -15005,6 +15005,8 @@ function bukaPreviewMou(dataSimpanan = null) {
                 body { background: white; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
                 body > *:not(#printArea) { display: none !important; } 
                 #printArea { display: block !important; } 
+                /* PAKSA TEKS MENGEMBANG KE TEPI UNTUK MOD CETAK SAHAJA */
+                .notis-body-wrapper { margin-left: -1.0cm !important; margin-right: -1.0cm !important; }
                 .kertas-notis { margin: 0 !important; padding: 1.5cm 1.95cm !important; box-shadow: none !important; width: 100% !important; min-height: 297mm !important; page-break-after: always; position: relative !important; box-sizing: border-box !important; } 
                 .kertas-notis:last-child { page-break-after: auto; }
                 
