@@ -14279,47 +14279,53 @@ function semakButangMou() {
 function tindakanMou() {
     if (!document.getElementById('btnTindakanMou').disabled) {
         
-        // Panggil pembolehubah kes semasa
         const kes = memoriSenaraiKes[indexKesSemasa]; 
-        
-        // Baca checkbox penerima notis MOU yang ditanda
         const penerimaNodeMou = document.querySelectorAll('input[name="mou_penerima"]:checked');
         let senaraiPenerimaMou = Array.from(penerimaNodeMou).map(cb => cb.value);
         
         // =========================================================================
-        // AUTO-REKOD BAYARAN DI PEJABAT (MOU) KE DALAM PEMANTAUAN
+        // AUTO-REKOD BAYARAN DI PEJABAT (MOU)
         // =========================================================================
+        // Cari ID input. Sila pastikan ID ini tepat dengan HTML modal MOU anda!
         let elemenBayar = document.getElementById('mk_dibayar_pejabat');
-        let bayarPejabatMou = elemenBayar ? (parseFloat(elemenBayar.value.replace(/,/g, '')) || 0) : 0;
         
-        if (bayarPejabatMou > 0 && kes) {
-            if (!kes.pemantauan) kes.pemantauan = {};
-            if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
+        // Jika tak jumpa, kita cuba cari guna ID alternatif
+        if (!elemenBayar) elemenBayar = document.getElementById('mou_dibayar_pejabat'); 
+        
+        if (elemenBayar && elemenBayar.value) {
+            let bayarPejabatMou = parseFloat(elemenBayar.value.replace(/,/g, '')) || 0;
             
-            // Elakkan rekod bertindih jika pegawai klik 'Jana' banyak kali
-            let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (MOU)");
-            
-            if (!rekodSediaAda) {
-                let elemenTarikh = document.getElementById('mk_tarikh_mou');
-                kes.pemantauan.rekod.push({
-                    tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
-                    jumlah: bayarPejabatMou,
-                    catatan: "Bayaran Pendahuluan di Pejabat (MOU)"
-                });
+            if (bayarPejabatMou > 0 && kes) {
+                if (!kes.pemantauan) kes.pemantauan = {};
+                if (!kes.pemantauan.rekod) kes.pemantauan.rekod = [];
                 
-                // Simpan perubahan ke dalam pangkalan data
-                if (typeof simpanSenaraiKes === "function") simpanSenaraiKes();
+                let rekodSediaAda = kes.pemantauan.rekod.find(r => r.catatan === "Bayaran Pendahuluan di Pejabat (MOU)");
+                
+                if (!rekodSediaAda) {
+                    let elemenTarikh = document.getElementById('mk_tarikh_mou');
+                    kes.pemantauan.rekod.push({
+                        tarikh: (elemenTarikh && elemenTarikh.value) ? elemenTarikh.value : new Date().toISOString().split('T')[0],
+                        jumlah: bayarPejabatMou,
+                        catatan: "Bayaran Pendahuluan di Pejabat (MOU)"
+                    });
+                    
+                    // Simpan data
+                    if (typeof simpanSenaraiKes === "function") simpanSenaraiKes();
+                    
+                    // KUNCI UTAMA: Paksa kad pemantauan di skrin untuk refresh on-the-spot!
+                    if (typeof renderKadPemantauan === "function") {
+                        renderKadPemantauan(kes);
+                    } else if (typeof paparMaklumatKes === "function") {
+                        paparMaklumatKes(indexKesSemasa);
+                    }
+                }
             }
         }
         // =========================================================================
 
-        // Simpan ke dalam memori global untuk dibaca oleh fungsi Preview MOU
-        window.tempDataMou = { 
-            // Pastikan anda mengekalkan sebarang pembolehubah sedia ada di sini
-            senaraiPenerima: senaraiPenerimaMou 
-        };
-
+        window.tempDataMou = { senaraiPenerima: senaraiPenerimaMou };
         bukaPreviewMou();
+        
     } else {
         alert("Sila lengkapkan semua maklumat Persetujuan Bersama & Jadual Ansuran (jika ada).");
     }
