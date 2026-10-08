@@ -14503,7 +14503,7 @@ function bukaPreviewMou(dataSimpanan = null) {
 
     let teksTuntutanDibuang = "";
     if (tuntutanDibuang.length > 0) {
-        let ayatDibuang = tuntutanDibuang.map(t => `<strong>${t.jenis}</strong> ${t.keterangan !== '(Keterangan Berbeza)' ? t.keterangan : ''} (RM ${Number(t.jumlah).toLocaleString('en-MY', {minimumFractionDigits:2})})`).join(', ');
+        let ayatDibuang = tuntutanDibuang.map(t => `<strong>${t.jenis}</strong> ${t.keterangan !== '(Keterangan Berbeza)' ? t.keterangan.replace(/<br>/gi, ' ') : ''} (RM ${Number(t.jumlah).toLocaleString('en-MY', {minimumFractionDigits:2})})`).join(', ');
         teksTuntutanDibuang = `<div style="text-indent: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.25;">Dan diperintahkan bahawa tuntutan ${ayatDibuang} adalah dibuang.</div>`;
     }
 
