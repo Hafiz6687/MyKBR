@@ -14442,22 +14442,30 @@ function bukaPreviewMou(dataSimpanan = null) {
     if (isAutoGroup) {
         let senaraiTuntutanBerkumpulan = [];
         let nKetua = (kes.dataBorang && kes.dataBorang.inputs['namaPengadu']) || document.getElementById('namaPengadu')?.value || "Ketua Pengadu";
+        let kpKetua = (kes.dataBorang && kes.dataBorang.inputs['noPendPengadu']) || ""; // Ekstrak No MyKad Ketua
         let senaraiKetua = kes.dataBorang ? (kes.dataBorang.tuntutanKetua || []) : memoriTuntutanKetua;
 
-        senaraiKetua.forEach((item, idx) => { senaraiTuntutanBerkumpulan.push({ id: `ketua_${idx}`, pemilik: nKetua, ...item }); });
+        senaraiKetua.forEach((item, idx) => { senaraiTuntutanBerkumpulan.push({ id: `ketua_${idx}`, pemilik: nKetua, kp: kpKetua, ...item }); });
 
         const bilP = parseInt((kes.dataBorang && kes.dataBorang.inputs['bilPengadu']) || document.getElementById('bilPengadu')?.value) || 1;
         for (let i = 2; i <= bilP; i++) {
             let nTambahan = (kes.dataBorang && kes.dataBorang.inputs['namaPengaduTambahan'+i]) || document.getElementById('namaPengaduTambahan'+i)?.value || `Pengadu ${i}`;
+            let kpTambahan = (kes.dataBorang && kes.dataBorang.inputs['kpPengaduTambahan'+i]) || ""; // Ekstrak No MyKad Tambahan
             let sTambahan = (kes.dataBorang && kes.dataBorang.tuntutanTambahan) ? kes.dataBorang.tuntutanTambahan[i] : memoriTuntutanTambahan[i];
             
-            if (sTambahan) { sTambahan.forEach((item, idx) => { senaraiTuntutanBerkumpulan.push({ id: `tambahan_${i}_${idx}`, pemilik: nTambahan, ...item }); }); }
+            if (sTambahan) { sTambahan.forEach((item, idx) => { senaraiTuntutanBerkumpulan.push({ id: `tambahan_${i}_${idx}`, pemilik: nTambahan, kp: kpTambahan, ...item }); }); }
         }
 
         senaraiTuntutanBerkumpulan.forEach(item => {
             let cloneItem = { ...item };
             let ketAsal = cloneItem.keterangan === "(Keterangan Berbeza)" ? "" : cloneItem.keterangan;
+            
+            // Simpan Keterangan yang bersih tanpa tag [Tuntutan] untuk dipanggil ke dalam perenggan 'Buang'
+            cloneItem.keteranganBersih = ketAsal.replace(/<br>/gi, ' ').trim(); 
+            
+            // Tag [Tuntutan] hanya digunakan untuk paparan jadual
             cloneItem.keterangan = `${ketAsal} <br><span style="font-size:0.85em; font-weight:600; font-style:italic;">[Tuntutan: ${cloneItem.pemilik.toUpperCase()}]</span>`;
+            
             if (selectedIds.includes(item.id)) tuntutanDipilih.push(cloneItem); else tuntutanDibuang.push(cloneItem);
         });
 
@@ -14503,7 +14511,15 @@ function bukaPreviewMou(dataSimpanan = null) {
 
     let teksTuntutanDibuang = "";
     if (tuntutanDibuang.length > 0) {
-        let ayatDibuang = tuntutanDibuang.map(t => `<strong>${t.jenis}</strong> ${t.keterangan !== '(Keterangan Berbeza)' ? t.keterangan.replace(/<br>/gi, ' ') : ''} (RM ${Number(t.jumlah).toLocaleString('en-MY', {minimumFractionDigits:2})})`).join(', ');
+        let ayatDibuang = "";
+        
+        // Logik Penjanaan Ayat Khusus Untuk Aduan Berkumpulan dan Biasa
+        if (isAutoGroup) {
+            ayatDibuang = tuntutanDibuang.map(t => `<strong>${t.pemilik.toUpperCase()}</strong> (${t.kp}) <strong>${t.jenis}</strong> ${t.keteranganBersih !== '' ? t.keteranganBersih : ''} berjumlah <strong>RM ${Number(t.jumlah).toLocaleString('en-MY', {minimumFractionDigits:2})}</strong>`).join(', ');
+        } else {
+            ayatDibuang = tuntutanDibuang.map(t => `<strong>${t.jenis}</strong> ${t.keterangan !== '(Keterangan Berbeza)' ? t.keterangan.replace(/<br>/gi, ' ') : ''} berjumlah <strong>RM ${Number(t.jumlah).toLocaleString('en-MY', {minimumFractionDigits:2})}</strong>`).join(', ');
+        }
+        
         teksTuntutanDibuang = `<div style="text-indent: 40px; text-align: justify; margin-bottom: 15px; line-height: 1.25;">Dan diperintahkan bahawa tuntutan ${ayatDibuang} adalah dibuang.</div>`;
     }
 
