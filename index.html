@@ -17059,6 +17059,9 @@ window.renderKadPemantauan = function(kes) {
 
     let jumlahKeseluruhan = info.jumlah || 0;
     let telahDibayar = 0;
+    
+    // Flag untuk periksa kalau pendahuluan dah wujud dalam lejar
+    let lejarAdaPendahuluan = false; 
 
     if (kes.pemantauan && kes.pemantauan.rekod) {
         kes.pemantauan.rekod.forEach(r => {
@@ -17071,9 +17074,44 @@ window.renderKadPemantauan = function(kes) {
             else if (r.status === 'Telah Dibayar' || r.status === 'Selesai') {
                 dibayar = parseFloat(String(r.amaun || 0).replace(/,/g, '')) || 0;
             }
+            
             telahDibayar += dibayar;
+
+            // Kenal pasti jika dah ada rekod bayaran pendahuluan dimasukkan untuk elak 'double-count'
+            if (r.catatan && r.catatan.toLowerCase().includes('pejabat')) {
+                lejarAdaPendahuluan = true;
+            }
         });
     }
+
+    // =========================================================================
+    // ENJIN PENGEKSTRAK PENDAHULUAN TERSEMBUNYI (AUTO-BACA DARI BORANG/SEJARAH)
+    // =========================================================================
+    if (!lejarAdaPendahuluan) {
+        let bayarDiPejabatTerselindung = 0;
+        
+        // 1. Seluk dari memori borang kes (Sistem auto-save data form di sini)
+        if (kes.dataBorang && kes.dataBorang.inputs) {
+            let dMOU = parseFloat(String(kes.dataBorang.inputs['mk_dibayar_pejabat'] || '0').replace(/,/g, '')) || 0;
+            let dBC = parseFloat(String(kes.dataBorang.inputs['bc_dibayar_pejabat'] || '0').replace(/,/g, '')) || 0;
+            bayarDiPejabatTerselindung = dMOU > 0 ? dMOU : (dBC > 0 ? dBC : 0);
+        }
+        
+        // 2. Seluk secara 'live' dari kotak input di skrin (Jika pengguna sedang menaip)
+        if (bayarDiPejabatTerselindung === 0) {
+            let elMOU = document.getElementById('mk_dibayar_pejabat');
+            let elBC = document.getElementById('bc_dibayar_pejabat');
+            
+            if (elMOU && elMOU.value) bayarDiPejabatTerselindung = parseFloat(elMOU.value.replace(/,/g, '')) || 0;
+            else if (elBC && elBC.value) bayarDiPejabatTerselindung = parseFloat(elBC.value.replace(/,/g, '')) || 0;
+        }
+
+        // Masukkan terus nilai RM560 (atau nilai lain) ke dalam jumlah Telah Dibayar
+        if (bayarDiPejabatTerselindung > 0) {
+            telahDibayar += bayarDiPejabatTerselindung;
+        }
+    }
+    // =========================================================================
 
     let bakiSemasa = jumlahKeseluruhan - telahDibayar;
     if (bakiSemasa < 0) bakiSemasa = 0;
