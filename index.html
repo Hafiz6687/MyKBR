@@ -16291,12 +16291,65 @@ function kiraSemulaRumusanMOU() {
 
 function semakJenisPemantauan(kes) {
     if (!kes.pemantauan) kes.pemantauan = {};
-    
+
     let aktif = false;
     let jenis = '';
     let jumlah = 0;
     let tajuk = 'Pemantauan Bayaran';
-    
+
+    // 1. SENTIASA DAHULUKAN SEJARAH TINDAKAN TERKINI (Sumber Paling Tepat)
+    if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
+        // Cari rekod Perintah / MOU yang paling terkini dicetak
+        const rekodTerkini = [...kes.sejarahTindakan].reverse().find(s => s.tindakan && (
+            s.tindakan.toLowerCase().includes('borang c') || 
+            s.tindakan.toLowerCase().includes('perintah') || 
+            s.tindakan.toLowerCase().includes('mou') || 
+            s.tindakan.toLowerCase().includes('persetujuan')
+        ));
+
+        if (rekodTerkini) {
+            if (rekodTerkini.tindakan.toLowerCase().includes('borang c') || rekodTerkini.tindakan.toLowerCase().includes('perintah')) {
+                aktif = true;
+                jenis = 'borang_c';
+                tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+                
+                // Ekstrak data dari Base64
+                let dMatch = rekodTerkini.butiran.match(/\[DATA_BORANGC:(.*?)\]/);
+                if (dMatch && dMatch[1]) {
+                    try {
+                        let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
+                        jumlah = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
+                        if (memoData.jenis === 'Buang') aktif = false; // Tiada pemantauan jika kes dibuang
+                    } catch(e) {}
+                }
+                if (jumlah === 0) jumlah = parseFloat(kes.borangC?.jumlahPerintah) || parseFloat(kes.dataBorang?.inputs?.bc_jumlah_perintah?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
+                
+                return { aktif, jenis, jumlah, tajuk };
+            } else {
+                aktif = true;
+                let isAnsuran = false;
+                
+                // Ekstrak data sebenar (Kaedah & Amaun) dari Base64 MOU
+                let dMatch = rekodTerkini.butiran.match(/\[DATA_MOU:(.*?)\]/);
+                if (dMatch && dMatch[1]) {
+                    try {
+                        let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
+                        jumlah = parseFloat(memoData.jumlah.toString().replace(/,/g, '')) || 0;
+                        if (memoData.kaedah === 'Ansuran') isAnsuran = true;
+                    } catch(e) {}
+                }
+
+                jenis = isAnsuran ? 'ansuran' : 'penuh';
+                tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
+                
+                if (jumlah === 0) jumlah = parseFloat(kes.mou?.jumlahMou) || parseFloat(kes.dataBorang?.inputs?.mk_jumlah_mou?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
+                
+                return { aktif, jenis, jumlah, tajuk };
+            }
+        }
+    }
+
+    // 2. JIKA TIADA SEJARAH (FALLBACK UNTUK KES LAMA)
     if (kes.borangC && kes.borangC.jenisPerintah === 'Bayar') {
         aktif = true;
         jenis = 'borang_c';
@@ -16312,26 +16365,6 @@ function semakJenisPemantauan(kes) {
         } else {
             jenis = 'penuh';
             tajuk = 'Pemantauan Bayaran (MOU Penuh)';
-        }
-    }
-    else if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
-        const sejarahReverse = [...kes.sejarahTindakan].reverse();
-        let adaBorangC = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('borang c') || s.tindakan.toLowerCase().includes('perintah')));
-        
-        if (adaBorangC) {
-            aktif = true;
-            jenis = 'borang_c';
-            tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-            jumlah = parseFloat(kes.dataBorang?.inputs?.bc_jumlah_perintah?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
-        } else {
-            let adaMou = sejarahReverse.find(s => s.tindakan && (s.tindakan.toLowerCase().includes('mou') || s.tindakan.toLowerCase().includes('persetujuan')));
-            if (adaMou) {
-                aktif = true;
-                let isAnsuran = adaMou.butiran && adaMou.butiran.toLowerCase().includes('ansuran');
-                jenis = isAnsuran ? 'ansuran' : 'penuh';
-                tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
-                jumlah = parseFloat(kes.dataBorang?.inputs?.mk_jumlah_mou?.toString().replace(/,/g, '')) || kiraJumlahTuntutanLegacy(kes);
-            }
         }
     }
     
