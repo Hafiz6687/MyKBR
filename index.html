@@ -16543,9 +16543,17 @@ window.bukaModalPemantauanMou = function() {
         }
         
         htmlJadual = `
-            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
-                <div style="font-size: 0.9em; font-weight: 600;">Jadual Ansuran Bulanan</div>
-                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; padding: 10px;">
+                <div>
+                    <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Rekod Bayaran (MOU Penuh / Borang C)</div>
+                    
+                    <!-- FIELD EXTRACT: JUMLAH DIBAYAR DI PEJABAT -->
+                    <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                        <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                        <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                    </div>
+                </div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 4px;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
             </div>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
