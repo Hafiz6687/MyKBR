@@ -16482,17 +16482,17 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ 1. ENJIN EKSTRAK TARIKH (KEKALKAN SOKONGAN DATA LAMA!)
+    // 🛡️ PENYELESAIAN 1: KUNCI TARIKH DARI INPUT BOX (DOM)
     // =========================================================
     let tarikhDokumenSebenar = "";
 
-    // A. DOM Input Box (Paling Kuat - Semasa Edit)
+    // A. Tangkap terus dari Kotak Input DOM (Paling Kuat)
     let domMOU = document.getElementById('mk_tarikh_mou');
     let domBC = document.getElementById('bc_tarikh');
     if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
     else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
 
-    // B. Data Legacy dalam Memori (Sebelum Update)
+    // B. Jika tiada di DOM, cari dalam data borang tersimpan
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou ||
                                kes.dataBorang?.inputs?.bc_tarikh ||
@@ -16500,67 +16500,8 @@ window.bukaModalPemantauanMou = function() {
                                kes.borangC?.tarikhPerintah || "";
     }
 
-    // C. Menyelam Sejarah Tindakan (Base64 & Teks Lama)
-    if (!tarikhDokumenSebenar && kes.sejarahTindakan) {
-        for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
-            let s = kes.sejarahTindakan[i];
-            if (!s.tindakan) continue;
-            let act = s.tindakan.toLowerCase();
-
-            if (act.includes('borang c') || act.includes('perintah') || act.includes('mou') || act.includes('persetujuan')) {
-                
-                // Cuba Base64 dahulu (Untuk rekod selepas update)
-                let matchData = s.butiran?.match(/\[DATA_(?:MOU\vert{}BORANGC):(.*?)\]/);
-                if (matchData && matchData[1]) {
-                    try {
-                        let d = JSON.parse(decodeURIComponent(escape(atob(matchData[1]))));
-                        let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                        if (tBase) {
-                            tarikhDokumenSebenar = tBase;
-                            break; 
-                        }
-                    } catch(e) {}
-                }
-
-                // JIKA GAGAL: Baca terus dari Teks Sejarah Tindakan (UNTUK REKOD SEBELUM UPDATE)
-                if (!tarikhDokumenSebenar) {
-                    let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
-                    // Tangkap "6 Oktober 2026"
-                    let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
-                    
-                    if (mTxt) {
-                        let dObj = mTxt[1].padStart(2, '0');
-                        let mStr = mTxt[2];
-                        let yObj = mTxt[3];
-                        let mObj = { 'januari':'01', 'februari':'02', 'mac':'03', 'april':'04', 'mei':'05', 'jun':'06', 'julai':'07', 'ogos':'08', 'september':'09', 'oktober':'10', 'november':'11', 'disember':'12' }[mStr];
-                        tarikhDokumenSebenar = `${yObj}-${mObj}-${dObj}`;
-                        break;
-                    } else {
-                        // Tangkap format nombor lama (DD/MM/YYYY atau YYYY-MM-DD)
-                        let mNum = s.butiran?.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-                        if (mNum) {
-                            tarikhDokumenSebenar = `${mNum[3]}-${mNum[2].padStart(2,'0')}-${mNum[1].padStart(2,'0')}`;
-                            break;
-                        } else {
-                            let mNumRev = s.butiran?.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                            if (mNumRev) {
-                                tarikhDokumenSebenar = `${mNumRev[1]}-${mNumRev[2].padStart(2,'0')}-${mNumRev[3].padStart(2,'0')}`;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // D. Penyelamat terakhir (Hari Ini) jika semua benar-benar musnah
-    if (!tarikhDokumenSebenar) {
-        tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
-    }
-
     // =========================================================
-    // 🛡️ 2. ENJIN BACA JENIS & JUMLAH (TAK SENTUH TARIKH DI ATAS)
+    // 🛡️ BACA SEJARAH TINDAKAN & BASE64 (TANPA GANGGU TARIKH)
     // =========================================================
     let base64Berjaya = false;
 
@@ -16590,6 +16531,7 @@ window.bukaModalPemantauanMou = function() {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                         
+                        // Penghadang: Pastikan Base64 adalah dokumen sebenar
                         if (d.kaedah !== undefined || d.inputs?.mk_kaedah_mou !== undefined || d.inputs?.bc_jenis_perintah !== undefined) {
                             base64Berjaya = true; 
                             
@@ -16600,6 +16542,12 @@ window.bukaModalPemantauanMou = function() {
                             } else if (dKdh === 'Ansuran' || (d.ansuranDetails && d.ansuranDetails.length > 0) || d.ansuranIndividu) {
                                 info.jenis = 'ansuran';
                                 info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                            }
+
+                            // JIKA TARIKH MASIH KOSONG SAHAJA DIBENARKAN BACA DARI SINI
+                            if (!tarikhDokumenSebenar) {
+                                let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
+                                if (tBase) tarikhDokumenSebenar = tBase;
                             }
 
                             let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
@@ -16619,13 +16567,37 @@ window.bukaModalPemantauanMou = function() {
                                     senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                                 }
                             }
-                            
-                            break; 
+                            break; // Dah jumpa dokumen base64, terus break loop!
                         }
                     } catch(e) {}
                 }
+                
+                // Fallback tarik tarikh dari teks Sejarah Tindakan JIKA masih kosong
+                if (!tarikhDokumenSebenar) {
+                    let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
+                    let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
+                    
+                    if (mTxt) {
+                        let dObj = mTxt[1].padStart(2, '0');
+                        let mStr = mTxt[2];
+                        let yObj = mTxt[3];
+                        let mObj = { 'januari':'01', 'februari':'02', 'mac':'03', 'april':'04', 'mei':'05', 'jun':'06', 'julai':'07', 'ogos':'08', 'september':'09', 'oktober':'10', 'november':'11', 'disember':'12' }[mStr];
+                        tarikhDokumenSebenar = `${yObj}-${mObj}-${dObj}`;
+                    } else {
+                        let mNum = s.butiran?.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                        if (mNum) tarikhDokumenSebenar = `${mNum[3]}-${mNum[2].padStart(2,'0')}-${mNum[1].padStart(2,'0')}`;
+                        else {
+                            let mNumRev = s.butiran?.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+                            if (mNumRev) tarikhDokumenSebenar = `${mNumRev[1]}-${mNumRev[2].padStart(2,'0')}-${mNumRev[3].padStart(2,'0')}`;
+                        }
+                    }
+                }
             }
         }
+    }
+
+    if (!tarikhDokumenSebenar) {
+        tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
     }
 
     if (!base64Berjaya) {
@@ -16643,6 +16615,7 @@ window.bukaModalPemantauanMou = function() {
         senaraiAnsuran = [];
     }
 
+    // Ekstrak Bayaran Awal dari DOM (jika ada)
     if (bayarAwal === 0) {
         let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
@@ -16666,6 +16639,7 @@ window.bukaModalPemantauanMou = function() {
     let htmlJadual = '';
     let rekodPemantauan = kes.pemantauan?.rekod || [];
     
+    // Pembersihan rekod bercanggah
     if (info.jenis === 'penuh' || info.jenis === 'borang_c') {
         if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
             rekodPemantauan = [];
@@ -16700,6 +16674,8 @@ window.bukaModalPemantauanMou = function() {
             if (!kes.pemantauan) kes.pemantauan = {};
             kes.pemantauan.rekod = rekodPemantauan;
         }
+
+        // PENYELESAIAN 2: BLOK KOD YANG MENGGANGGU ROW 1 TELAH DIPADAM DI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -16806,6 +16782,8 @@ window.bukaModalPemantauanMou = function() {
                 resit: ''
             }];
         }
+
+        // PENYELESAIAN 2: BLOK KOD YANG MENGGANGGU ROW 1 TELAH DIPADAM DI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -16863,6 +16841,7 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAdhoc(); }, 50);
     }
 };
+       
 window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     let tMatang = rekod.tarikhMestiBayar || window.tempTarikhMatangAdhoc || '';
     let aDiperintahRaw = rekod.amaunDiperintah !== undefined ? rekod.amaunDiperintah : window.tempAmaunDiperintahAdhoc;
