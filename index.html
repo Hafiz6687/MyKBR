@@ -16482,17 +16482,15 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ 1. ENJIN EKSTRAK TARIKH (DIASINGKAN SEPENUHNYA!)
+    // 🛡️ 1. ENJIN EKSTRAK TARIKH
     // =========================================================
     let tarikhDokumenSebenar = "";
 
-    // A. Tangkap terus dari Kotak Input DOM (Paling Kuat)
     let domMOU = document.getElementById('mk_tarikh_mou');
     let domBC = document.getElementById('bc_tarikh');
     if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
     else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
 
-    // B. Jika tiada di DOM, cari dalam data borang tersimpan
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou ||
                                kes.dataBorang?.inputs?.bc_tarikh ||
@@ -16500,7 +16498,6 @@ window.bukaModalPemantauanMou = function() {
                                kes.borangC?.tarikhPerintah || "";
     }
 
-    // C. Jika MASIH KOSONG, baru selam Sejarah Tindakan (Khas cari tarikh)
     if (!tarikhDokumenSebenar && kes.sejarahTindakan) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let matchData = kes.sejarahTindakan[i].butiran?.match(/\[DATA_(?:MOU\vert{}BORANGC):(.*?)\]/);
@@ -16510,20 +16507,19 @@ window.bukaModalPemantauanMou = function() {
                     let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
                     if (tBase) {
                         tarikhDokumenSebenar = tBase;
-                        break; // Berhenti serta-merta bila dah jumpa
+                        break; 
                     }
                 } catch(e) {}
             }
         }
     }
 
-    // D. Penyelamat terakhir (Hari Ini) jika semua gagal
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
     }
 
     // =========================================================
-    // 🛡️ 2. ENJIN BACA JENIS & JUMLAH (TAK BOLEH USIK TARIKH)
+    // 🛡️ 2. ENJIN BACA JENIS & JUMLAH
     // =========================================================
     let base64Berjaya = false;
 
@@ -16553,7 +16549,6 @@ window.bukaModalPemantauanMou = function() {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                         
-                        // PENGHADANG KEBODOHAN: Pastikan ini dokumen MOU sebenar, bukan sekadar Notis!
                         if (d.kaedah !== undefined || d.inputs?.mk_kaedah_mou !== undefined || d.inputs?.bc_jenis_perintah !== undefined) {
                             base64Berjaya = true; 
                             
@@ -16584,7 +16579,6 @@ window.bukaModalPemantauanMou = function() {
                                 }
                             }
                             
-                            // BARU BOLEH BERHENTI (Sebab dah jumpa jadual dan amaun sebenar)
                             break; 
                         }
                     } catch(e) {}
@@ -16643,6 +16637,9 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
+    // =========================================================
+    // MOD JADUAL: ANSURAN
+    // =========================================================
     if (info.jenis === 'ansuran') {
         let dataCacat = false;
         if (rekodPemantauan.length > 0) {
@@ -16663,14 +16660,7 @@ window.bukaModalPemantauanMou = function() {
             kes.pemantauan.rekod = rekodPemantauan;
         }
 
-        if (bayarAwal > 0 && rekodPemantauan.length > 0) {
-            let valRaw = rekodPemantauan[0].amaunDibayar;
-            let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
-            if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
-                rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || tarikhDokumenSebenar;
-            }
-        }
+        // KOD PAKSAAN BAYARAN AWAL KE BARIS PERTAMA TELAH DIBUANG DARI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -16752,8 +16742,10 @@ window.bukaModalPemantauanMou = function() {
         
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
+    // =========================================================
+    // MOD JADUAL: ADHOC (MOU PENUH / BORANG C)
+    // =========================================================
     } else {
-        // PENGIRAAN 14 HARI (Diambil terus dari tarikh dokumen sebenar)
         let partsLog = tarikhDokumenSebenar ? tarikhDokumenSebenar.split('-') : null;
         if (partsLog && partsLog.length === 3) tarikhPerintahAdhoc = new Date(`${partsLog[0]}-${partsLog[1]}-${partsLog[2]}`);
         if (isNaN(tarikhPerintahAdhoc.getTime())) tarikhPerintahAdhoc = new Date();
@@ -16776,15 +16768,7 @@ window.bukaModalPemantauanMou = function() {
             }];
         }
 
-        if (bayarAwal > 0 && rekodPemantauan.length > 0) {
-            let valRaw = rekodPemantauan[0].amaunDibayar;
-            let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
-            
-            if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
-                rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || tarikhDokumenSebenar;
-            }
-        }
+        // KOD PAKSAAN BAYARAN AWAL KE BARIS PERTAMA TELAH DIBUANG DARI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
