@@ -16481,7 +16481,7 @@ window.bukaModalPemantauanMou = function() {
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
     
     // =========================================================
-    // 🛡️ ENJIN EKSTRAK TARIKH & BAYARAN AWAL (SATU BLOK SAHAJA)
+    // 🛡️ ENJIN EKSTRAK TARIKH
     // =========================================================
     let tarikhDokumenSebenar = "";
     let base64Berjaya = false;
@@ -16499,7 +16499,6 @@ window.bukaModalPemantauanMou = function() {
             if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
             else if (matchBC && matchBC[1]) matchData = matchBC[1];
 
-            // KITA FOKUS CARI TINDAKAN DOKUMEN SAHAJA
             if (act.includes('borang c') || act.includes('perintah') || act.includes('mou') || act.includes('persetujuan')) {
                 
                 if (act.includes('borang c') || act.includes('perintah')) {
@@ -16524,7 +16523,6 @@ window.bukaModalPemantauanMou = function() {
                             info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                         }
 
-                        // SUMBER 1: TARIKH DARI BASE64 (Paling Tepat)
                         let tBase = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir || d.bc_tarikh || d.mk_tarikh_mou;
                         if (tBase) tarikhDokumenSebenar = tBase;
 
@@ -16548,30 +16546,43 @@ window.bukaModalPemantauanMou = function() {
                     } catch(e) {}
                 }
 
-                // SUMBER 2: TARIKH DARI MASA LOG TINDAKAN (Jika Base64 tiada tarikh)
+                // 🚨 PENYELAMAT: CARI AYAT BAHASA MELAYU "6 Oktober 2026" 🚨
+                let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
+                let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
+                
+                if (mTxt) {
+                    let dObj = mTxt[1].padStart(2, '0');
+                    let mStr = mTxt[2];
+                    let yObj = mTxt[3];
+                    let mObj = { 'januari':'01', 'februari':'02', 'mac':'03', 'april':'04', 'mei':'05', 'jun':'06', 'julai':'07', 'ogos':'08', 'september':'09', 'oktober':'10', 'november':'11', 'disember':'12' }[mStr];
+                    tarikhDokumenSebenar = `${yObj}-${mObj}-${dObj}`; // OVERRIDE JADI 2026-10-06
+                } else {
+                    let mNum = s.butiran?.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                    if (mNum) tarikhDokumenSebenar = `${mNum[3]}-${mNum[2].padStart(2,'0')}-${mNum[1].padStart(2,'0')}`;
+                    else {
+                        let mNumRev = s.butiran?.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+                        if (mNumRev) tarikhDokumenSebenar = `${mNumRev[1]}-${mNumRev[2].padStart(2,'0')}-${mNumRev[3].padStart(2,'0')}`;
+                    }
+                }
+
                 if (!tarikhDokumenSebenar && s.tarikhMasa) {
                     let parts = s.tarikhMasa.split('|')[0].trim().split('/');
                     if (parts.length === 3) {
                         tarikhDokumenSebenar = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
                     }
                 }
-
-                break; // BERHENTI LOOP (Dah jumpa dokumen paling latest, kunci data ni)
+                break; 
             }
         }
     }
 
-    // SUMBER 3: TARIKH DARI LEGACY DATA (Jika log sejarah dah jahanam/hilang)
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = kes.dataBorang?.inputs?.bc_tarikh || kes.dataBorang?.inputs?.mk_tarikh_mou || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
     }
-    
-    // SUMBER 4: FALLBACK HARI INI (Mustahil sampai sini kalau data tak corrupt teruk)
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
     }
-    // =========================================================
-
+    
     if (!base64Berjaya) {
         let kdhLegacy = kes.mou?.kaedah || kes.dataBorang?.inputs?.mk_kaedah_mou;
         if (kdhLegacy === 'Penuh') {
