@@ -16476,142 +16476,118 @@ window.bukaModalPemantauanMou = function() {
     if (!kes) return;
     
     let info = semakJenisPemantauan(kes);
+    let bayarAwal = 0;
+    let jumlahAsal = info.jumlah || 0;
+    let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
+    let isBorangC = false;
+    let tarikhPerintahAdhoc = new Date();
 
     // =========================================================================
-    // 🛠️ FIX 1: PENIMPA KLASIFIKASI MUTLAK (Selesaikan Permasalahan 4)
-    // Paksa sistem baca sejarah terakhir. Jika Borang C, BUKA JADUAL BORANG C!
+    // 🛡️ ENJIN UTAMA: BACA & EKSTRAK DARI SEJARAH TINDAKAN (BASE64) TERKINI
     // =========================================================================
-    if (kes.sejarahTindakan && kes.sejarahTindakan.length > 0) {
+    if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let s = kes.sejarahTindakan[i];
             if (!s.tindakan) continue;
             let act = s.tindakan.toLowerCase();
             
+            // Tentukan Klasifikasi yang Tepat
             if (act.includes('borang c') || act.includes('perintah')) {
+                isBorangC = true;
                 info.jenis = 'borang_c';
                 info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-                break; // Jumpa Borang C, terus kunci keputusan!
+                
+                // Dapatkan tarikh sebenar dari Sejarah
+                let tMatch = s.tarikhMasa.split('|')[0].trim().split('/');
+                if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
             } else if (act.includes('mou') || act.includes('persetujuan')) {
-                let isAnsuran = false;
-                let m = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
-                if (m && m[1]) {
-                    try {
-                        let d = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-                        if (d.kaedah === 'Ansuran') isAnsuran = true;
-                    } catch(e){}
-                } else if (kes.mou && kes.mou.kaedah === 'Ansuran') {
-                    isAnsuran = true;
+                isBorangC = false;
+                if (s.butiran?.includes("Ansuran")) {
+                    info.jenis = 'ansuran';
+                    info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                } else {
+                    info.jenis = 'penuh';
+                    info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
                 }
-                info.jenis = isAnsuran ? 'ansuran' : 'penuh';
-                info.tajuk = isAnsuran ? 'Pemantauan Bayaran (MOU Ansuran)' : 'Pemantauan Bayaran (MOU Penuh)';
-                break; // Jumpa MOU, terus kunci keputusan!
             }
+
+            // Ekstrak Data Tersembunyi (Base64)
+            let m = s.butiran?.match(/\[DATA_(MOU\vert{}BORANGC):(.*?)\]/);
+            if (m && m[2]) {
+                try {
+                    let d = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
+                    
+                    // Ekstrak Nilai Pendahuluan (bayarAwal)
+                    let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                             parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                             parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+                    if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
+
+                    // Ekstrak Jumlah Keseluruhan Perintah/MOU
+                    let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
+                    if (j > 0) jumlahAsal = j;
+
+                    // Ekstrak Jadual Ansuran dari Sejarah (Jika Ada)
+                    if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
+                        if (d.ansuranDetails && d.ansuranDetails.length > 0) {
+                            senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                        } else if (d.ansuranIndividu) {
+                            let tempAns = [];
+                            Object.values(d.ansuranIndividu).forEach(arr => { tempAns = tempAns.concat(arr); });
+                            senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                        }
+                    }
+                    
+                    break; // Berhenti mencari selepas jumpa rekod relevan terkini
+                } catch(e) {}
+            }
+        }
+    }
+
+    // =========================================================================
+    // FALLBACK: JIKA SEJARAH GAGAL, BACA DARI MEMORI BORANG (LIVE)
+    // =========================================================================
+    if (bayarAwal === 0) {
+        if (kes.dataBorang && kes.dataBorang.inputs) {
+            let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,''));
+            let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,''));
+            bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
+        }
+        if (bayarAwal === 0) {
+            let elM = document.getElementById('mk_dibayar_pejabat');
+            let elB = document.getElementById('bc_dibayar_pejabat');
+            if (elM && elM.value) bayarAwal = parseFloat(elM.value.replace(/,/g, '')) || 0;
+            else if (elB && elB.value) bayarAwal = parseFloat(elB.value.replace(/,/g, '')) || 0;
         }
     }
 
     document.getElementById('tajuk_modal_pemantauan').innerText = "Kemaskini " + info.tajuk;
-    
-    // =========================================================================
-    // 🛠️ FIX 2: PENGEKSTRAK WANG PENDAHULUAN BRUTE-FORCE (Selesaikan Permasalahan 3)
-    // Selongkar setiap lubang memori untuk cari RM500 / RM330
-    // =========================================================================
-    let bayarAwal = 0;
-    
-    // 1. Selongkar dari memori borang utama
-    if (kes.dataBorang && kes.dataBorang.inputs) {
-        let val1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,''));
-        let val2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,''));
-        if (val1 > 0) bayarAwal = val1;
-        else if (val2 > 0) bayarAwal = val2;
-    }
-    
-    // 2. Selongkar dari memori objek spesifik (Jika borang utama gagal)
-    if (bayarAwal === 0) {
-        let val3 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,''));
-        let val4 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,''));
-        if (val3 > 0) bayarAwal = val3;
-        else if (val4 > 0) bayarAwal = val4;
-    }
-
-    // 3. Selongkar sejarah Base64 (Jika ini kes lama yang di-load semula)
-    if (bayarAwal === 0 && kes.sejarahTindakan) {
-        for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
-            let m = kes.sejarahTindakan[i].butiran?.match(/\[DATA_(MOU\vert{}BORANGC):(.*?)\]/);
-            if (m && m[2]) {
-                try {
-                    let d = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
-                    let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                             parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                             parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-                    if (vX > 0) { bayarAwal = vX; break; }
-                } catch(e){}
-            }
-        }
-    }
-
-    // 4. Selongkar dari Kotak Skrin secara 'Live' (Fallback Terakhir)
-    if (bayarAwal === 0) {
-        let elM = document.getElementById('mk_dibayar_pejabat');
-        let elB = document.getElementById('bc_dibayar_pejabat');
-        if (elM && elM.value) bayarAwal = parseFloat(elM.value.replace(/,/g, '')) || 0;
-        else if (elB && elB.value) bayarAwal = parseFloat(elB.value.replace(/,/g, '')) || 0;
-    }
-    // =========================================================================
-
     let htmlJadual = '';
+    let rekodPemantauan = kes.pemantauan?.rekod || [];
     
     // ==========================================
     // MOD ANSURAN
     // ==========================================
     if (info.jenis === 'ansuran') {
-        let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
-        
-        if (senaraiAnsuran.length === 0 && kes.sejarahTindakan) {
-            const rekodMOU = [...kes.sejarahTindakan].reverse().find(s => s.butiran && s.butiran.includes("[DATA_MOU:"));
-            if (rekodMOU) {
-                let dMatch = rekodMOU.butiran.match(/\[DATA_MOU:(.*?)\]/);
-                if (dMatch && dMatch[1]) {
-                    try {
-                        let memoData = JSON.parse(decodeURIComponent(escape(atob(dMatch[1]))));
-                        if (memoData.ansuranDetails && memoData.ansuranDetails.length > 0) {
-                            senaraiAnsuran = memoData.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
-                        } else if (memoData.ansuranIndividu) {
-                            let tempAns = [];
-                            Object.values(memoData.ansuranIndividu).forEach(arr => { tempAns = tempAns.concat(arr); });
-                            senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
-                        }
-                    } catch(e){}
-                }
-            }
-        }
-
-        let rekodPemantauan = kes.pemantauan?.rekod || [];
-        
         let dataCacat = false;
         if (rekodPemantauan.length > 0) {
-            let totalSetuju = rekodPemantauan.reduce((sum, r) => {
-                let val = r.amaunDipersetujui !== undefined ? r.amaunDipersetujui : (r.amaun || 0);
-                return sum + (parseFloat(String(val).replace(/,/g, '')) || 0);
-            }, 0);
+            let totalSetuju = rekodPemantauan.reduce((sum, r) => sum + (parseFloat(String(r.amaunDipersetujui || r.amaun || 0).replace(/,/g, '')) || 0), 0);
             if (totalSetuju === 0) dataCacat = true; 
         }
 
         if ((rekodPemantauan.length === 0 || dataCacat) && senaraiAnsuran.length > 0) {
-            rekodPemantauan = senaraiAnsuran.map((a, i) => {
-                return { 
-                    tarikhMestiBayar: a.tarikh, 
-                    amaunDipersetujui: a.amaun, 
-                    amaunDibayar: '', 
-                    status: 'Belum Dibayar', 
-                    tarikhDibayar: '', 
-                    resit: '' 
-                };
-            });
+            rekodPemantauan = senaraiAnsuran.map(a => ({ 
+                tarikhMestiBayar: a.tarikh, 
+                amaunDipersetujui: a.amaun, 
+                amaunDibayar: '', 
+                status: 'Belum Dibayar', 
+                tarikhDibayar: '', 
+                resit: '' 
+            }));
             if (!kes.pemantauan) kes.pemantauan = {};
             kes.pemantauan.rekod = rekodPemantauan;
         }
 
-        // Tembak nilai pendahuluan masuk Baris 1
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
             let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
             if (bayaranSemasa === 0) {
@@ -16645,10 +16621,8 @@ window.bukaModalPemantauanMou = function() {
             htmlJadual += `<tr><td colspan="8" class="empty-row" style="padding: 15px; text-align: center;">Tiada jadual ansuran dikesan. Sila klik butang '+ Tambah Ansuran' di atas.</td></tr>`;
         } else {
             rekodPemantauan.forEach((rekod, i) => {
-                let aSetujuRaw = rekod.amaunDipersetujui !== undefined ? rekod.amaunDipersetujui : (rekod.amaun || '');
-                let aSetuju = aSetujuRaw !== '' ? parseFloat(String(aSetujuRaw).replace(/,/g, '')) : '';
-                let aBayarRaw = rekod.amaunDibayar !== undefined ? rekod.amaunDibayar : (rekod.status === 'Telah Dibayar' ? aSetuju : '');
-                let aBayar = aBayarRaw !== '' ? parseFloat(String(aBayarRaw).replace(/,/g, '')) : '';
+                let aSetuju = rekod.amaunDipersetujui !== undefined && rekod.amaunDipersetujui !== '' ? parseFloat(String(rekod.amaunDipersetujui).replace(/,/g, '')) : '';
+                let aBayar = rekod.amaunDibayar !== undefined && rekod.amaunDibayar !== '' ? parseFloat(String(rekod.amaunDibayar).replace(/,/g, '')) : '';
                 
                 htmlJadual += `
                     <tr class="baris-ansuran">
@@ -16694,36 +16668,13 @@ window.bukaModalPemantauanMou = function() {
         // ==========================================
         // MOD ADHOC (MOU PENUH / BORANG C)
         // ==========================================
-        let tarikhAsal = new Date();
-        let jumlahAdhoc = info.jumlah || 0;
-        
-        // Pastikan jumlahAdhoc paling tepat ditarik dari sejarah jika info.jumlah gagal
-        if (kes.sejarahTindakan) {
-            for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
-                let s = kes.sejarahTindakan[i];
-                let m = s.butiran?.match(/\[DATA_(MOU\vert{}BORANGC):(.*?)\]/);
-                if (m && m[2]) {
-                    try {
-                        let d = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
-                        let tMatch = s.tarikhMasa.split('|')[0].trim().split('/');
-                        if (tMatch.length === 3) tarikhAsal = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
-                        let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || 0).replace(/,/g,''));
-                        if (j > 0) jumlahAdhoc = j;
-                        break;
-                    } catch(e){}
-                }
-            }
-        }
-        
-        tarikhAsal.setDate(tarikhAsal.getDate() + 14); 
-        let yyyy = tarikhAsal.getFullYear();
-        let mm = String(tarikhAsal.getMonth() + 1).padStart(2, '0');
-        let dd = String(tarikhAsal.getDate()).padStart(2, '0');
+        tarikhPerintahAdhoc.setDate(tarikhPerintahAdhoc.getDate() + 14); 
+        let yyyy = tarikhPerintahAdhoc.getFullYear();
+        let mm = String(tarikhPerintahAdhoc.getMonth() + 1).padStart(2, '0');
+        let dd = String(tarikhPerintahAdhoc.getDate()).padStart(2, '0');
         window.tempTarikhMatangAdhoc = `${yyyy}-${mm}-${dd}`;
-        window.tempAmaunDiperintahAdhoc = jumlahAdhoc;
+        window.tempAmaunDiperintahAdhoc = jumlahAsal;
 
-        let rekodPemantauan = kes.pemantauan?.rekod || [];
-        
         if (rekodPemantauan.length === 0) {
             rekodPemantauan = [{
                 tarikhMestiBayar: window.tempTarikhMatangAdhoc, 
@@ -16735,7 +16686,6 @@ window.bukaModalPemantauanMou = function() {
             }];
         }
 
-        // Tembak nilai pendahuluan masuk Baris 1
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
             let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
             if (bayaranSemasa === 0) {
