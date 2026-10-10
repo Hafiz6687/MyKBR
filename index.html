@@ -9777,21 +9777,29 @@ if ((tdk.includes("Notis") && !tdk.includes("Notis Custom")) || tdk.includes("Bo
     }
 }
 
-// --- FUNGSI BARU: Hapus Sejarah Tindakan ---
+// --- FUNGSI BARU: Hapus Sejarah Tindakan (Dikemaskini dengan Auto-Refresh Pemantauan) ---
 function hapusSejarahTindakan(indexKes, indexSejarah) {
     if (confirm("Adakah anda pasti mahu memadam rekod sejarah tindakan ini?")) {
         const kes = memoriSenaraiKes[indexKes];
         if (kes && kes.sejarahTindakan) {
-            // Buang 1 item pada index yang spesifik
+            // 1. Buang 1 item pada index yang spesifik
             kes.sejarahTindakan.splice(indexSejarah, 1);
             
-            // Simpan perubahan ke memori dan paparkan semula jadual
-            simpanSenaraiKeLokal();
+            // 2. Simpan perubahan ke memori
+            if (typeof simpanSenaraiKeLokal === 'function') simpanSenaraiKeLokal();
+            if (typeof simpanSenaraiKes === 'function') simpanSenaraiKes();
+            
+            // 3. Paparkan semula jadual sejarah (hilangkan dari jadual skrin)
             renderJadualSejarah(indexKes);
+            
+            // 4. KUNCI UTAMA: Paksa kad Pemantauan Bayaran refresh (dan hilang jika MOU dipadam)
+            if (typeof renderKadPemantauan === 'function') {
+                renderKadPemantauan(kes);
+            }
         }
     }
 }
-       // --- FUNGSI BARU: Kawalan Dropdown Modal Tarik Balik ---
+// --- FUNGSI BARU: Kawalan Dropdown Modal Tarik Balik ---
 function kawalJenisPendWakilTarikBalik() {
     const jenis = document.getElementById('tb_jenisPendWakil').value;
     const ruangan = document.getElementById('ruangan_tb_idWakil');
