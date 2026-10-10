@@ -16482,27 +16482,9 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ PENYELESAIAN 1: KUNCI TARIKH DARI INPUT BOX (DOM)
+    // 🛡️ ENJIN EKSTRAK TULEN DARI DATABASE (TANPA GANGGUAN DOM)
     // =========================================================
     let tarikhDokumenSebenar = "";
-
-    // A. Tangkap terus dari Kotak Input DOM (Paling Kuat)
-    let domMOU = document.getElementById('mk_tarikh_mou');
-    let domBC = document.getElementById('bc_tarikh');
-    if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
-    else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
-
-    // B. Jika tiada di DOM, cari dalam data borang tersimpan
-    if (!tarikhDokumenSebenar) {
-        tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou ||
-                               kes.dataBorang?.inputs?.bc_tarikh ||
-                               kes.mou?.tarikhHadir ||
-                               kes.borangC?.tarikhPerintah || "";
-    }
-
-    // =========================================================
-    // 🛡️ BACA SEJARAH TINDAKAN & BASE64 (TANPA GANGGU TARIKH)
-    // =========================================================
     let base64Berjaya = false;
 
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
@@ -16531,7 +16513,7 @@ window.bukaModalPemantauanMou = function() {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                         
-                        // Penghadang: Pastikan Base64 adalah dokumen sebenar
+                        // Sahkan ini dokumen sebenar
                         if (d.kaedah !== undefined || d.inputs?.mk_kaedah_mou !== undefined || d.inputs?.bc_jenis_perintah !== undefined) {
                             base64Berjaya = true; 
                             
@@ -16544,20 +16526,21 @@ window.bukaModalPemantauanMou = function() {
                                 info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                             }
 
-                            // JIKA TARIKH MASIH KOSONG SAHAJA DIBENARKAN BACA DARI SINI
-                            if (!tarikhDokumenSebenar) {
-                                let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                                if (tBase) tarikhDokumenSebenar = tBase;
-                            }
+                            // 1. EKSTRAK TARIKH
+                            let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
+                            if (tBase && !tarikhDokumenSebenar) tarikhDokumenSebenar = tBase;
 
+                            // 2. EKSTRAK BAYARAN PEJABAT
                             let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
                             if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
 
+                            // 3. EKSTRAK JUMLAH
                             let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                             if (j > 0) jumlahAsal = j;
 
+                            // 4. EKSTRAK JADUAL ANSURAN
                             if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                                 if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                                     senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
@@ -16567,12 +16550,12 @@ window.bukaModalPemantauanMou = function() {
                                     senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                                 }
                             }
-                            break; // Dah jumpa dokumen base64, terus break loop!
+                            break; // SELESAI BACA DOKUMEN, TERUS KELUAR LOOP!
                         }
                     } catch(e) {}
                 }
                 
-                // Fallback tarik tarikh dari teks Sejarah Tindakan JIKA masih kosong
+                // PENYELAMAT TEKS BAHASA MELAYU (JIKA BASE64 GAGAL)
                 if (!tarikhDokumenSebenar) {
                     let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
                     let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
@@ -16596,8 +16579,9 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
+    // PENYELAMAT MEMORI LEGACY (Sebelum Update)
     if (!tarikhDokumenSebenar) {
-        tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
+        tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou || kes.dataBorang?.inputs?.bc_tarikh || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah || new Date().toISOString().split('T')[0];
     }
 
     if (!base64Berjaya) {
@@ -16615,20 +16599,15 @@ window.bukaModalPemantauanMou = function() {
         senaraiAnsuran = [];
     }
 
-    // Ekstrak Bayaran Awal dari DOM (jika ada)
     if (bayarAwal === 0) {
         let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy3 = parseFloat(String(kes.dataBorang?.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy4 = parseFloat(String(kes.dataBorang?.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
         bayarAwal = vLegacy1 || vLegacy2 || vLegacy3 || vLegacy4 || 0;
-        
-        let elM = document.getElementById('mk_dibayar_pejabat');
-        let elB = document.getElementById('bc_dibayar_pejabat');
-        if (elM && elM.value && bayarAwal === 0) bayarAwal = parseFloat(elM.value.replace(/,/g, '')) || 0;
-        else if (elB && elB.value && bayarAwal === 0) bayarAwal = parseFloat(elB.value.replace(/,/g, '')) || 0;
     }
 
+    // FORMAT PAPARAN TARIKH DD/MM/YYYY
     let paparanTarikhDokumen = tarikhDokumenSebenar;
     if (paparanTarikhDokumen && paparanTarikhDokumen.includes('-')) {
         let parts = paparanTarikhDokumen.split('-');
@@ -16639,7 +16618,7 @@ window.bukaModalPemantauanMou = function() {
     let htmlJadual = '';
     let rekodPemantauan = kes.pemantauan?.rekod || [];
     
-    // Pembersihan rekod bercanggah
+    // PEMBETULAN REKOD BERCANGGAH
     if (info.jenis === 'penuh' || info.jenis === 'borang_c') {
         if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
             rekodPemantauan = [];
@@ -16662,6 +16641,7 @@ window.bukaModalPemantauanMou = function() {
             if (totalSetuju === 0) dataCacat = true; 
         }
 
+        // TUGASAN AUTO-JANA (Data Tulen Tanpa Paksaan Bayar Pejabat)
         if ((rekodPemantauan.length === 0 || dataCacat) && senaraiAnsuran.length > 0) {
             rekodPemantauan = senaraiAnsuran.map(a => ({ 
                 tarikhMestiBayar: a.tarikh, 
@@ -16674,8 +16654,6 @@ window.bukaModalPemantauanMou = function() {
             if (!kes.pemantauan) kes.pemantauan = {};
             kes.pemantauan.rekod = rekodPemantauan;
         }
-
-        // PENYELESAIAN 2: BLOK KOD YANG MENGGANGGU ROW 1 TELAH DIPADAM DI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -16782,8 +16760,6 @@ window.bukaModalPemantauanMou = function() {
                 resit: ''
             }];
         }
-
-        // PENYELESAIAN 2: BLOK KOD YANG MENGGANGGU ROW 1 TELAH DIPADAM DI SINI
         
         htmlJadual = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
