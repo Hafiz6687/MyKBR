@@ -16482,7 +16482,7 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ ENJIN EKSTRAK TARIKH (GABUNGAN DOM, BASE64 & SEJARAH)
+    // 🛡️ ENJIN EKSTRAK TARIKH (DIBETULKAN LOOP BREAK)
     // =========================================================
     let tarikhDokumenSebenar = "";
 
@@ -16493,34 +16493,39 @@ window.bukaModalPemantauanMou = function() {
     else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
 
     let base64Berjaya = false;
+    let tarikhLogTerawal = ""; // Simpan tarikh log sekiranya terdesak
 
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
+        // Loop dari atas (latest) ke bawah
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let s = kes.sejarahTindakan[i];
             if (!s.tindakan) continue;
             let act = s.tindakan.toLowerCase();
             
-            let matchData = null;
             let matchMOU = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
             let matchBC = s.butiran?.match(/\[DATA_BORANGC:(.*?)\]/);
-
-            if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
-            else if (matchBC && matchBC[1]) matchData = matchBC[1];
+            let matchData = matchMOU ? matchMOU[1] : (matchBC ? matchBC[1] : null);
 
             if (act.includes('borang c') || act.includes('perintah') || act.includes('mou') || act.includes('persetujuan')) {
                 
-                if (act.includes('borang c') || act.includes('perintah')) {
-                    info.jenis = 'borang_c';
-                    info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-                    
-                    let parts = s.tarikhMasa.split('|');
-                    let tMatch = parts[0].trim().split('/');
-                    if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
-                } else {
-                    info.jenis = 'penuh'; 
-                    info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                // Set info jenis jika masih default
+                if (info.jenis === 'biasa' || !info.tajuk) {
+                    if (act.includes('borang c') || act.includes('perintah')) {
+                        info.jenis = 'borang_c';
+                        info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+                    } else {
+                        info.jenis = 'penuh'; 
+                        info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                    }
                 }
 
+                // Simpan rekod tarikh log (10/10/2026) sebagai backup terdesak
+                if (!tarikhLogTerawal && s.tarikhMasa) {
+                    let parts = s.tarikhMasa.split('|')[0].trim().split('/');
+                    if (parts.length === 3) tarikhLogTerawal = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                }
+
+                // JIKA JUMPA DATA BASE64 (INI YANG PALING MUKTAMAD)
                 if (matchData) {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
@@ -16535,11 +16540,9 @@ window.bukaModalPemantauanMou = function() {
                             info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                         }
 
-                        // 2. Ekstrak dari Base64
-                        if (!tarikhDokumenSebenar) {
-                            let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                            if (tBase) tarikhDokumenSebenar = tBase;
-                        }
+                        // TIMPA TARIKH SEBENAR DENGAN TARIKH BASE64
+                        let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
+                        if (tBase) tarikhDokumenSebenar = tBase;
 
                         let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                  parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
@@ -16558,38 +16561,44 @@ window.bukaModalPemantauanMou = function() {
                                 senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                             }
                         }
+                        
+                        // BERHENTI LOOP! Kita dah jumpa Base64 yang lengkap!
+                        break; 
                     } catch(e) {}
-                }
-
-                // 3. Ekstrak Teks dari Sejarah Tindakan
-                if (!tarikhDokumenSebenar) {
-                    let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
-                    let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
-                    
-                    if (mTxt) {
-                        let dObj = mTxt[1].padStart(2, '0');
-                        let mStr = mTxt[2];
-                        let yObj = mTxt[3];
-                        let mObj = { 'januari':'01', 'februari':'02', 'mac':'03', 'april':'04', 'mei':'05', 'jun':'06', 'julai':'07', 'ogos':'08', 'september':'09', 'oktober':'10', 'november':'11', 'disember':'12' }[mStr];
-                        tarikhDokumenSebenar = `${yObj}-${mObj}-${dObj}`;
-                    } else {
-                        let mNum = s.butiran?.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-                        if (mNum) tarikhDokumenSebenar = `${mNum[3]}-${mNum[2].padStart(2,'0')}-${mNum[1].padStart(2,'0')}`;
-                        else {
-                            let mNumRev = s.butiran?.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                            if (mNumRev) tarikhDokumenSebenar = `${mNumRev[1]}-${mNumRev[2].padStart(2,'0')}-${mNumRev[3].padStart(2,'0')}`;
+                } 
+                else {
+                    // JIKA TAK JUMPA BASE64 (Mungkin baris Notis MOU)
+                    // Cuba tarik tarikh dari teks butiran (Cth: 6 Oktober 2026)
+                    if (!tarikhDokumenSebenar) {
+                        let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
+                        let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
+                        
+                        if (mTxt) {
+                            let dObj = mTxt[1].padStart(2, '0');
+                            let mStr = mTxt[2];
+                            let yObj = mTxt[3];
+                            let mObj = { 'januari':'01', 'februari':'02', 'mac':'03', 'april':'04', 'mei':'05', 'jun':'06', 'julai':'07', 'ogos':'08', 'september':'09', 'oktober':'10', 'november':'11', 'disember':'12' }[mStr];
+                            tarikhDokumenSebenar = `${yObj}-${mObj}-${dObj}`;
+                        } else {
+                            let mNum = s.butiran?.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                            if (mNum) tarikhDokumenSebenar = `${mNum[3]}-${mNum[2].padStart(2,'0')}-${mNum[1].padStart(2,'0')}`;
+                            else {
+                                let mNumRev = s.butiran?.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+                                if (mNumRev) tarikhDokumenSebenar = `${mNumRev[1]}-${mNumRev[2].padStart(2,'0')}-${mNumRev[3].padStart(2,'0')}`;
+                            }
                         }
                     }
+                    // JANGAN LETAK BREAK DI SINI. 
+                    // Teruskan loop sampai bawah (Row 6) supaya dia boleh jumpa Base64 sebenar.
                 }
-                break;
             }
         }
     }
 
-    // 4. Ekstrak dari Legacy atau Hari Ini
+    // 2. Fallback terakhir jika semua di atas gagal (Legacy / Log Date / Hari Ini)
     if (!tarikhDokumenSebenar) {
         let tLegacy = kes.dataBorang?.inputs?.mk_tarikh_mou || kes.dataBorang?.inputs?.bc_tarikh || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
-        tarikhDokumenSebenar = tLegacy ? tLegacy : new Date().toISOString().split('T')[0];
+        tarikhDokumenSebenar = tLegacy ? tLegacy : (tarikhLogTerawal ? tarikhLogTerawal : new Date().toISOString().split('T')[0]);
     }
     // =========================================================
 
@@ -16753,6 +16762,10 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
     } else {
+        // (KEKAL ASAL)
+        let partsLog = tarikhLogTerawal ? tarikhLogTerawal.split('-') : null;
+        if (partsLog && partsLog.length === 3) tarikhPerintahAdhoc = new Date(`${partsLog[0]}-${partsLog[1]}-${partsLog[2]}`);
+        
         tarikhPerintahAdhoc.setDate(tarikhPerintahAdhoc.getDate() + 14); 
         let yyyy = tarikhPerintahAdhoc.getFullYear();
         let mm = String(tarikhPerintahAdhoc.getMonth() + 1).padStart(2, '0');
