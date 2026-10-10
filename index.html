@@ -16481,7 +16481,10 @@ window.bukaModalPemantauanMou = function() {
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
     let tarikhPerintahAdhoc = new Date();
     
+    // PEMBETULAN UTAMA: Tarik tarikh lama awal-awal tanpa tunggu syarat bayarAwal
     let tarikhDokumenSebenar = new Date().toISOString().split('T')[0]; 
+    let tLegacy = kes.dataBorang?.inputs?.bc_tarikh || kes.dataBorang?.inputs?.mk_tarikh_mou || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
+    if (tLegacy) tarikhDokumenSebenar = tLegacy;
 
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
@@ -16513,7 +16516,6 @@ window.bukaModalPemantauanMou = function() {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                         base64Berjaya = true; 
                         
-                        // SYARAT BESI: Wajib periksa "Penuh" dahulu sebelum array kotor
                         let dKdh = d.kaedah || d.inputs?.mk_kaedah_mou;
                         if (dKdh === 'Penuh') {
                             info.jenis = 'penuh';
@@ -16525,7 +16527,6 @@ window.bukaModalPemantauanMou = function() {
                     } catch(e) {}
                 }
                 
-                // FALLBACK LEGACY (Untuk kes lama tanpa Base64)
                 if (!base64Berjaya) {
                     let kdhLegacy = kes.mou?.kaedah || kes.dataBorang?.inputs?.mk_kaedah_mou;
                     if (kdhLegacy === 'Penuh') {
@@ -16545,9 +16546,9 @@ window.bukaModalPemantauanMou = function() {
                 try {
                     let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                     
-                    if (d.inputs?.bc_tarikh) tarikhDokumenSebenar = d.inputs.bc_tarikh;
-                    else if (d.inputs?.mk_tarikh_mou) tarikhDokumenSebenar = d.inputs.mk_tarikh_mou;
-                    else if (d.tarikhPerintah) tarikhDokumenSebenar = d.tarikhPerintah;
+                    // Pastikan Base64 juga tulis ganti tarikh jika ada
+                    let tBase64 = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir;
+                    if (tBase64) tarikhDokumenSebenar = tBase64;
                     
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
@@ -16572,7 +16573,6 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
-    // PEMBUNUH DATA KOTOR: Jika sah MOU Penuh, padam sisa jadual ansuran lama terus
     if (info.jenis === 'penuh' || info.jenis === 'borang_c') {
         senaraiAnsuran = [];
     }
@@ -16587,8 +16587,7 @@ window.bukaModalPemantauanMou = function() {
             let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
             
-            if (kes.dataBorang.inputs.bc_tarikh) tarikhDokumenSebenar = kes.dataBorang.inputs.bc_tarikh;
-            else if (kes.dataBorang.inputs.mk_tarikh_mou) tarikhDokumenSebenar = kes.dataBorang.inputs.mk_tarikh_mou;
+            // NOTE: Kod tarikh dah dibuang dari sini supaya tak tersekat
         }
 
         if (bayarAwal === 0) {
@@ -16609,7 +16608,6 @@ window.bukaModalPemantauanMou = function() {
     let htmlJadual = '';
     let rekodPemantauan = kes.pemantauan?.rekod || [];
     
-    // PENAPIS KEDUA: Bersihkan format jadual jika berlawanan jenis
     if (info.jenis === 'penuh' || info.jenis === 'borang_c') {
         if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
             rekodPemantauan = [];
