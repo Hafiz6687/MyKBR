@@ -17173,7 +17173,80 @@ window.renderKadPemantauan = function(kes) {
     const kad = document.getElementById('kad_pemantauan_mou');
     if (!container || !kad) return;
 
-    const info = semakJenisPemantauan(kes);
+    let info = semakJenisPemantauan(kes);
+    let jumlahKeseluruhan = info.jumlah || 0;
+    let bayarDiPejabatTerselindung = 0;
+
+    // =========================================================================
+    // 🛡️ ENJIN UTAMA: BACA & EKSTRAK DARI SEJARAH TINDAKAN (BASE64) TERKINI
+    // =========================================================================
+    if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
+        for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
+            let s = kes.sejarahTindakan[i];
+            if (!s.tindakan) continue;
+            let act = s.tindakan.toLowerCase();
+            
+            // Tentukan Klasifikasi yang Tepat
+            if (act.includes('borang c') || act.includes('perintah')) {
+                info.jenis = 'borang_c';
+                info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+            } else if (act.includes('mou') || act.includes('persetujuan')) {
+                if (s.butiran?.includes("Ansuran")) {
+                    info.jenis = 'ansuran';
+                    info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                } else {
+                    info.jenis = 'penuh';
+                    info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                }
+            }
+
+            let matchData = null;
+            let matchMOU = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
+            let matchBC = s.butiran?.match(/\[DATA_BORANGC:(.*?)\]/);
+
+            if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
+            else if (matchBC && matchBC[1]) matchData = matchBC[1];
+
+            if (matchData) {
+                try {
+                    let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
+                    
+                    let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                             parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                             parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+                    if (vX > 0 && bayarDiPejabatTerselindung === 0) bayarDiPejabatTerselindung = vX;
+
+                    let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
+                    if (j > 0) jumlahKeseluruhan = j;
+                    
+                    break;
+                } catch(e) {}
+            }
+        }
+    }
+
+    // =========================================================================
+    // FALLBACK TERMAJU: BACA DARI MEMORI LAMA (LEGACY) & LIVE BORANG
+    // =========================================================================
+    if (bayarDiPejabatTerselindung === 0) {
+        let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+        let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+        bayarDiPejabatTerselindung = vLegacy1 > 0 ? vLegacy1 : (vLegacy2 > 0 ? vLegacy2 : 0);
+
+        if (bayarDiPejabatTerselindung === 0 && kes.dataBorang && kes.dataBorang.inputs) {
+            let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
+            let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
+            bayarDiPejabatTerselindung = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
+        }
+
+        if (bayarDiPejabatTerselindung === 0) {
+            let elM = document.getElementById('mk_dibayar_pejabat');
+            let elB = document.getElementById('bc_dibayar_pejabat');
+            if (elM && elM.value) bayarDiPejabatTerselindung = parseFloat(elM.value.replace(/,/g, '')) || 0;
+            else if (elB && elB.value) bayarDiPejabatTerselindung = parseFloat(elB.value.replace(/,/g, '')) || 0;
+        }
+    }
+
     if (!info.aktif) {
         kad.style.display = 'none';
         return;
@@ -17182,61 +17255,33 @@ window.renderKadPemantauan = function(kes) {
     kad.style.display = 'flex';
     document.getElementById('tajuk_kad_pemantauan').innerText = info.tajuk;
 
-    let jumlahKeseluruhan = info.jumlah || 0;
     let telahDibayar = 0;
-    
-    // Flag untuk periksa kalau pendahuluan dah wujud dalam lejar
     let lejarAdaPendahuluan = false; 
 
     if (kes.pemantauan && kes.pemantauan.rekod) {
         kes.pemantauan.rekod.forEach(r => {
             let dibayar = 0;
-            // Baca dari struktur data baharu (amaunDibayar)
             if (r.amaunDibayar !== undefined && r.amaunDibayar !== '') {
                 dibayar = parseFloat(String(r.amaunDibayar).replace(/,/g, '')) || 0;
-            } 
-            // Fallback untuk struktur data lama jika kes direkod sebelum kemaskini
-            else if (r.status === 'Telah Dibayar' || r.status === 'Selesai') {
+            } else if (r.status === 'Telah Dibayar' || r.status === 'Selesai') {
                 dibayar = parseFloat(String(r.amaun || 0).replace(/,/g, '')) || 0;
             }
             
             telahDibayar += dibayar;
 
-            // Kenal pasti jika dah ada rekod bayaran pendahuluan dimasukkan untuk elak 'double-count'
-            if (r.catatan && r.catatan.toLowerCase().includes('pejabat')) {
+            // Kesan jika pendahuluan (cth: RM330) dah ada dalam jadual supaya tak double-count
+            if (dibayar === bayarDiPejabatTerselindung && bayarDiPejabatTerselindung > 0) {
+                lejarAdaPendahuluan = true;
+            } else if (r.catatan && r.catatan.toLowerCase().includes('pejabat')) {
                 lejarAdaPendahuluan = true;
             }
         });
     }
 
-    // =========================================================================
-    // ENJIN PENGEKSTRAK PENDAHULUAN TERSEMBUNYI (AUTO-BACA DARI BORANG/SEJARAH)
-    // =========================================================================
-    if (!lejarAdaPendahuluan) {
-        let bayarDiPejabatTerselindung = 0;
-        
-        // 1. Seluk dari memori borang kes (Sistem auto-save data form di sini)
-        if (kes.dataBorang && kes.dataBorang.inputs) {
-            let dMOU = parseFloat(String(kes.dataBorang.inputs['mk_dibayar_pejabat'] || '0').replace(/,/g, '')) || 0;
-            let dBC = parseFloat(String(kes.dataBorang.inputs['bc_dibayar_pejabat'] || '0').replace(/,/g, '')) || 0;
-            bayarDiPejabatTerselindung = dMOU > 0 ? dMOU : (dBC > 0 ? dBC : 0);
-        }
-        
-        // 2. Seluk secara 'live' dari kotak input di skrin (Jika pengguna sedang menaip)
-        if (bayarDiPejabatTerselindung === 0) {
-            let elMOU = document.getElementById('mk_dibayar_pejabat');
-            let elBC = document.getElementById('bc_dibayar_pejabat');
-            
-            if (elMOU && elMOU.value) bayarDiPejabatTerselindung = parseFloat(elMOU.value.replace(/,/g, '')) || 0;
-            else if (elBC && elBC.value) bayarDiPejabatTerselindung = parseFloat(elBC.value.replace(/,/g, '')) || 0;
-        }
-
-        // Masukkan terus nilai RM560 (atau nilai lain) ke dalam jumlah Telah Dibayar
-        if (bayarDiPejabatTerselindung > 0) {
-            telahDibayar += bayarDiPejabatTerselindung;
-        }
+    // Jika lejar kosong/belum buka pop-up, kita pump terus ke dalam progress bar
+    if (!lejarAdaPendahuluan && bayarDiPejabatTerselindung > 0) {
+        telahDibayar += bayarDiPejabatTerselindung;
     }
-    // =========================================================================
 
     let bakiSemasa = jumlahKeseluruhan - telahDibayar;
     if (bakiSemasa < 0) bakiSemasa = 0;
@@ -17247,9 +17292,9 @@ window.renderKadPemantauan = function(kes) {
         if (peratus > 100) peratus = 100;
     }
 
-    let warnaProgress = '#3b82f6'; // Biru (Separa)
-    if (peratus === 100) warnaProgress = '#10b981'; // Hijau (Selesai)
-    else if (peratus === 0) warnaProgress = '#cbd5e1'; // Kelabu (Belum ada bayaran)
+    let warnaProgress = '#3b82f6'; 
+    if (peratus === 100) warnaProgress = '#10b981'; 
+    else if (peratus === 0) warnaProgress = '#cbd5e1'; 
 
     let htmlRingkasan = `
         <div style="margin-bottom: 15px;">
