@@ -16480,10 +16480,9 @@ window.bukaModalPemantauanMou = function() {
     let jumlahAsal = info.jumlah || 0;
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
     let tarikhPerintahAdhoc = new Date();
+    
+    let tarikhDokumenSebenar = new Date().toISOString().split('T')[0]; 
 
-    // =========================================================================
-    // 🛡️ ENJIN UTAMA: BACA KLASIFIKASI SEBENAR DARI BASE64/MEMORI
-    // =========================================================================
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let s = kes.sejarahTindakan[i];
@@ -16530,6 +16529,10 @@ window.bukaModalPemantauanMou = function() {
                 try {
                     let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                     
+                    if (d.inputs?.bc_tarikh) tarikhDokumenSebenar = d.inputs.bc_tarikh;
+                    else if (d.inputs?.mk_tarikh_mou) tarikhDokumenSebenar = d.inputs.mk_tarikh_mou;
+                    else if (d.tarikhPerintah) tarikhDokumenSebenar = d.tarikhPerintah;
+                    
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
@@ -16562,6 +16565,9 @@ window.bukaModalPemantauanMou = function() {
             let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
+            
+            if (kes.dataBorang.inputs.bc_tarikh) tarikhDokumenSebenar = kes.dataBorang.inputs.bc_tarikh;
+            else if (kes.dataBorang.inputs.mk_tarikh_mou) tarikhDokumenSebenar = kes.dataBorang.inputs.mk_tarikh_mou;
         }
 
         if (bayarAwal === 0) {
@@ -16572,13 +16578,16 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
+    let paparanTarikhDokumen = tarikhDokumenSebenar;
+    if (paparanTarikhDokumen && paparanTarikhDokumen.includes('-')) {
+        let parts = paparanTarikhDokumen.split('-');
+        if (parts.length === 3) paparanTarikhDokumen = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
     document.getElementById('tajuk_modal_pemantauan').innerText = "Kemaskini " + info.tajuk;
     let htmlJadual = '';
     let rekodPemantauan = kes.pemantauan?.rekod || [];
     
-    // ==========================================
-    // MOD ANSURAN
-    // ==========================================
     if (info.jenis === 'ansuran') {
         let dataCacat = false;
         if (rekodPemantauan.length > 0) {
@@ -16605,20 +16614,25 @@ window.bukaModalPemantauanMou = function() {
             
             if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
                 rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || new Date().toISOString().split('T')[0];
+                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || tarikhDokumenSebenar;
             }
         }
         
         htmlJadual = `
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; padding: 10px;">
-                <div>
-                    <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Jadual Ansuran Bulanan</div>
-                    <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                        <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
-                        <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+            <div style="margin-bottom: 15px; padding: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div>
+                        <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Jadual Ansuran Bulanan</div>
+                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                            <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                        </div>
+                    </div>
+                    <div style="text-align: right; margin-top: -2px;">
+                        <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 6px;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
+                        <div style="font-size: 0.75em; color: var(--text-muted); font-weight: 600;">Tarikh Bayaran: ${paparanTarikhDokumen}</div>
                     </div>
                 </div>
-                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 4px;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
             </div>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
@@ -16684,9 +16698,6 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
     } else {
-        // ==========================================
-        // MOD ADHOC (MOU PENUH / BORANG C)
-        // ==========================================
         tarikhPerintahAdhoc.setDate(tarikhPerintahAdhoc.getDate() + 14); 
         let yyyy = tarikhPerintahAdhoc.getFullYear();
         let mm = String(tarikhPerintahAdhoc.getMonth() + 1).padStart(2, '0');
@@ -16711,20 +16722,25 @@ window.bukaModalPemantauanMou = function() {
             
             if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
                 rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || new Date().toISOString().split('T')[0];
+                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || tarikhDokumenSebenar;
             }
         }
         
         htmlJadual = `
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; padding: 10px;">
-                <div>
-                    <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Rekod Bayaran (MOU Penuh / Borang C)</div>
-                    <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                        <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
-                        <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+            <div style="margin-bottom: 15px; padding: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div>
+                        <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Rekod Bayaran (MOU Penuh / Borang C)</div>
+                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                            <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                        </div>
+                    </div>
+                    <div style="text-align: right; margin-top: -2px;">
+                        <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 6px;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
+                        <div style="font-size: 0.75em; color: var(--text-muted); font-weight: 600;">Tarikh Bayaran: ${paparanTarikhDokumen}</div>
                     </div>
                 </div>
-                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 4px;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
             </div>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
