@@ -16491,12 +16491,15 @@ window.bukaModalPemantauanMou = function() {
             if (!s.tindakan) continue;
             let act = s.tindakan.toLowerCase();
             
+            // Tentukan Klasifikasi yang Tepat
             if (act.includes('borang c') || act.includes('perintah')) {
                 isBorangC = true;
                 info.jenis = 'borang_c';
                 info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
                 
-                let tMatch = s.tarikhMasa.split('|')[0].trim().split('/');
+                // Dapatkan tarikh sebenar dari Sejarah
+                let parts = s.tarikhMasa.split('|');
+                let tMatch = parts[0].trim().split('/');
                 if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
             } else if (act.includes('mou') || act.includes('persetujuan')) {
                 isBorangC = false;
@@ -16509,19 +16512,32 @@ window.bukaModalPemantauanMou = function() {
                 }
             }
 
-            let m = s.butiran?.match(/\[DATA_(MOU\vert{}BORANGC):(.*?)\]/);
-            if (m && m[2]) {
+            // Ekstrak Data Tersembunyi (Base64) - Dibaiki supaya kalis ralat copy-paste
+            let matchData = null;
+            let matchMOU = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
+            let matchBC = s.butiran?.match(/\[DATA_BORANGC:(.*?)\]/);
+
+            if (matchMOU && matchMOU[1]) {
+                matchData = matchMOU[1];
+            } else if (matchBC && matchBC[1]) {
+                matchData = matchBC[1];
+            }
+
+            if (matchData) {
                 try {
-                    let d = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
+                    let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                     
+                    // Ekstrak Nilai Pendahuluan (bayarAwal)
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
                     if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
 
+                    // Ekstrak Jumlah Keseluruhan Perintah/MOU
                     let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                     if (j > 0) jumlahAsal = j;
 
+                    // Ekstrak Jadual Ansuran dari Sejarah (Jika Ada)
                     if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                         if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                             senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
@@ -16531,7 +16547,8 @@ window.bukaModalPemantauanMou = function() {
                             senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                         }
                     }
-                    break;
+                    
+                    break; // Berhenti mencari selepas jumpa rekod relevan terkini
                 } catch(e) {}
             }
         }
