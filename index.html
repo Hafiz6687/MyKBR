@@ -16500,7 +16500,7 @@ window.bukaModalPemantauanMou = function() {
     // =========================================================================
     
     // ==========================================
-    // MOD ANSURAN
+    // MOD ANSURAN (PENYELESAIAN PERMASALAHAN 2)
     // ==========================================
     if (info.jenis === 'ansuran') {
         let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
@@ -16526,47 +16526,40 @@ window.bukaModalPemantauanMou = function() {
 
         let rekodPemantauan = kes.pemantauan?.rekod || [];
         
-        // ---------------------------------------------------------------------
-        // PEMBAIKAN: Enjin Pencuci Data Cacat (Corrupted Data Auto-Sync)
-        // ---------------------------------------------------------------------
+        // Pencuci Data Cacat (Corrupted Data Auto-Sync)
         let dataCacat = false;
         if (rekodPemantauan.length > 0) {
-            // Semak adakah total nilai dipersetujui dalam rekod adalah kosong/0.00
             let totalSetuju = rekodPemantauan.reduce((sum, r) => {
                 let val = r.amaunDipersetujui !== undefined ? r.amaunDipersetujui : (r.amaun || 0);
                 return sum + (parseFloat(String(val).replace(/,/g, '')) || 0);
             }, 0);
-            if (totalSetuju === 0) dataCacat = true; // Jadual ada, tapi amount 0.00. Sah cacat!
+            if (totalSetuju === 0) dataCacat = true; 
         }
 
-        // BINA SEMULA JADUAL JIKA KOSONG ATAU TERKESAN CACAT
+        // Bina jadual bersih
         if ((rekodPemantauan.length === 0 || dataCacat) && senaraiAnsuran.length > 0) {
             rekodPemantauan = senaraiAnsuran.map((a, i) => {
-                let amaunBayarRow = '';
-                let statusRow = 'Belum Dibayar';
-                let tarikhBayarRow = '';
-                
-                // Jika ini baris pertama dan ada pendahuluan Pejabat
-                if (i === 0 && bayarAwal > 0) {
-                    amaunBayarRow = bayarAwal;
-                    tarikhBayarRow = new Date().toISOString().split('T')[0];
-                }
-                
                 return { 
                     tarikhMestiBayar: a.tarikh, 
                     amaunDipersetujui: a.amaun, 
-                    amaunDibayar: amaunBayarRow, 
-                    status: statusRow, 
-                    tarikhDibayar: tarikhBayarRow, 
+                    amaunDibayar: '', 
+                    status: 'Belum Dibayar', 
+                    tarikhDibayar: '', 
                     resit: '' 
                 };
             });
-            
-            // Simpan terus jadual yang telah dibaiki ke dalam pangkalan data memori kes
             if (!kes.pemantauan) kes.pemantauan = {};
             kes.pemantauan.rekod = rekodPemantauan;
         }
-        // ---------------------------------------------------------------------
+
+        // 🔴 FIX: PAKSA MASUKKAN NILAI PENDAHULUAN KE BARIS PERTAMA (BIL. 1) JIKA MASIH KOSONG
+        if (bayarAwal > 0 && rekodPemantauan.length > 0) {
+            let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
+            if (bayaranSemasa === 0) {
+                rekodPemantauan[0].amaunDibayar = bayarAwal;
+                rekodPemantauan[0].tarikhDibayar = new Date().toISOString().split('T')[0];
+            }
+        }
         
         htmlJadual = `
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
@@ -16640,7 +16633,7 @@ window.bukaModalPemantauanMou = function() {
 
     } else {
         // ==========================================
-        // MOD ADHOC (MOU PENUH / BORANG C)
+        // MOD ADHOC (PENYELESAIAN PERMASALAHAN 1)
         // ==========================================
         let tarikhAsal = new Date();
         if (kes.sejarahTindakan) {
@@ -16658,18 +16651,38 @@ window.bukaModalPemantauanMou = function() {
         window.tempAmaunDiperintahAdhoc = info.jumlah || 0;
 
         let rekodPemantauan = kes.pemantauan?.rekod || [];
+        
         if (rekodPemantauan.length === 0) {
             rekodPemantauan = [{
-                tarikhMestiBayar: window.tempTarikhMatangAdhoc, amaunDiperintah: window.tempAmaunDiperintahAdhoc,
-                amaunDibayar: '', status: 'Belum Dibayar', tarikhDibayar: '', resit: ''
+                tarikhMestiBayar: window.tempTarikhMatangAdhoc, 
+                amaunDiperintah: window.tempAmaunDiperintahAdhoc,
+                amaunDibayar: '', 
+                status: 'Belum Dibayar', 
+                tarikhDibayar: '', 
+                resit: ''
             }];
         }
+
+        // 🔴 FIX: PAKSA MASUKKAN NILAI PENDAHULUAN KE BARIS PERTAMA JIKA MASIH KOSONG (ADHOC)
+        if (bayarAwal > 0 && rekodPemantauan.length > 0) {
+            let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
+            if (bayaranSemasa === 0) {
+                rekodPemantauan[0].amaunDibayar = bayarAwal;
+                rekodPemantauan[0].tarikhDibayar = new Date().toISOString().split('T')[0];
+            }
+        }
         
-        // SUSUNAN KOLUM LEBAR BARU (%): Tarikh dikecilkan ke 12%, Status dibesarkan ke 18%
+        // 🔴 FIX UI: PAPARAN KOTAK READ-ONLY DI KEPALA JADUAL
         htmlJadual = `
-            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; padding: 10px;">
-                <div style="font-size: 0.9em; font-weight: 600;">Rekod Bayaran (MOU Penuh / Borang C)</div>
-                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
+            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; padding: 10px;">
+                <div>
+                    <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Rekod Bayaran (MOU Penuh / Borang C)</div>
+                    <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                        <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                        <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                    </div>
+                </div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em; margin-bottom: 4px;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
             </div>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
@@ -16706,6 +16719,7 @@ window.bukaModalPemantauanMou = function() {
             
         document.getElementById('kandungan_jadual_pemantauan').innerHTML = htmlJadual;
         document.getElementById('modalPemantauanMou').style.display = 'flex';
+        
         setTimeout(() => { kiraStatusAdhoc(); }, 50);
     }
 };
