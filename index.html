@@ -16491,13 +16491,11 @@ window.bukaModalPemantauanMou = function() {
             if (!s.tindakan) continue;
             let act = s.tindakan.toLowerCase();
             
-            // Tentukan Klasifikasi yang Tepat
             if (act.includes('borang c') || act.includes('perintah')) {
                 isBorangC = true;
                 info.jenis = 'borang_c';
                 info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
                 
-                // Dapatkan tarikh sebenar dari Sejarah
                 let tMatch = s.tarikhMasa.split('|')[0].trim().split('/');
                 if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
             } else if (act.includes('mou') || act.includes('persetujuan')) {
@@ -16511,23 +16509,19 @@ window.bukaModalPemantauanMou = function() {
                 }
             }
 
-            // Ekstrak Data Tersembunyi (Base64)
             let m = s.butiran?.match(/\[DATA_(MOU\vert{}BORANGC):(.*?)\]/);
             if (m && m[2]) {
                 try {
                     let d = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
                     
-                    // Ekstrak Nilai Pendahuluan (bayarAwal)
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
                     if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
 
-                    // Ekstrak Jumlah Keseluruhan Perintah/MOU
                     let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                     if (j > 0) jumlahAsal = j;
 
-                    // Ekstrak Jadual Ansuran dari Sejarah (Jika Ada)
                     if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                         if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                             senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
@@ -16537,22 +16531,29 @@ window.bukaModalPemantauanMou = function() {
                             senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                         }
                     }
-                    
-                    break; // Berhenti mencari selepas jumpa rekod relevan terkini
+                    break;
                 } catch(e) {}
             }
         }
     }
 
     // =========================================================================
-    // FALLBACK: JIKA SEJARAH GAGAL, BACA DARI MEMORI BORANG (LIVE)
+    // FALLBACK TERMAJU: BACA DARI MEMORI LAMA (LEGACY) & LIVE BORANG
     // =========================================================================
     if (bayarAwal === 0) {
-        if (kes.dataBorang && kes.dataBorang.inputs) {
-            let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,''));
-            let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,''));
+        // 1. Semak Memori Lama (Bagi Kes Lama)
+        let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+        let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+        bayarAwal = vLegacy1 > 0 ? vLegacy1 : (vLegacy2 > 0 ? vLegacy2 : 0);
+
+        // 2. Semak Memori Borang Terkini
+        if (bayarAwal === 0 && kes.dataBorang && kes.dataBorang.inputs) {
+            let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
+            let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
         }
+
+        // 3. Semak Kotak Live
         if (bayarAwal === 0) {
             let elM = document.getElementById('mk_dibayar_pejabat');
             let elB = document.getElementById('bc_dibayar_pejabat');
@@ -16588,11 +16589,14 @@ window.bukaModalPemantauanMou = function() {
             kes.pemantauan.rekod = rekodPemantauan;
         }
 
+        // FIX: Ralat NaN dielakkan. Nilai pendahuluan disuntik dengan sempurna.
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
-            let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
-            if (bayaranSemasa === 0) {
+            let valRaw = rekodPemantauan[0].amaunDibayar;
+            let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
+            
+            if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
                 rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = new Date().toISOString().split('T')[0];
+                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || new Date().toISOString().split('T')[0];
             }
         }
         
@@ -16686,11 +16690,14 @@ window.bukaModalPemantauanMou = function() {
             }];
         }
 
+        // FIX: Sama seperti ansuran, elak ralat NaN untuk kes lama adhoc.
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
-            let bayaranSemasa = parseFloat(String(rekodPemantauan[0].amaunDibayar || '0').replace(/,/g, ''));
-            if (bayaranSemasa === 0) {
+            let valRaw = rekodPemantauan[0].amaunDibayar;
+            let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
+            
+            if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
                 rekodPemantauan[0].amaunDibayar = bayarAwal;
-                rekodPemantauan[0].tarikhDibayar = new Date().toISOString().split('T')[0];
+                rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || new Date().toISOString().split('T')[0];
             }
         }
         
