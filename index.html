@@ -16481,7 +16481,7 @@ window.bukaModalPemantauanMou = function() {
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
     let tarikhPerintahAdhoc = new Date();
     
-    // PEMBETULAN UTAMA: Tarik tarikh lama awal-awal tanpa tunggu syarat bayarAwal
+    // Ini Khas untuk Kotak Atas Sahaja
     let tarikhDokumenSebenar = new Date().toISOString().split('T')[0]; 
     let tLegacy = kes.dataBorang?.inputs?.bc_tarikh || kes.dataBorang?.inputs?.mk_tarikh_mou || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
     if (tLegacy) tarikhDokumenSebenar = tLegacy;
@@ -16499,9 +16499,19 @@ window.bukaModalPemantauanMou = function() {
             if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
             else if (matchBC && matchBC[1]) matchData = matchBC[1];
 
+            // EKSTRAK TARIKH DARI TEKS (Khas untuk kotak atas)
+            let textDateYMD = s.butiran?.match(/(\d{4})-(\d{2})-(\d{2})/);
+            let textDateDMY = s.butiran?.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+            if (textDateYMD) {
+                tarikhDokumenSebenar = textDateYMD[0];
+            } else if (textDateDMY) {
+                tarikhDokumenSebenar = `${textDateDMY[3]}-${textDateDMY[2].padStart(2,'0')}-${textDateDMY[1].padStart(2,'0')}`;
+            }
+
             if (act.includes('borang c') || act.includes('perintah')) {
                 info.jenis = 'borang_c';
                 info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+                // 14 HARI KEKAL GUNA TARIKH LOG (Tidak diusik)
                 let parts = s.tarikhMasa.split('|');
                 let tMatch = parts[0].trim().split('/');
                 if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
@@ -16546,8 +16556,7 @@ window.bukaModalPemantauanMou = function() {
                 try {
                     let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                     
-                    // Pastikan Base64 juga tulis ganti tarikh jika ada
-                    let tBase64 = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir;
+                    let tBase64 = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir || d.bc_tarikh || d.mk_tarikh_mou;
                     if (tBase64) tarikhDokumenSebenar = tBase64;
                     
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
@@ -16586,8 +16595,6 @@ window.bukaModalPemantauanMou = function() {
             let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
-            
-            // NOTE: Kod tarikh dah dibuang dari sini supaya tak tersekat
         }
 
         if (bayarAwal === 0) {
@@ -16643,7 +16650,6 @@ window.bukaModalPemantauanMou = function() {
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
             let valRaw = rekodPemantauan[0].amaunDibayar;
             let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
-            
             if (isNaN(bayaranSemasa) || bayaranSemasa === 0) {
                 rekodPemantauan[0].amaunDibayar = bayarAwal;
                 rekodPemantauan[0].tarikhDibayar = rekodPemantauan[0].tarikhDibayar || tarikhDokumenSebenar;
@@ -16731,6 +16737,7 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
     } else {
+        // DI SINI PENGIRAAN 14 HARI DIKEMBALIKAN KE LOGIK ASAL (Tidak lagi guna tarikh ekstrak)
         tarikhPerintahAdhoc.setDate(tarikhPerintahAdhoc.getDate() + 14); 
         let yyyy = tarikhPerintahAdhoc.getFullYear();
         let mm = String(tarikhPerintahAdhoc.getMonth() + 1).padStart(2, '0');
