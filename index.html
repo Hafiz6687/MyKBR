@@ -16479,12 +16479,12 @@ window.bukaModalPemantauanMou = function() {
     let bayarAwal = 0;
     let jumlahAsal = info.jumlah || 0;
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
-    let tarikhPerintahAdhoc = new Date();
     
-    // Ini Khas untuk Kotak Atas Sahaja
-    let tarikhDokumenSebenar = new Date().toISOString().split('T')[0]; 
-    let tLegacy = kes.dataBorang?.inputs?.bc_tarikh || kes.dataBorang?.inputs?.mk_tarikh_mou || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
-    if (tLegacy) tarikhDokumenSebenar = tLegacy;
+    // =========================================================
+    // 🛡️ ENJIN EKSTRAK TARIKH & BAYARAN AWAL (SATU BLOK SAHAJA)
+    // =========================================================
+    let tarikhDokumenSebenar = "";
+    let base64Berjaya = false;
 
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
@@ -16499,27 +16499,16 @@ window.bukaModalPemantauanMou = function() {
             if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
             else if (matchBC && matchBC[1]) matchData = matchBC[1];
 
-            // EKSTRAK TARIKH DARI TEKS (Khas untuk kotak atas)
-            let textDateYMD = s.butiran?.match(/(\d{4})-(\d{2})-(\d{2})/);
-            let textDateDMY = s.butiran?.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-            if (textDateYMD) {
-                tarikhDokumenSebenar = textDateYMD[0];
-            } else if (textDateDMY) {
-                tarikhDokumenSebenar = `${textDateDMY[3]}-${textDateDMY[2].padStart(2,'0')}-${textDateDMY[1].padStart(2,'0')}`;
-            }
-
-            if (act.includes('borang c') || act.includes('perintah')) {
-                info.jenis = 'borang_c';
-                info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-                // 14 HARI KEKAL GUNA TARIKH LOG (Tidak diusik)
-                let parts = s.tarikhMasa.split('|');
-                let tMatch = parts[0].trim().split('/');
-                if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
-            } 
-            else if (act.includes('mou') || act.includes('persetujuan')) {
-                info.jenis = 'penuh'; 
-                info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
-                let base64Berjaya = false; 
+            // KITA FOKUS CARI TINDAKAN DOKUMEN SAHAJA
+            if (act.includes('borang c') || act.includes('perintah') || act.includes('mou') || act.includes('persetujuan')) {
+                
+                if (act.includes('borang c') || act.includes('perintah')) {
+                    info.jenis = 'borang_c';
+                    info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+                } else {
+                    info.jenis = 'penuh'; 
+                    info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                }
 
                 if (matchData) {
                     try {
@@ -16534,51 +16523,63 @@ window.bukaModalPemantauanMou = function() {
                             info.jenis = 'ansuran';
                             info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                         }
+
+                        // SUMBER 1: TARIKH DARI BASE64 (Paling Tepat)
+                        let tBase = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir || d.bc_tarikh || d.mk_tarikh_mou;
+                        if (tBase) tarikhDokumenSebenar = tBase;
+
+                        let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                                 parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                                 parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+                        if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
+
+                        let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
+                        if (j > 0) jumlahAsal = j;
+
+                        if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
+                            if (d.ansuranDetails && d.ansuranDetails.length > 0) {
+                                senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                            } else if (d.ansuranIndividu) {
+                                let tempAns = [];
+                                Object.values(d.ansuranIndividu).forEach(arr => { tempAns = tempAns.concat(arr); });
+                                senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
+                            }
+                        }
                     } catch(e) {}
                 }
-                
-                if (!base64Berjaya) {
-                    let kdhLegacy = kes.mou?.kaedah || kes.dataBorang?.inputs?.mk_kaedah_mou;
-                    if (kdhLegacy === 'Penuh') {
-                        info.jenis = 'penuh';
-                        info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
-                    } else if (kdhLegacy === 'Ansuran') {
-                        info.jenis = 'ansuran';
-                        info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
-                    } else if (senaraiAnsuran.length > 0) {
-                        info.jenis = 'ansuran';
-                        info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+
+                // SUMBER 2: TARIKH DARI MASA LOG TINDAKAN (Jika Base64 tiada tarikh)
+                if (!tarikhDokumenSebenar && s.tarikhMasa) {
+                    let parts = s.tarikhMasa.split('|')[0].trim().split('/');
+                    if (parts.length === 3) {
+                        tarikhDokumenSebenar = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
                     }
                 }
+
+                break; // BERHENTI LOOP (Dah jumpa dokumen paling latest, kunci data ni)
             }
+        }
+    }
 
-            if (matchData) {
-                try {
-                    let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
-                    
-                    let tBase64 = d.inputs?.bc_tarikh || d.inputs?.mk_tarikh_mou || d.tarikhPerintah || d.tarikhHadir || d.bc_tarikh || d.mk_tarikh_mou;
-                    if (tBase64) tarikhDokumenSebenar = tBase64;
-                    
-                    let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                             parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                             parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-                    if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
+    // SUMBER 3: TARIKH DARI LEGACY DATA (Jika log sejarah dah jahanam/hilang)
+    if (!tarikhDokumenSebenar) {
+        tarikhDokumenSebenar = kes.dataBorang?.inputs?.bc_tarikh || kes.dataBorang?.inputs?.mk_tarikh_mou || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah;
+    }
+    
+    // SUMBER 4: FALLBACK HARI INI (Mustahil sampai sini kalau data tak corrupt teruk)
+    if (!tarikhDokumenSebenar) {
+        tarikhDokumenSebenar = new Date().toISOString().split('T')[0];
+    }
+    // =========================================================
 
-                    let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
-                    if (j > 0) jumlahAsal = j;
-
-                    if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
-                        if (d.ansuranDetails && d.ansuranDetails.length > 0) {
-                            senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
-                        } else if (d.ansuranIndividu) {
-                            let tempAns = [];
-                            Object.values(d.ansuranIndividu).forEach(arr => { tempAns = tempAns.concat(arr); });
-                            senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
-                        }
-                    }
-                    break;
-                } catch(e) {}
-            }
+    if (!base64Berjaya) {
+        let kdhLegacy = kes.mou?.kaedah || kes.dataBorang?.inputs?.mk_kaedah_mou;
+        if (kdhLegacy === 'Penuh') {
+            info.jenis = 'penuh';
+            info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+        } else if (kdhLegacy === 'Ansuran' || senaraiAnsuran.length > 0) {
+            info.jenis = 'ansuran';
+            info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
         }
     }
 
@@ -16589,20 +16590,9 @@ window.bukaModalPemantauanMou = function() {
     if (bayarAwal === 0) {
         let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-        bayarAwal = vLegacy1 > 0 ? vLegacy1 : (vLegacy2 > 0 ? vLegacy2 : 0);
-
-        if (bayarAwal === 0 && kes.dataBorang && kes.dataBorang.inputs) {
-            let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
-            let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
-            bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
-        }
-
-        if (bayarAwal === 0) {
-            let elM = document.getElementById('mk_dibayar_pejabat');
-            let elB = document.getElementById('bc_dibayar_pejabat');
-            if (elM && elM.value) bayarAwal = parseFloat(elM.value.replace(/,/g, '')) || 0;
-            else if (elB && elB.value) bayarAwal = parseFloat(elB.value.replace(/,/g, '')) || 0;
-        }
+        let vLegacy3 = parseFloat(String(kes.dataBorang?.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
+        let vLegacy4 = parseFloat(String(kes.dataBorang?.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
+        bayarAwal = vLegacy1 || vLegacy2 || vLegacy3 || vLegacy4 || 0;
     }
 
     let paparanTarikhDokumen = tarikhDokumenSebenar;
@@ -16737,7 +16727,13 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAnsuran(); }, 50);
 
     } else {
-        // DI SINI PENGIRAAN 14 HARI DIKEMBALIKAN KE LOGIK ASAL (Tidak lagi guna tarikh ekstrak)
+        let tarikhPerintahAdhoc = new Date();
+        if (tarikhDokumenSebenar && tarikhDokumenSebenar.includes('-')) {
+            let pts = tarikhDokumenSebenar.split('-');
+            tarikhPerintahAdhoc = new Date(`${pts[0]}-${pts[1]}-${pts[2]}`);
+        }
+        if (isNaN(tarikhPerintahAdhoc.getTime())) tarikhPerintahAdhoc = new Date();
+        
         tarikhPerintahAdhoc.setDate(tarikhPerintahAdhoc.getDate() + 14); 
         let yyyy = tarikhPerintahAdhoc.getFullYear();
         let mm = String(tarikhPerintahAdhoc.getMonth() + 1).padStart(2, '0');
