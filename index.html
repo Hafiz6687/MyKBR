@@ -16506,12 +16506,12 @@ window.bukaModalPemantauanMou = function() {
             else if (act.includes('mou') || act.includes('persetujuan')) {
                 info.jenis = 'penuh'; 
                 info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
-                let base64Berjaya = false; // FLAG PENYELAMAT BARU
+                let base64Berjaya = false; 
 
                 if (matchData) {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
-                        base64Berjaya = true; // Tandakan Base64 berjaya dibaca
+                        base64Berjaya = true; 
                         
                         if (d.kaedah === 'Ansuran' || (d.ansuranDetails && d.ansuranDetails.length > 0) || d.ansuranIndividu) {
                             info.jenis = 'ansuran';
@@ -16523,7 +16523,6 @@ window.bukaModalPemantauanMou = function() {
                     } catch(e) {}
                 }
                 
-                // FALLBACK HANYA BERLAKU JIKA BASE64 GAGAL ATAU TIADA SAHAJA
                 if (!base64Berjaya) {
                     if ((kes.mou && kes.mou.kaedah === 'Ansuran') || senaraiAnsuran.length > 0) {
                         info.jenis = 'ansuran';
@@ -16548,7 +16547,6 @@ window.bukaModalPemantauanMou = function() {
                     let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                     if (j > 0) jumlahAsal = j;
 
-                    // Pastikan jadual ansuran dikosongkan jika Base64 kata ia MOU Penuh
                     if (info.jenis === 'penuh') {
                         senaraiAnsuran = [];
                     } else if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
@@ -16629,24 +16627,22 @@ window.bukaModalPemantauanMou = function() {
         }
         
         htmlJadual = `
-            <div style="margin-bottom: 15px; padding: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                    <div>
-                        <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Jadual Ansuran Bulanan</div>
-                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
-                            <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-top: -2px;">
-                        <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
-                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
-                            <input type="text" readonly value="${paparanTarikhDokumen}" style="padding: 4px 10px; width: 90px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: center;">
-                        </div>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                    <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 6px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                </div>
+                <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
+                    <input type="text" readonly value="${paparanTarikhDokumen}" style="padding: 6px 10px; width: 110px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: center;">
                 </div>
             </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-size: 0.95em; font-weight: 700; color: var(--text-main);">Jadual Ansuran Bulanan</div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisAnsuranManual()">+ Tambah Ansuran</button>
+            </div>
+
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
                     <tr>
@@ -16718,7 +16714,6 @@ window.bukaModalPemantauanMou = function() {
         window.tempTarikhMatangAdhoc = `${yyyy}-${mm}-${dd}`;
         window.tempAmaunDiperintahAdhoc = jumlahAsal;
 
-        // Semak untuk buang rekod Ansuran lama yang mungkin bersisa
         if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
             rekodPemantauan = [];
             if (kes.pemantauan) kes.pemantauan.rekod = [];
@@ -16746,24 +16741,22 @@ window.bukaModalPemantauanMou = function() {
         }
         
         htmlJadual = `
-            <div style="margin-bottom: 15px; padding: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                    <div>
-                        <div style="font-size: 0.9em; font-weight: 600; margin-bottom: 10px;">Rekod Bayaran (MOU Penuh / Borang C)</div>
-                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
-                            <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 4px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px; margin-top: -2px;">
-                        <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
-                        <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                            <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
-                            <input type="text" readonly value="${paparanTarikhDokumen}" style="padding: 4px 10px; width: 90px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: center;">
-                        </div>
-                    </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Jumlah Dibayar di Pejabat (RM):</span>
+                    <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 6px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
+                </div>
+                <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
+                    <input type="text" readonly value="${paparanTarikhDokumen}" style="padding: 6px 10px; width: 110px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: center;">
                 </div>
             </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px;">
+                <div style="font-size: 0.95em; font-weight: 700; color: var(--text-main);">Rekod Bayaran (MOU Penuh / Borang C)</div>
+                <button class="btn-add btn-terapung" style="padding: 6px 12px; font-size: 0.8em;" onclick="tambahBarisBayaranAdhoc()">+ Tambah Rekod Bayaran</button>
+            </div>
+
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                 <thead style="background-color: var(--card-header-bg);">
                     <tr>
