@@ -16479,11 +16479,10 @@ window.bukaModalPemantauanMou = function() {
     let bayarAwal = 0;
     let jumlahAsal = info.jumlah || 0;
     let senaraiAnsuran = kes.mou?.senaraiAnsuran || kes.dataBorang?.jadualAnsuran || [];
-    let isBorangC = false;
     let tarikhPerintahAdhoc = new Date();
 
     // =========================================================================
-    // 🛡️ ENJIN UTAMA: BACA & EKSTRAK DARI SEJARAH TINDAKAN (BASE64) TERKINI
+    // 🛡️ ENJIN UTAMA: BACA KLASIFIKASI SEBENAR DARI BASE64/MEMORI
     // =========================================================================
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
@@ -16491,53 +16490,58 @@ window.bukaModalPemantauanMou = function() {
             if (!s.tindakan) continue;
             let act = s.tindakan.toLowerCase();
             
-            // Tentukan Klasifikasi yang Tepat
-            if (act.includes('borang c') || act.includes('perintah')) {
-                isBorangC = true;
-                info.jenis = 'borang_c';
-                info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
-                
-                // Dapatkan tarikh sebenar dari Sejarah
-                let parts = s.tarikhMasa.split('|');
-                let tMatch = parts[0].trim().split('/');
-                if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
-            } else if (act.includes('mou') || act.includes('persetujuan')) {
-                isBorangC = false;
-                if (s.butiran?.includes("Ansuran")) {
-                    info.jenis = 'ansuran';
-                    info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
-                } else {
-                    info.jenis = 'penuh';
-                    info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
-                }
-            }
-
-            // Ekstrak Data Tersembunyi (Base64) - Dibaiki supaya kalis ralat copy-paste
             let matchData = null;
             let matchMOU = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
             let matchBC = s.butiran?.match(/\[DATA_BORANGC:(.*?)\]/);
 
-            if (matchMOU && matchMOU[1]) {
-                matchData = matchMOU[1];
-            } else if (matchBC && matchBC[1]) {
-                matchData = matchBC[1];
+            if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
+            else if (matchBC && matchBC[1]) matchData = matchBC[1];
+
+            // --- KLASIFIKASI YANG DIBETULKAN ---
+            if (act.includes('borang c') || act.includes('perintah')) {
+                info.jenis = 'borang_c';
+                info.tajuk = 'Pemantauan Bayaran (Perintah Borang C)';
+                let parts = s.tarikhMasa.split('|');
+                let tMatch = parts[0].trim().split('/');
+                if (tMatch.length === 3) tarikhPerintahAdhoc = new Date(`${tMatch[2]}-${tMatch[1]}-${tMatch[0]}`);
+            } 
+            else if (act.includes('mou') || act.includes('persetujuan')) {
+                info.jenis = 'penuh'; // Set default dulu
+                info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+
+                // Bongkar Base64 untuk tengok jenis sebenar
+                if (matchData) {
+                    try {
+                        let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
+                        if (d.kaedah === 'Ansuran' || (d.ansuranDetails && d.ansuranDetails.length > 0) || d.ansuranIndividu) {
+                            info.jenis = 'ansuran';
+                            info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                        }
+                    } catch(e) {}
+                }
+                
+                // Fallback: Check pada objek kes lama
+                if (info.jenis === 'penuh') {
+                    if ((kes.mou && kes.mou.kaedah === 'Ansuran') || senaraiAnsuran.length > 0) {
+                        info.jenis = 'ansuran';
+                        info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                    }
+                }
             }
 
+            // --- EKSTRAK NILAI & JADUAL ---
             if (matchData) {
                 try {
                     let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                     
-                    // Ekstrak Nilai Pendahuluan (bayarAwal)
                     let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                              parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
                     if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
 
-                    // Ekstrak Jumlah Keseluruhan Perintah/MOU
                     let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                     if (j > 0) jumlahAsal = j;
 
-                    // Ekstrak Jadual Ansuran dari Sejarah (Jika Ada)
                     if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                         if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                             senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
@@ -16547,8 +16551,7 @@ window.bukaModalPemantauanMou = function() {
                             senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                         }
                     }
-                    
-                    break; // Berhenti mencari selepas jumpa rekod relevan terkini
+                    break;
                 } catch(e) {}
             }
         }
@@ -16558,19 +16561,16 @@ window.bukaModalPemantauanMou = function() {
     // FALLBACK TERMAJU: BACA DARI MEMORI LAMA (LEGACY) & LIVE BORANG
     // =========================================================================
     if (bayarAwal === 0) {
-        // 1. Semak Memori Lama (Bagi Kes Lama)
         let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
         bayarAwal = vLegacy1 > 0 ? vLegacy1 : (vLegacy2 > 0 ? vLegacy2 : 0);
 
-        // 2. Semak Memori Borang Terkini
         if (bayarAwal === 0 && kes.dataBorang && kes.dataBorang.inputs) {
             let v1 = parseFloat(String(kes.dataBorang.inputs.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             let v2 = parseFloat(String(kes.dataBorang.inputs.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
             bayarAwal = v1 > 0 ? v1 : (v2 > 0 ? v2 : 0);
         }
 
-        // 3. Semak Kotak Live
         if (bayarAwal === 0) {
             let elM = document.getElementById('mk_dibayar_pejabat');
             let elB = document.getElementById('bc_dibayar_pejabat');
@@ -16606,7 +16606,6 @@ window.bukaModalPemantauanMou = function() {
             kes.pemantauan.rekod = rekodPemantauan;
         }
 
-        // FIX: Ralat NaN dielakkan. Nilai pendahuluan disuntik dengan sempurna.
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
             let valRaw = rekodPemantauan[0].amaunDibayar;
             let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
@@ -16707,7 +16706,6 @@ window.bukaModalPemantauanMou = function() {
             }];
         }
 
-        // FIX: Sama seperti ansuran, elak ralat NaN untuk kes lama adhoc.
         if (bayarAwal > 0 && rekodPemantauan.length > 0) {
             let valRaw = rekodPemantauan[0].amaunDibayar;
             let bayaranSemasa = (valRaw === undefined || valRaw === '') ? 0 : parseFloat(String(valRaw).replace(/,/g, ''));
