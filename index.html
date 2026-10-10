@@ -16506,18 +16506,25 @@ window.bukaModalPemantauanMou = function() {
             else if (act.includes('mou') || act.includes('persetujuan')) {
                 info.jenis = 'penuh'; 
                 info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                let base64Berjaya = false; // FLAG PENYELAMAT BARU
 
                 if (matchData) {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
+                        base64Berjaya = true; // Tandakan Base64 berjaya dibaca
+                        
                         if (d.kaedah === 'Ansuran' || (d.ansuranDetails && d.ansuranDetails.length > 0) || d.ansuranIndividu) {
                             info.jenis = 'ansuran';
                             info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
+                        } else {
+                            info.jenis = 'penuh';
+                            info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
                         }
                     } catch(e) {}
                 }
                 
-                if (info.jenis === 'penuh') {
+                // FALLBACK HANYA BERLAKU JIKA BASE64 GAGAL ATAU TIADA SAHAJA
+                if (!base64Berjaya) {
                     if ((kes.mou && kes.mou.kaedah === 'Ansuran') || senaraiAnsuran.length > 0) {
                         info.jenis = 'ansuran';
                         info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
@@ -16541,7 +16548,10 @@ window.bukaModalPemantauanMou = function() {
                     let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                     if (j > 0) jumlahAsal = j;
 
-                    if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
+                    // Pastikan jadual ansuran dikosongkan jika Base64 kata ia MOU Penuh
+                    if (info.jenis === 'penuh') {
+                        senaraiAnsuran = [];
+                    } else if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                         if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                             senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                         } else if (d.ansuranIndividu) {
@@ -16708,6 +16718,12 @@ window.bukaModalPemantauanMou = function() {
         window.tempTarikhMatangAdhoc = `${yyyy}-${mm}-${dd}`;
         window.tempAmaunDiperintahAdhoc = jumlahAsal;
 
+        // Semak untuk buang rekod Ansuran lama yang mungkin bersisa
+        if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
+            rekodPemantauan = [];
+            if (kes.pemantauan) kes.pemantauan.rekod = [];
+        }
+
         if (rekodPemantauan.length === 0) {
             rekodPemantauan = [{
                 tarikhMestiBayar: window.tempTarikhMatangAdhoc, 
@@ -16787,7 +16803,6 @@ window.bukaModalPemantauanMou = function() {
         setTimeout(() => { kiraStatusAdhoc(); }, 50);
     }
 };
-
 window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     let tMatang = rekod.tarikhMestiBayar || window.tempTarikhMatangAdhoc || '';
     let aDiperintahRaw = rekod.amaunDiperintah !== undefined ? rekod.amaunDiperintah : window.tempAmaunDiperintahAdhoc;
