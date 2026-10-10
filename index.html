@@ -17183,27 +17183,37 @@ window.renderKadPemantauan = function(kes) {
     document.getElementById('tajuk_kad_pemantauan').innerText = info.tajuk;
 
     // =========================================================================
-    // 🛡️ ENJIN PENGEKSTRAK KESELURUHAN (BRUTE-FORCE CRAWLER)
-    // Menterjemah semua data tersembunyi untuk mencari nilai yang hilang
+    // 🛡️ ENJIN PENGEKSTRAK KESELURUHAN (KALIS COPY-PASTE)
     // =========================================================================
     let decodedHistory = "";
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         kes.sejarahTindakan.forEach(s => {
-            let m = s.butiran?.match(/\[DATA_(?:MOU\vert{}BORANGC):(.*?)\]/);
-            if (m && m[1]) {
-                try { decodedHistory += decodeURIComponent(escape(atob(m[1]))) + " "; } catch(e){}
+            let matchData = null;
+            let matchMOU = s.butiran?.match(/\[DATA_MOU:(.*?)\]/);
+            let matchBC = s.butiran?.match(/\[DATA_BORANGC:(.*?)\]/);
+
+            if (matchMOU && matchMOU[1]) matchData = matchMOU[1];
+            else if (matchBC && matchBC[1]) matchData = matchBC[1];
+
+            if (matchData) {
+                try { decodedHistory += decodeURIComponent(escape(atob(matchData))) + " "; } catch(e){}
             }
         });
     }
     
-    // Gabungkan keseluruhan objek kes + data Base64 ke dalam satu memori teks
     let strMemori = JSON.stringify(kes) + " " + decodedHistory;
     
-    // Cari Jumlah Keseluruhan
+    // Cari Jumlah Keseluruhan (Dipecahkan untuk elak ralat simpol paip '|')
     let jumlahKeseluruhan = info.jumlah || 0;
     if (jumlahKeseluruhan === 0) {
-        let jMatch = strMemori.match(/"(?:jumlah|jumlahPerintah|jumlahMou|mk_jumlah_mou|bc_jumlah_perintah)"\s*:\s*"?([\d,.]+)"?/i);
-        if (jMatch && jMatch[1]) jumlahKeseluruhan = parseFloat(jMatch[1].replace(/,/g, '')) || 0;
+        let regJ1 = strMemori.match(/"jumlah"\s*:\s*"?([\d,.]+)"?/i);
+        let regJ2 = strMemori.match(/"jumlahPerintah"\s*:\s*"?([\d,.]+)"?/i);
+        let regJ3 = strMemori.match(/"jumlahMou"\s*:\s*"?([\d,.]+)"?/i);
+        let regJ4 = strMemori.match(/"mk_jumlah_mou"\s*:\s*"?([\d,.]+)"?/i);
+        let regJ5 = strMemori.match(/"bc_jumlah_perintah"\s*:\s*"?([\d,.]+)"?/i);
+        
+        let foundJ = regJ1 || regJ2 || regJ3 || regJ4 || regJ5;
+        if (foundJ && foundJ[1]) jumlahKeseluruhan = parseFloat(foundJ[1].replace(/,/g, '')) || 0;
     }
 
     let telahDibayar = 0;
@@ -17216,14 +17226,21 @@ window.renderKadPemantauan = function(kes) {
         });
     }
 
-    // Jika sistem masih anggap 0.00, PAKSA cari pendahuluan dalam memori
+    // PAKSA cari pendahuluan dalam memori
     if (telahDibayar === 0) {
         let bayarAwal = 0;
         
-        // Carian pelbagai variasi 'key' nama yang mungkin wujud dalam versi lama sistem
-        let pMatch = strMemori.match(/"(?:mk_dibayar_pejabat|bc_dibayar_pejabat|dibayarPejabat|bayaranPendahuluan|pendahuluan|wangPendahuluan)"\s*:\s*"?([\d,.]+)"?/i);
-        if (pMatch && pMatch[1]) {
-            bayarAwal = parseFloat(pMatch[1].replace(/,/g, '')) || 0;
+        // Dipecahkan untuk elak ralat simbol paip '|'
+        let regP1 = strMemori.match(/"mk_dibayar_pejabat"\s*:\s*"?([\d,.]+)"?/i);
+        let regP2 = strMemori.match(/"bc_dibayar_pejabat"\s*:\s*"?([\d,.]+)"?/i);
+        let regP3 = strMemori.match(/"dibayarPejabat"\s*:\s*"?([\d,.]+)"?/i);
+        let regP4 = strMemori.match(/"bayaranPendahuluan"\s*:\s*"?([\d,.]+)"?/i);
+        let regP5 = strMemori.match(/"pendahuluan"\s*:\s*"?([\d,.]+)"?/i);
+        let regP6 = strMemori.match(/"wangPendahuluan"\s*:\s*"?([\d,.]+)"?/i);
+
+        let foundP = regP1 || regP2 || regP3 || regP4 || regP5 || regP6;
+        if (foundP && foundP[1]) {
+            bayarAwal = parseFloat(foundP[1].replace(/,/g, '')) || 0;
         }
         
         // Fallback Skrin Live
