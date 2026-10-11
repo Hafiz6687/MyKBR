@@ -16813,7 +16813,20 @@ window.bukaModalPemantauanMou = function() {
                 <tbody id="body_jadual_pemantauan_adhoc">
         `;
         
-        rekodPemantauan.forEach((rekod, i) => {
+        let rekodAdhocBersih = [];
+        
+        for (let i = 0; i < rekodPemantauan.length; i++) {
+            rekodAdhocBersih.push(rekodPemantauan[i]);
+            let aBayar = parseFloat(String(rekodPemantauan[i].amaunDibayar || 0).replace(/,/g, '')) || 0;
+            
+            // Sekiranya tiada rekod pembayaran (0) pada baris ini, 
+            // jadual TIDAK akan berkembang dan baris seterusnya diabaikan.
+            if (aBayar === 0) {
+                break;
+            }
+        }
+
+        rekodAdhocBersih.forEach((rekod, i) => {
             htmlJadual += `<tr class="baris-adhoc">${janaBarisAdhocHTML_Raw(i, rekod)}</tr>`;
         });
         
