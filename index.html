@@ -16485,21 +16485,9 @@ window.bukaModalPemantauanMou = function() {
     // 🛡️ ENJIN EKSTRAK TEPAT (HIERARKI DIPERBETULKAN)
     // =========================================================
     let tarikhDokumenSebenar = "";
-    
-    // 1. Tangkap dari DOM dahulu (Sebab user mungkin baru key-in dan belum reload)
-    let domMOU = document.getElementById('mk_tarikh_mou');
-    let domBC = document.getElementById('bc_tarikh');
-    if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
-    else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
-
-    // 2. Tangkap nilai bayaran Pejabat dari DOM
-    let domMOU_duit = document.getElementById('mk_dibayar_pejabat');
-    let domBC_duit = document.getElementById('bc_dibayar_pejabat');
-    if (domMOU_duit && domMOU_duit.value) bayarAwal = parseFloat(domMOU_duit.value.replace(/,/g, '')) || 0;
-    else if (domBC_duit && domBC_duit.value) bayarAwal = parseFloat(domBC_duit.value.replace(/,/g, '')) || 0;
-
-    // 3. Selongkar Database (Base64) jika DOM kosong atau perlukan data sokongan
     let base64Berjaya = false;
+
+    // 1. Selongkar Database (Base64 / Sejarah Tindakan) DAHULU sebagai sumber utama yang sah
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let s = kes.sejarahTindakan[i];
@@ -16539,7 +16527,7 @@ window.bukaModalPemantauanMou = function() {
                             }
 
                             if (!tarikhDokumenSebenar) {
-                                let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
+                                let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah || d.tarikh;
                                 if (tBase) tarikhDokumenSebenar = tBase;
                             }
 
@@ -16590,8 +16578,20 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
+    // 2. Tangkap dari DOM sebagai fallback terakhir (jika memori sejarah kosong/baru key-in)
     if (!tarikhDokumenSebenar) {
-        tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou || kes.dataBorang?.inputs?.bc_tarikh || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah || new Date().toISOString().split('T')[0];
+        let domMOU = document.getElementById('mk_tarikh_mou');
+        let domBC = document.getElementById('bc_tarikh');
+        if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
+        else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
+        else tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou || kes.dataBorang?.inputs?.bc_tarikh || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah || new Date().toISOString().split('T')[0];
+    }
+    
+    if (bayarAwal === 0) {
+        let domMOU_duit = document.getElementById('mk_dibayar_pejabat');
+        let domBC_duit = document.getElementById('bc_dibayar_pejabat');
+        if (domMOU_duit && domMOU_duit.value) bayarAwal = parseFloat(domMOU_duit.value.replace(/,/g, '')) || 0;
+        else if (domBC_duit && domBC_duit.value) bayarAwal = parseFloat(domBC_duit.value.replace(/,/g, '')) || 0;
     }
 
     if (!base64Berjaya) {
