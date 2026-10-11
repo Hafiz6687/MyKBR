@@ -16813,10 +16813,9 @@ window.bukaModalPemantauanMou = function() {
                 <tbody id="body_jadual_pemantauan_adhoc">
         `;
         
-        // Hadkan kepada 1 baris pertama sahaja untuk mod MOU Penuh / Borang C
-        if (rekodPemantauan.length > 0) {
-            htmlJadual += `<tr class="baris-adhoc">${janaBarisAdhocHTML_Raw(0, rekodPemantauan[0])}</tr>`;
-        }
+        rekodPemantauan.forEach((rekod, i) => {
+            htmlJadual += `<tr class="baris-adhoc">${janaBarisAdhocHTML_Raw(i, rekod)}</tr>`;
+        });
         
         htmlJadual += `</tbody>
                 <tfoot>
