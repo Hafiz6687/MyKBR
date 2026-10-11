@@ -16784,7 +16784,10 @@ window.bukaModalPemantauanMou = function() {
                     <input type="text" readonly value="${bayarAwal > 0 ? bayarAwal.toLocaleString('en-MY', {minimumFractionDigits: 2}) : '0.00'}" style="padding: 6px 10px; width: 120px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: right;">
                 </div>
                 <div style="background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-                    <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.85em; font-weight: 600; color: var(--text-muted);">Tarikh Bayaran:</span>
+                        <span style="font-size: 0.75em; color: var(--danger); font-style: italic; margin-top: 2px;">*Jumlah Dibayar di Pejabat (RM):</span>
+                    </div>
                     <input type="text" readonly value="${paparanTarikhDokumen}" style="padding: 6px 10px; width: 110px; font-weight: bold; color: var(--primary-blue); border: 1px solid #cbd5e1; border-radius: 4px; background: #e2e8f0; cursor: not-allowed; text-align: center;">
                 </div>
             </div>
