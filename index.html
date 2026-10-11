@@ -16862,20 +16862,23 @@ window.janaBarisAdhocHTML_Raw = function(index, rekod = {}) {
     let resit = rekod.resit || '';
     let status = rekod.status || 'Belum Dibayar';
 
-    // FONT SAIZ DIKEMBALIKAN KE NORMAL
+    // Format nilai supaya sentiasa menjadi 0.00
+    let aDiperintahFormat = aDiperintah > 0 ? aDiperintah.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00';
+    let aDibayarFormat = aDibayar !== '' ? Number(aDibayar).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
+
     return `
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center;" class="bil-adhoc">${index + 1}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
             <input type="date" class="inp-tarikh-matang" value="${tMatang}" style="padding: 4px; width: 100%; box-sizing: border-box; background: #f1f5f9; cursor: not-allowed; color: #475569;" readonly>
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="number" class="inp-amaun-diperintah" placeholder="0.00" value="${aDiperintah}" style="padding: 4px; width: 100%; box-sizing: border-box; background: #f1f5f9; border: 1px solid #cbd5e1; cursor: not-allowed; color: #475569;" readonly>
+            <input type="text" class="inp-amaun-diperintah" placeholder="0.00" value="${aDiperintahFormat}" style="padding: 4px; width: 100%; box-sizing: border-box; background: #f1f5f9; border: 1px solid #cbd5e1; cursor: not-allowed; color: #475569;" readonly>
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
             <input type="date" class="inp-tarikh-bayar" value="${tDibayar}" style="padding: 4px; width: 100%; box-sizing: border-box;">
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-            <input type="number" class="inp-amaun-bayar" placeholder="0.00" value="${aDibayar}" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold; color: var(--primary-blue);" oninput="kiraStatusAdhoc()">
+            <input type="text" class="inp-amaun-bayar" placeholder="0.00" value="${aDibayarFormat}" style="padding: 4px; width: 100%; box-sizing: border-box; font-weight: bold; color: var(--primary-blue);" oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); kiraStatusAdhoc()" onfocus="unformatDuit(this)" onblur="formatDuit(this); kiraStatusAdhoc()">
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">
             <select class="inp-status" style="padding: 4px; width: 100%; font-size: 0.9em; font-weight: bold; pointer-events: none; background: transparent; border: none; appearance: none; -moz-appearance: none; -webkit-appearance: none;" tabindex="-1">
