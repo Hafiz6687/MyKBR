@@ -16482,11 +16482,24 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ ENJIN EKSTRAK 100% DARI DATABASE
+    // 🛡️ ENJIN EKSTRAK TEPAT (HIERARKI DIPERBETULKAN)
     // =========================================================
     let tarikhDokumenSebenar = "";
-    let base64Berjaya = false;
+    
+    // 1. Tangkap dari DOM dahulu (Sebab user mungkin baru key-in dan belum reload)
+    let domMOU = document.getElementById('mk_tarikh_mou');
+    let domBC = document.getElementById('bc_tarikh');
+    if (domMOU && domMOU.value) tarikhDokumenSebenar = domMOU.value;
+    else if (domBC && domBC.value) tarikhDokumenSebenar = domBC.value;
 
+    // 2. Tangkap nilai bayaran Pejabat dari DOM
+    let domMOU_duit = document.getElementById('mk_dibayar_pejabat');
+    let domBC_duit = document.getElementById('bc_dibayar_pejabat');
+    if (domMOU_duit && domMOU_duit.value) bayarAwal = parseFloat(domMOU_duit.value.replace(/,/g, '')) || 0;
+    else if (domBC_duit && domBC_duit.value) bayarAwal = parseFloat(domBC_duit.value.replace(/,/g, '')) || 0;
+
+    // 3. Selongkar Database (Base64) jika DOM kosong atau perlukan data sokongan
+    let base64Berjaya = false;
     if (kes.sejarahTindakan && Array.isArray(kes.sejarahTindakan)) {
         for (let i = kes.sejarahTindakan.length - 1; i >= 0; i--) {
             let s = kes.sejarahTindakan[i];
@@ -16516,24 +16529,26 @@ window.bukaModalPemantauanMou = function() {
                         if (d.kaedah !== undefined || d.inputs?.mk_kaedah_mou !== undefined || d.inputs?.bc_jenis_perintah !== undefined) {
                             base64Berjaya = true; 
                             
-                            let dKdh = d.kaedah || d.inputs?.mk_kaedah_mou;
-                            if (dKdh === 'Penuh') {
-                                info.jenis = 'penuh';
-                                info.tajuk = 'Pemantauan Bayaran (MOU Penuh)';
+                            let dKdh = d.kaedah || d.inputs?.mk_kaedah_mou || d.inputs?.bc_jenis_perintah;
+                            if (dKdh === 'Penuh' || dKdh === 'Bayar') {
+                                info.jenis = matchBC ? 'borang_c' : 'penuh';
+                                info.tajuk = matchBC ? 'Pemantauan Bayaran (Perintah Borang C)' : 'Pemantauan Bayaran (MOU Penuh)';
                             } else if (dKdh === 'Ansuran' || (d.ansuranDetails && d.ansuranDetails.length > 0) || d.ansuranIndividu) {
                                 info.jenis = 'ansuran';
                                 info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                             }
 
-                            // EKSTRAK TARIKH TULEN
-                            let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                            if (tBase && !tarikhDokumenSebenar) tarikhDokumenSebenar = tBase;
+                            if (!tarikhDokumenSebenar) {
+                                let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
+                                if (tBase) tarikhDokumenSebenar = tBase;
+                            }
 
-                            // EKSTRAK BAYARAN PEJABAT
-                            let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                                     parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
-                                     parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-                            if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
+                            if (bayarAwal === 0) {
+                                let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                                         parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
+                                         parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
+                                if (vX > 0) bayarAwal = vX;
+                            }
 
                             let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                             if (j > 0) jumlahAsal = j;
@@ -16594,15 +16609,7 @@ window.bukaModalPemantauanMou = function() {
         senaraiAnsuran = [];
     }
 
-    if (bayarAwal === 0) {
-        let vLegacy1 = parseFloat(String(kes.mou?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-        let vLegacy2 = parseFloat(String(kes.borangC?.dibayarPejabat || 0).replace(/,/g,'')) || 0;
-        let vLegacy3 = parseFloat(String(kes.dataBorang?.inputs?.mk_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
-        let vLegacy4 = parseFloat(String(kes.dataBorang?.inputs?.bc_dibayar_pejabat || 0).replace(/,/g,'')) || 0;
-        bayarAwal = vLegacy1 || vLegacy2 || vLegacy3 || vLegacy4 || 0;
-    }
-
-    // 🚨 PENYELESAIAN 1: KOSONGKAN TARIKH ATAS JIKA TIADA BAYARAN AWAL 🚨
+    // 🚨 KOSONGKAN TARIKH ATAS JIKA TIADA BAYARAN PEJABAT 🚨
     let paparanTarikhDokumen = "";
     if (bayarAwal > 0) {
         paparanTarikhDokumen = tarikhDokumenSebenar;
@@ -16628,7 +16635,7 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
-    // 🚨 PENYELESAIAN 2: PEMBERSIH HANTU - FORCE CLEAR TARIKH JIKA AMAUN 0/KOSONG 🚨
+    // 🚨 PEMBERSIH HANTU - FORCE CLEAR TARIKH JIKA AMAUN 0/KOSONG DALAM JADUAL 🚨
     if (rekodPemantauan.length > 0) {
         rekodPemantauan.forEach(r => {
             let aBayar = r.amaunDibayar !== undefined && r.amaunDibayar !== '' ? parseFloat(String(r.amaunDibayar).replace(/,/g, '')) : 0;
