@@ -16934,6 +16934,15 @@ window.kiraStatusAdhoc = function() {
 
     let totalDiperintahAsal = window.tempAmaunDiperintahAdhoc || 0;
     let totalDibayar = 0;
+    
+    // Tangkap nilai "Jumlah Dibayar di Pejabat (RM)" dari paparan atas
+    let bayarAwalModal = 0;
+    const inputBayarAwal = document.querySelector('input[readonly][value*="."]') || document.querySelector('.modal-box input[readonly]');
+    if (inputBayarAwal) {
+        bayarAwalModal = parseFloat(String(inputBayarAwal.value).replace(/,/g, '')) || 0;
+    }
+    totalDibayar += bayarAwalModal;
+
     let today = new Date();
     today.setHours(0,0,0,0);
 
@@ -16945,11 +16954,11 @@ window.kiraStatusAdhoc = function() {
         let aBayarInp = tr.querySelector('.inp-amaun-bayar');
         let statusSel = tr.querySelector('.inp-status');
 
-        // KIRA AMAUN DIPERINTAH SECARA DINAMIK (Ditolak dari baki sebelumnya)
+        // KIRA AMAUN DIPERINTAH SECARA DINAMIK (Ditolak dari baki sebelumnya termasuk bayaran pejabat)
         let currentDiperintah = totalDiperintahAsal - totalDibayar;
         currentDiperintah = currentDiperintah > 0 ? currentDiperintah : 0;
         
-        // Kemaskini nilai Amaun Diperintah pada kotak (supaya ia sentiasa tepat bila baris atas diedit)
+        // Kemaskini nilai Amaun Diperintah pada kotak
         if (aDiperintahInp) {
             aDiperintahInp.value = currentDiperintah;
         }
