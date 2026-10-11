@@ -16482,7 +16482,7 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ ENJIN EKSTRAK TULEN DARI DATABASE (TANPA GANGGUAN DOM)
+    // 🛡️ ENJIN EKSTRAK 100% DARI DATABASE (TIADA LAGI "HANTU" DOM)
     // =========================================================
     let tarikhDokumenSebenar = "";
     let base64Berjaya = false;
@@ -16513,7 +16513,6 @@ window.bukaModalPemantauanMou = function() {
                     try {
                         let d = JSON.parse(decodeURIComponent(escape(atob(matchData))));
                         
-                        // Sahkan ini dokumen sebenar
                         if (d.kaedah !== undefined || d.inputs?.mk_kaedah_mou !== undefined || d.inputs?.bc_jenis_perintah !== undefined) {
                             base64Berjaya = true; 
                             
@@ -16526,21 +16525,18 @@ window.bukaModalPemantauanMou = function() {
                                 info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                             }
 
-                            // 1. EKSTRAK TARIKH
+                            // EKSTRAK TARIKH TULEN DARI BASE64
                             let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                            if (tBase && !tarikhDokumenSebenar) tarikhDokumenSebenar = tBase;
+                            if (tBase) tarikhDokumenSebenar = tBase;
 
-                            // 2. EKSTRAK BAYARAN PEJABAT
                             let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
                             if (vX > 0 && bayarAwal === 0) bayarAwal = vX;
 
-                            // 3. EKSTRAK JUMLAH
                             let j = parseFloat(String(d.jumlah || d.jumlahPerintah || d.jumlahMou || d.inputs?.mk_jumlah_mou || d.inputs?.bc_jumlah_perintah || 0).replace(/,/g,''));
                             if (j > 0) jumlahAsal = j;
 
-                            // 4. EKSTRAK JADUAL ANSURAN
                             if (info.jenis === 'ansuran' && senaraiAnsuran.length === 0) {
                                 if (d.ansuranDetails && d.ansuranDetails.length > 0) {
                                     senaraiAnsuran = d.ansuranDetails.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
@@ -16550,13 +16546,13 @@ window.bukaModalPemantauanMou = function() {
                                     senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                                 }
                             }
-                            break; // SELESAI BACA DOKUMEN, TERUS KELUAR LOOP!
+                            break; // BERHENTI SELEPAS JUMPA DOKUMEN BASE64 PALING LATEST
                         }
                     } catch(e) {}
                 }
                 
-                // PENYELAMAT TEKS BAHASA MELAYU (JIKA BASE64 GAGAL)
-                if (!tarikhDokumenSebenar) {
+                // FALLBACK TEKS JIKA TIADA BASE64
+                if (!tarikhDokumenSebenar && !base64Berjaya) {
                     let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
                     let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
                     
@@ -16579,7 +16575,6 @@ window.bukaModalPemantauanMou = function() {
         }
     }
 
-    // PENYELAMAT MEMORI LEGACY (Sebelum Update)
     if (!tarikhDokumenSebenar) {
         tarikhDokumenSebenar = kes.dataBorang?.inputs?.mk_tarikh_mou || kes.dataBorang?.inputs?.bc_tarikh || kes.mou?.tarikhHadir || kes.borangC?.tarikhPerintah || new Date().toISOString().split('T')[0];
     }
@@ -16607,7 +16602,6 @@ window.bukaModalPemantauanMou = function() {
         bayarAwal = vLegacy1 || vLegacy2 || vLegacy3 || vLegacy4 || 0;
     }
 
-    // FORMAT PAPARAN TARIKH DD/MM/YYYY
     let paparanTarikhDokumen = tarikhDokumenSebenar;
     if (paparanTarikhDokumen && paparanTarikhDokumen.includes('-')) {
         let parts = paparanTarikhDokumen.split('-');
@@ -16641,7 +16635,6 @@ window.bukaModalPemantauanMou = function() {
             if (totalSetuju === 0) dataCacat = true; 
         }
 
-        // TUGASAN AUTO-JANA (Data Tulen Tanpa Paksaan Bayar Pejabat)
         if ((rekodPemantauan.length === 0 || dataCacat) && senaraiAnsuran.length > 0) {
             rekodPemantauan = senaraiAnsuran.map(a => ({ 
                 tarikhMestiBayar: a.tarikh, 
