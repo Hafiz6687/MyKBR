@@ -16932,15 +16932,26 @@ window.kiraStatusAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
     if (!tbody) return;
 
+    // Tarik nilai asal dengan perlindungan kalis-ralat (fallback dari footer jika window kosong)
     let totalDiperintahAsal = window.tempAmaunDiperintahAdhoc || 0;
+    if (totalDiperintahAsal === 0) {
+        const elTotalSetuju = document.getElementById('adhoc_total_setuju');
+        if (elTotalSetuju) {
+            totalDiperintahAsal = parseFloat(elTotalSetuju.innerText.replace(/[^0-9.]/g, '')) || 0;
+        }
+    }
+
     let totalDibayar = 0;
     
-    // Tangkap nilai "Jumlah Dibayar di Pejabat (RM)" dari paparan atas
+    // Tangkap nilai "Jumlah Dibayar di Pejabat (RM)" dari paparan atas secara selamat
     let bayarAwalModal = 0;
-    const inputBayarAwal = document.querySelector('input[readonly][value*="."]') || document.querySelector('.modal-box input[readonly]');
-    if (inputBayarAwal) {
-        bayarAwalModal = parseFloat(String(inputBayarAwal.value).replace(/,/g, '')) || 0;
-    }
+    const inputsReadonly = document.querySelectorAll('.modal-box input[readonly]');
+    inputsReadonly.forEach(inp => {
+        let valNum = parseFloat(String(inp.value).replace(/,/g, '')) || 0;
+        if (valNum > 0 && bayarAwalModal === 0) {
+            bayarAwalModal = valNum;
+        }
+    });
     totalDibayar += bayarAwalModal;
 
     let today = new Date();
@@ -17052,7 +17063,7 @@ window.kiraStatusAdhoc = function() {
             btnTambah.style.display = 'inline-block';
         }
     }
-};
+}; // <--- Fungsi ditutup dengan sempurna di sini
 
 window.tambahBarisBayaranAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
