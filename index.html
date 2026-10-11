@@ -16947,7 +16947,7 @@ window.kiraStatusAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
     if (!tbody) return;
 
-    // Tarik nilai asal dengan perlindungan kalis-ralat (fallback dari footer jika window kosong)
+    // Tarik nilai asal dengan perlindungan kalis-ralat
     let totalDiperintahAsal = window.tempAmaunDiperintahAdhoc || 0;
     if (totalDiperintahAsal === 0) {
         const elTotalSetuju = document.getElementById('adhoc_total_setuju');
@@ -16958,7 +16958,7 @@ window.kiraStatusAdhoc = function() {
 
     let totalDibayar = 0;
     
-    // Tangkap nilai "Jumlah Dibayar di Pejabat (RM)" dari paparan atas secara selamat
+    // Tangkap nilai "Jumlah Dibayar di Pejabat (RM)"
     let bayarAwalModal = 0;
     const inputsReadonly = document.querySelectorAll('.modal-box input[readonly]');
     inputsReadonly.forEach(inp => {
@@ -16980,16 +16980,18 @@ window.kiraStatusAdhoc = function() {
         let aBayarInp = tr.querySelector('.inp-amaun-bayar');
         let statusSel = tr.querySelector('.inp-status');
 
+        // Pastikan amaun bayaran ditapis dari koma (,) sebelum dikira
+        let aBayar = parseFloat(String(aBayarInp.value).replace(/,/g, '')) || 0;
+
         // KIRA AMAUN DIPERINTAH SECARA DINAMIK (Ditolak dari baki sebelumnya termasuk bayaran pejabat)
         let currentDiperintah = totalDiperintahAsal - totalDibayar;
         currentDiperintah = currentDiperintah > 0 ? currentDiperintah : 0;
         
-        // Kemaskini nilai Amaun Diperintah pada kotak
+        // Kemaskini nilai Amaun Diperintah pada kotak (Ditukar ke format 0.00)
         if (aDiperintahInp) {
-            aDiperintahInp.value = currentDiperintah;
+            aDiperintahInp.value = currentDiperintah.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
-        let aBayar = parseFloat(aBayarInp.value) || 0;
         totalDibayar += aBayar;
 
         let dMatang = tMatangInp.value ? new Date(tMatangInp.value) : null;
@@ -17059,7 +17061,7 @@ window.kiraStatusAdhoc = function() {
         let currentRows = Array.from(tbody.querySelectorAll('.baris-adhoc'));
         for (let j = currentRows.length - 1; j >= 1; j--) {
             let r = currentRows[j];
-            let bayarVal = parseFloat(r.querySelector('.inp-amaun-bayar').value) || 0;
+            let bayarVal = parseFloat(String(r.querySelector('.inp-amaun-bayar').value).replace(/,/g, '')) || 0;
             if (bayarVal === 0) {
                 r.remove();
             } else {
@@ -17078,7 +17080,7 @@ window.kiraStatusAdhoc = function() {
             btnTambah.style.display = 'inline-block';
         }
     }
-}; // <--- Fungsi ditutup dengan sempurna di sini
+};
 
 window.tambahBarisBayaranAdhoc = function() {
     const tbody = document.getElementById('body_jadual_pemantauan_adhoc');
