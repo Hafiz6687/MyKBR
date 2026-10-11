@@ -16482,7 +16482,7 @@ window.bukaModalPemantauanMou = function() {
     let tarikhPerintahAdhoc = new Date();
     
     // =========================================================
-    // 🛡️ ENJIN EKSTRAK 100% DARI DATABASE (TIADA LAGI "HANTU" DOM)
+    // 🛡️ ENJIN EKSTRAK 100% DARI DATABASE
     // =========================================================
     let tarikhDokumenSebenar = "";
     let base64Berjaya = false;
@@ -16525,10 +16525,11 @@ window.bukaModalPemantauanMou = function() {
                                 info.tajuk = 'Pemantauan Bayaran (MOU Ansuran)';
                             }
 
-                            // EKSTRAK TARIKH TULEN DARI BASE64
+                            // EKSTRAK TARIKH TULEN
                             let tBase = d.inputs?.mk_tarikh_mou || d.mk_tarikh_mou || d.inputs?.bc_tarikh || d.bc_tarikh || d.tarikhHadir || d.tarikhPerintah;
-                            if (tBase) tarikhDokumenSebenar = tBase;
+                            if (tBase && !tarikhDokumenSebenar) tarikhDokumenSebenar = tBase;
 
+                            // EKSTRAK BAYARAN PEJABAT
                             let vX = parseFloat(String(d.inputs?.mk_dibayar_pejabat || d.mk_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.inputs?.bc_dibayar_pejabat || d.bc_dibayar_pejabat || 0).replace(/,/g,'')) ||
                                      parseFloat(String(d.dibayarPejabat || 0).replace(/,/g,'')) || 0;
@@ -16546,12 +16547,11 @@ window.bukaModalPemantauanMou = function() {
                                     senaraiAnsuran = tempAns.map(a => ({ tarikh: a.tarikh, amaun: a.amaun }));
                                 }
                             }
-                            break; // BERHENTI SELEPAS JUMPA DOKUMEN BASE64 PALING LATEST
+                            break; 
                         }
                     } catch(e) {}
                 }
                 
-                // FALLBACK TEKS JIKA TIADA BASE64
                 if (!tarikhDokumenSebenar && !base64Berjaya) {
                     let butiranLOWER = s.butiran ? s.butiran.toLowerCase() : "";
                     let mTxt = butiranLOWER.match(/(\d{1,2})\s+(januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)\s+(\d{4})/);
@@ -16602,17 +16602,20 @@ window.bukaModalPemantauanMou = function() {
         bayarAwal = vLegacy1 || vLegacy2 || vLegacy3 || vLegacy4 || 0;
     }
 
-    let paparanTarikhDokumen = tarikhDokumenSebenar;
-    if (paparanTarikhDokumen && paparanTarikhDokumen.includes('-')) {
-        let parts = paparanTarikhDokumen.split('-');
-        if (parts.length === 3) paparanTarikhDokumen = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    // 🚨 PENYELESAIAN 1: KOSONGKAN TARIKH ATAS JIKA TIADA BAYARAN AWAL 🚨
+    let paparanTarikhDokumen = "";
+    if (bayarAwal > 0) {
+        paparanTarikhDokumen = tarikhDokumenSebenar;
+        if (paparanTarikhDokumen && paparanTarikhDokumen.includes('-')) {
+            let parts = paparanTarikhDokumen.split('-');
+            if (parts.length === 3) paparanTarikhDokumen = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
     }
 
     document.getElementById('tajuk_modal_pemantauan').innerText = "Kemaskini " + info.tajuk;
     let htmlJadual = '';
     let rekodPemantauan = kes.pemantauan?.rekod || [];
     
-    // PEMBETULAN REKOD BERCANGGAH
     if (info.jenis === 'penuh' || info.jenis === 'borang_c') {
         if (rekodPemantauan.length > 0 && (rekodPemantauan[0].amaunDiperintah === undefined && rekodPemantauan[0].amaunDipersetujui !== undefined)) {
             rekodPemantauan = [];
@@ -16623,6 +16626,16 @@ window.bukaModalPemantauanMou = function() {
             rekodPemantauan = [];
             if (kes.pemantauan) kes.pemantauan.rekod = [];
         }
+    }
+
+    // 🚨 PENYELESAIAN 2: PEMBERSIH HANTU - FORCE CLEAR TARIKH JIKA AMAUN 0/KOSONG 🚨
+    if (rekodPemantauan.length > 0) {
+        rekodPemantauan.forEach(r => {
+            let aBayar = r.amaunDibayar !== undefined && r.amaunDibayar !== '' ? parseFloat(String(r.amaunDibayar).replace(/,/g, '')) : 0;
+            if (isNaN(aBayar) || aBayar === 0) {
+                r.tarikhDibayar = ''; 
+            }
+        });
     }
 
     // =========================================================
