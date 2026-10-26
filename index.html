@@ -15431,6 +15431,36 @@ function bukaModalPeringatanBayaran(jenis) {
 
     document.getElementById('modalPeringatanBayaran').style.display = 'flex';
 }
+// Fungsi baharu untuk mengendalikan tindakan Kuatkuasa Perintah
+function bukaModalKuatkuasaPerintah() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) {
+        alert("Sila pilih kes terlebih dahulu.");
+        return;
+    }
+
+    // Semak sama ada aduan adalah berasaskan Majikan sebagai Pengadu
+    let isMajikan = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        isMajikan = kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true";
+    } else {
+        isMajikan = kes.jenisAduan === 'Majikan';
+    }
+
+    if (isMajikan) {
+        // Logik/Notifikasi penguatkuasaan perintah bagi aduan Majikan
+        if (confirm("Adakah anda ingin menjana proses Penguatkuasaan Perintah untuk kes ini?")) {
+            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Permohonan / Notis Penguatkuasaan Perintah telah dijana.");
+            alert("Proses Kuatkuasa Perintah bagi Pengadu (Majikan) berjaya direkodkan.");
+        }
+    } else {
+        // Logik umum jika kes biasa
+        if (confirm("Jana tindakan Penguatkuasaan Perintah?")) {
+            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Penguatkuasaan Perintah telah dijana.");
+            alert("Tindakan Kuatkuasa Perintah telah ditambah ke Sejarah Tindakan.");
+        }
+    }
+}
 
 function janaPeringatanBayaran() {
     const tarikh = document.getElementById('pb_tarikh_notis').value;
