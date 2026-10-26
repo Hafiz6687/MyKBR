@@ -15480,7 +15480,8 @@ function bukaModalKuatkuasaPerintah() {
     // Paparkan modal
     document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
 }
-// --- KOD BAHARU SEBAGAI PENGGANTI ---
+
+// Fungsi penjanaan dokumen Kuatkuasa Perintah diselaraskan sebiji-biji mengikut format notis rasmi sedia ada
 function janaKuatkuasaPerintah() {
     const tarikhNotis = document.getElementById('kp_tarikh_notis').value;
     if (!tarikhNotis) {
@@ -15498,7 +15499,7 @@ function janaKuatkuasaPerintah() {
     let noKes = kes.noKes.split('<br>')[0].trim();
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
 
-    // Ekstrak maklumat pengadu dan defendan daripada data borang
+    // Ekstrak maklumat pengadu dan defendan daripada data borang sedia ada
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
@@ -15526,92 +15527,97 @@ function janaKuatkuasaPerintah() {
     let tN = new Date(tarikhNotis);
     let tarikhSuratStr = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : tarikhNotis;
 
-    // Ambil nama pegawai semasa
+    // Ambil nama pegawai semasa daripada sistem profil
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const pegawai = namaPegawaiRaw.toUpperCase();
 
-    // Bina senarai Salinan Kepada (s.k.) sekiranya dipilih
+    // Bina senarai Salinan Kepada (s.k.) mengikut format asal notis
     let skHTML = '';
     if (senaraiPenerima.length > 0) {
-        skHTML = `<div class="notis-sk" style="margin-top: 20px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k:</strong><br>`;
+        skHTML = `<div class="notis-sk" style="margin-top: 15px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k:</strong><br>`;
         senaraiPenerima.forEach(penerima => {
             skHTML += `- ${penerima}<br>`;
         });
         skHTML += `</div>`;
     }
 
-    // Templat Header Rasmi Jata Negara & Pejabat
+    // Templat Header Rasmi (Mengikut standard sistem sedia ada)
     const templateHeaderHTML = `
-        <div class="notis-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-            <div class="notis-header-kiri" style="display: flex; gap: 15px; align-items: center;">
-                <div class="notis-logo" style="width: 70px;"><img src="jata-negara.png" alt="Logo Jata Negara" style="width: 100%; height: auto;"></div>
+        <div class="notis-header">
+            <div class="notis-header-kiri">
+                <div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div>
                 <div class="notis-jabatan">
-                    <div style="font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
-                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
-                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
-                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
-                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-weight: bold;">JALAN PEJABAT KERAJAAN, 86000 KLUANG, JOHOR</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div>
                 </div>
             </div>
             <div class="notis-hubungi">
                 <table style="font-family: Arial, sans-serif; font-size: 8pt;">
-                    <tr><td>Telefon</td><td>: 07-772 1646</td></tr>
-                    <tr><td>E-mel</td><td>: jtkdkluang@mohr.gov.my</td></tr>
+                    <tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr>
+                    <tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr>
+                    <tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr>
+                    <tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr>
                 </table>
             </div>
         </div>
     `;
 
-    // Templat Footer Rasmi Slogan & Tandatangan
+    // Templat Footer Rasmi (Mengikut standard sistem sedia ada)
     const templateFooterHTML = `
-        <div class="notis-isi" style="margin-top: 20px;">Sekian, terima kasih.</div>
-        <div class="notis-slogan" style="text-align: center; font-weight: bold; font-size: 9pt; margin: 20px 0;">
+        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
+        <div class="notis-slogan">
             " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
         </div>
         <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
         <div class="gambar-sign" style="position: relative; z-index: 2; pointer-events: none;">
-            <img src="tandatangan.png" alt="Tandatangan" style="height: 100px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -15px;">
+            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
         </div>
-        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -30px;">
+        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
             ${pegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
         </div>
         ${skHTML}
+        <div class="notis-footer-line"></div>
     `;
 
-    // Fungsi pembina muka surat A4 untuk Pengadu dan Defendan
+    // Fungsi pembina muka surat A4 yang serasi dengan kelas .kertas-a4 sistem
     function binaKertasA4(untukSiapa, namaPenerima, alamatPenerima) {
         return `
-        <div class="kertas-a4 page-${untukSiapa}" style="background: white; width: 21cm; min-height: 29.7cm; padding: 1.5cm 2cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, sans-serif; color: black; font-size: 11pt; box-sizing: border-box; position: relative; text-align: justify; line-height: 1.6;">
+        <div class="kertas-a4 page-${untukSiapa}">
             ${templateHeaderHTML}
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <div><strong>Rujukan Kami:</strong> ${noKes}</div>
-                <div><strong>Tarikh:</strong> ${tarikhSuratStr}</div>
+            <div class="notis-rujukan" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <div><strong>Rujukan Kami :</strong> ${noKes}</div>
+                <div><strong>Tarikh :</strong> ${tarikhSuratStr}</div>
             </div>
 
-            <div style="margin-bottom: 20px; line-height: 1.4;">
+            <div class="notis-penerima" style="margin-bottom: 15px; line-height: 1.4;">
                 <strong>${namaPenerima}</strong><br>
                 ${alamatPenerima}
             </div>
 
-            <div style="margin-bottom: 15px;">Tuan / Puan,</div>
+            <div class="notis-salutation" style="margin-bottom: 12px;">Tuan / Puan,</div>
 
-            <div class="notis-tajuk" style="text-align: center; font-weight: bold; font-size: 11.5pt; margin-bottom: 20px; text-decoration: underline;">
+            <div class="notis-tajuk" style="text-align: center; font-weight: bold; font-size: 10.5pt; margin-bottom: 15px; text-decoration: underline; line-height: 1.4;">
                 KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>
                 ANTARA PENGADU : ${namaP.toUpperCase()}<br>
                 TERHADAP DEFENDAN : ${namaD.toUpperCase()}<br>
                 PERKARA: NOTIS ARAHAN KUATKUASA PERINTAH
             </div>
 
-            <div class="notis-isi" style="margin-bottom: 15px;">
+            <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.5;">
                 Dengan hormatnya merujuk kepada perkara di atas dan terma perintah yang telah diputuskan di Mahkamah Buruh bagi kes tersebut.
             </div>
 
-            <div class="notis-isi" style="margin-bottom: 15px;">
+            <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.5;">
                 2. Adalah dimaklumkan bahawa pihak Mahkamah Buruh mendapati perintah yang telah dikeluarkan sebelum ini masih belum dipatuhi sepenuhnya. Sehubungan dengan itu, pihak tuan/puan diarah untuk mengambil tindakan pematuhan segera atau menyelesaikan bayaran perintah mengikut terma yang ditetapkan.
             </div>
 
-            <div class="notis-isi" style="margin-bottom: 20px;">
+            <div class="notis-isi" style="text-align: justify; margin-bottom: 15px; line-height: 1.5;">
                 3. Kegagalan tuan/puan berbuat demikian boleh menyebabkan tindakan penguatkuasaan lanjut diambil menurut peruntukan undang-undang yang berkuatkuasa.
             </div>
 
@@ -15619,7 +15625,7 @@ function janaKuatkuasaPerintah() {
         </div>`;
     }
 
-    // Jana kedua-dua muka surat (untuk Pengadu dan Defendan)
+    // Jana dokumen untuk kedua-dua pihak (Pengadu dan Defendan)
     let htmlGabung = 
         binaKertasA4('pengadu', namaP, alamatP) + 
         binaKertasA4('defendan', namaD, alamatD);
@@ -15627,12 +15633,12 @@ function janaKuatkuasaPerintah() {
     // Tutup modal input
     document.getElementById('modalKuatkuasaPerintah').style.display = 'none';
 
-    // Suntik ke dalam skrin preview
+    // Suntik terus ke dalam skrin preview sistem
     document.getElementById('previewContent').innerHTML = htmlGabung;
     document.getElementById('printArea').innerHTML = htmlGabung;
 
-    // Rekodkan ke Sejarah Tindakan
-    rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Arahan Kuatkuasa Perintah telah dijana lengkap dengan letterhead.");
+    // Rekodkan ke Sejarah Tindakan secara automatik
+    rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Arahan Kuatkuasa Perintah telah dijana lengkap mengikut format rasmi.");
 
     // Paparkan modal preview
     document.getElementById('modalPreview').style.display = 'flex';
