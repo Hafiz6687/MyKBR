@@ -878,6 +878,49 @@
             </div>
         </div>
     </div>
+    <!-- MODAL POP-UP KHAS UNTUK KUATKUASA PERINTAH -->
+<div class="modal-overlay" id="modalKuatkuasaPerintah">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-title">Jana Notis Kuatkuasa Perintah</div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+            <input type="date" id="kp_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+        </div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Nama Pegawai <span>*</span></label>
+            <input type="text" id="kp_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Tambahan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kp_penerima" value="Defendan" checked> Defendan</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kp_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kp_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kp_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kp_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+            </div>
+        </div>
+
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Perkara / Tajuk Notis <span>*</span></label>
+            <input type="text" id="kp_tajuk" value="ARAHAN / PERINGATAN KUATKUASA PERINTAH" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
+        </div>
+        
+        <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+            <label style="text-align: left;">Isi Kandungan Notis <span>*</span></label>
+            <textarea id="kp_isi" rows="6" class="auto-expand" placeholder="Taipkan perenggan arahan kuatkuasa perintah di sini..." style="resize: vertical; width: 100%; box-sizing: border-box;" oninput="autoResize(this)">Adalah dimaklumkan bahawa pihak Mahkamah Buruh mendapati perintah yang telah dikeluarkan sebelum ini masih belum dipatuhi sepenuhnya. Sehubungan dengan itu, pihak tuan/puan diarahkan untuk mematuhi dan menyelesaikan bayaran atau terma perintah tersebut dalam tempoh yang ditetapkan.</textarea>
+            <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 5px; font-style: italic;">*Nota: Tekan butang 'Enter' untuk memisahkan perenggan.</p>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="document.getElementById('modalKuatkuasaPerintah').style.display='none'">Batal</button>
+            <button class="btn-save" onclick="janaKuatkuasaPerintahDariModal()">✔ Jana Notis</button>
+        </div>
+    </div>
+</div>
     <!-- MODAL POP-UP KHAS UNTUK SEBUTAN KES -->
     <div class="modal-overlay" id="modalSebutan">
         <div class="modal-box" style="max-width: 650px;">
@@ -15431,7 +15474,7 @@ function bukaModalPeringatanBayaran(jenis) {
 
     document.getElementById('modalPeringatanBayaran').style.display = 'flex';
 }
-// Fungsi baharu untuk mengendalikan tindakan Kuatkuasa Perintah
+// 1. Fungsi untuk membuka modal Kuatkuasa Perintah
 function bukaModalKuatkuasaPerintah() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) {
@@ -15439,27 +15482,92 @@ function bukaModalKuatkuasaPerintah() {
         return;
     }
 
-    // Semak sama ada aduan adalah berasaskan Majikan sebagai Pengadu
-    let isMajikan = false;
-    if (kes.dataBorang && kes.dataBorang.inputs) {
-        isMajikan = kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true";
-    } else {
-        isMajikan = kes.jenisAduan === 'Majikan';
+    // Auto-isi Tarikh Notis dengan tarikh hari ini
+    const td = new Date();
+    document.getElementById('kp_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+
+    // Auto-isi Nama Pegawai daripada profil sidebar
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
+    document.getElementById('kp_pegawai').value = namaPegawaiRaw.toUpperCase();
+
+    // Paparkan modal
+    document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
+}
+
+// 2. Fungsi untuk memproses dan menjana paparan cetakan dokumen Kuatkuasa Perintah
+function janaKuatkuasaPerintahDariModal() {
+    const tarikhNotis = document.getElementById('kp_tarikh_notis').value;
+    const pegawai = document.getElementById('kp_pegawai').value.trim();
+    const tajukNotis = document.getElementById('kp_tajuk').value.trim();
+    const isiNotis = document.getElementById('kp_isi').value.trim();
+
+    if (!tarikhNotis || !pegawai || !tajukNotis || !isiNotis) {
+        alert("Sila lengkapkan semua maklumat wajib (*).");
+        return;
     }
 
-    if (isMajikan) {
-        // Logik/Notifikasi penguatkuasaan perintah bagi aduan Majikan
-        if (confirm("Adakah anda ingin menjana proses Penguatkuasaan Perintah untuk kes ini?")) {
-            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Permohonan / Notis Penguatkuasaan Perintah telah dijana.");
-            alert("Proses Kuatkuasa Perintah bagi Pengadu (Majikan) berjaya direkodkan.");
-        }
-    } else {
-        // Logik umum jika kes biasa
-        if (confirm("Jana tindakan Penguatkuasaan Perintah?")) {
-            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Penguatkuasaan Perintah telah dijana.");
-            alert("Tindakan Kuatkuasa Perintah telah ditambah ke Sejarah Tindakan.");
-        }
-    }
+    // Ambil senarai penerima (s.k.) yang bertanda
+    const penerimaNode = document.querySelectorAll('input[name="kp_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    let noKes = kes ? kes.noKes.split('<br>')[0].trim() : "KBR/XXXX";
+    
+    // Format tarikh surat kepada Bahasa Malaysia
+    const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    let tN = new Date(tarikhNotis);
+    let tarikhSuratStr = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : tarikhNotis;
+
+    // Tutup modal input
+    document.getElementById('modalKuatkuasaPerintah').style.display = 'none';
+
+    // Bina struktur HTML A4 untuk dicetak
+    let htmlSurat = `
+        <div class="kertas-a4" style="font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: black; padding: 2cm;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <div>
+                    <strong>Rujukan Kes:</strong> ${noKes}
+                </div>
+                <div>
+                    <strong>Tarikh:</strong> ${tarikhSuratStr}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <strong>Kepada Pihak Berkenaan / Defendan</strong>
+            </div>
+
+            <div style="text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 20px; text-decoration: underline;">
+                ${tajukNotis}
+            </div>
+
+            <div style="margin-bottom: 15px; text-align: justify;">
+                Dengan hormatnya merujuk kepada perkara di atas dan prosiding kes di Mahkamah Buruh bagi kes nombor <strong>${noKes}</strong>.
+            </div>
+
+            <div style="margin-bottom: 20px; text-align: justify; white-space: pre-wrap;">
+                ${isiNotis}
+            </div>
+
+            <div style="margin-top: 40px; page-break-inside: avoid;">
+                <p>Sekian, terima kasih.</p>
+                <br><br>
+                <strong>${pegawai}</strong><br>
+                Pegawai Pendengar / Pegawai Tenaga Kerja<br>
+                Pejabat Tenaga Kerja Kluang
+            </div>
+        </div>
+    `;
+
+    // Paparkan ke skrin Preview sistem
+    document.getElementById('previewContent').innerHTML = htmlSurat;
+    document.getElementById('printArea').innerHTML = htmlSurat;
+
+    // Rekod ke Sejarah Tindakan secara automatik
+    rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Kuatkuasa Perintah telah dijana dan disunting.");
+
+    // Buka paparan modal preview
+    document.getElementById('modalPreview').style.display = 'flex';
 }
 
 function janaPeringatanBayaran() {
