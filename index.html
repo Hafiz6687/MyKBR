@@ -5163,6 +5163,9 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
+    window.isNotisPengaduPrinted = false;
+    window.isNotisDefendanPrinted = false;
+
     let noKes = kes.noKes.split('<br>')[0].trim();
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
 
@@ -5192,7 +5195,7 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // Dapatkan baki amaun atau jumlah keseluruhan dari kes
+    // Dapatkan baki amaun dari tuntutan biasa (sama seperti Peringatan MOU)
     let jumlahBaki = "0.00";
     if (kes.dataBorang && kes.dataBorang.tuntutanBiasa) {
         let total = 0;
@@ -5252,7 +5255,7 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
                     <strong>KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}</strong><br>
                     <strong>ANTARA PENGADU : ${namaP}</strong><br>
                     <strong>TERHADAP DEFENDAN : ${namaD}</strong><br>
-                    <strong>PERKARA: KUATKUASA PERINTAH / PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</strong>
+                    <strong>PERKARA: PERINGATAN / KUATKUASA PERINTAH (MOU)</strong>
                     <hr style="border: 0; border-top: 1px solid #000; margin-top: 6px; margin-bottom: 0;">
                 </div>
 
@@ -5261,7 +5264,7 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
                 </div>
 
                 <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
-                    2.<span class="jarak-tab"></span>Tuan dengan ini diberikan <strong>PERINGATAN</strong> untuk mengamanahkan wang berjumlah <strong>RM ${jumlahBaki}</strong> sebagaimana PERSETUJUAN BERSAMA (MOU) yang telah dimeterai sebelum ini. Bayaran hendaklah dibuat di Pejabat Tenaga Kerja Kluang, Johor dalam tempoh <strong>14 hari</strong> dari tarikh surat ini.
+                    2.<span class="jarak-tab"></span>Tuan dengan ini diberikan <strong>PERINGATAN</strong> untuk mengamanahkan wang berjumlah <strong>RM ${jumlahBaki}</strong> sebagaimana PERSETUJUAN BERSAMA (MOU) dan BORANG C, Perintah Di Bawah Seksyen 69, Akta Kerja 1955. Bayaran hendaklah dibuat di Pejabat Tenaga Kerja Kluang, Johor dalam tempoh <strong>14 hari</strong> dari tarikh surat ini.
                 </div>
 
                 <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
@@ -5296,6 +5299,7 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
 
     document.getElementById('modalPreview').style.display = 'flex';
 }
+       
 function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
