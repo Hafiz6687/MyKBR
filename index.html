@@ -4603,19 +4603,15 @@ function janaSebutanTangguhDariModal() {
 function bukaModalKuatkuasaPerintah() {
     const modal = document.getElementById('modalKuatkuasaPerintah');
     if (modal) {
-        // Auto-isi tarikh notis dengan tarikh hari ini
         const td = new Date();
         const elTarikh = document.getElementById('kp_tarikh_notis');
         if (elTarikh) {
             elTarikh.value = `${td.getFullYear()}-${String(td.getMonth() + 1).padStart(2, '0')}-${String(td.getDate()).padStart(2, '0')}`;
         }
-        
-        // Paparkan modal
         modal.style.display = 'flex';
-    } else {
-        console.error("Elemen modalKuatkuasaPerintah tidak dijumpai di dalam HTML.");
     }
 }
+
 // =========================================================================
 // FUNGSI JANA PREVIEW NOTIS KUATKUASA PERINTAH
 // =========================================================================
@@ -4662,7 +4658,8 @@ function janaKuatkuasaPerintah() {
     let tN = new Date(tarikhNotis);
     let tarikhSurat = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : "[Tarikh]";
 
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit'].innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
+    // KOD YANG TELAH DIBETULKAN (Tanda ']' ditukar kepada ')')
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
     // 1. Bina Elemen Salinan Kepada (s.k.) jika ada dipilih
@@ -4782,7 +4779,7 @@ function janaKuatkuasaPerintah() {
     };
 
     document.getElementById('modalPreview').style.display = 'flex';
-}       
+}  
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
