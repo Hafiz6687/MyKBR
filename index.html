@@ -5584,40 +5584,19 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         
         let p4_majikan_teks = `4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya Pengarah Syarikat/ Pengerusi mewakilkan seorang yang lain, suatu surat wakil kuasa yang ditandatangani oleh Pengarah Syarikat/ Pengerusi, salinan KWSP/PERKESO terkini dan sesalinan maklumat syarikat (SSM)/organisasi/pertubuhan hendaklah dikemukakan dalam hal berkaitan perwakilan tersebut untuk semakan pegawai pendengar.`;
 
-        // Guna 'var' atau buang 'const' jika ia telah diisytiharkan di atas dalam fungsi yang sama
-        isMajikanCheck = (kes.dataBorang && kes.dataBorang.inputs && (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true"));
+        isiPengadu = `
+            <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
+            <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes akan dibatalkan sekiranya tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
+            <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
+            ${isMajikanCheck ? `<div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>` : ''}
+        `;
 
-        if (isMajikanCheck) {
-            // Kandungan khusus apabila Majikan adalah Pengadu
-            isiPengadu = `
-                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir di pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
-                <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
-                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
-                <div class="notis-isi">5.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
-            `;
-
-            isiDefendan = `
-                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
-                <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ke pejabat ini pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
-                <div class="notis-isi">4.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
-            `;
-        } else {
-            // Kandungan lalai asal (Jika Pekerja adalah Pengadu)
-            isiPengadu = `
-                <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa sebutan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
-                <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes akan dibatalkan sekiranya tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
-                <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
-                <div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>
-            `;
-
-            isiDefendan = `
-                <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa sebutan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
-                <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes ini akan dibicarakan dengan ketidakhadiran tuan jika tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
-                <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
-            `;
-        }
+        isiDefendan = `
+            <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
+            <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes ini akan dibicarakan dengan ketidakhadiran tuan jika tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
+            <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
+            ${!isMajikanCheck ? `<div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>` : ''}
+        `;
     } else if (kunci === 'bicara_tangguh') {
         const isMajikanCheck = (kes.dataBorang && kes.dataBorang.inputs && (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true"));
         
