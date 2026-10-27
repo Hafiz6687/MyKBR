@@ -5178,7 +5178,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         if (isMajikan) {
             // TUKAR: Defendan adalah Pekerja, Pengadu adalah Syarikat
             alamatDefendanBersih = arrPeng.join(', ').toUpperCase();
-            alamatPengaduBersih = arrDef.join(', ').toUpperCase();
+            alamatPengaduBersih = arrPeng.join(', ').toUpperCase();
             
             namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]'; alamatP = almtDefHTML || '[ALAMAT PENGADU]';
             namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]'; alamatD = almtPengHTML || '[ALAMAT DEFENDAN]';
@@ -5263,6 +5263,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     let isiPeguamDefendan = null;
 
     let tarikhMasaBaruGabung = formatTarikhMasaLengkap(tarikhRaw, masaRaw);
+    let lokasiMahkamahCetak = ""; // Diisytiharkan di peringkat fungsi untuk elak ReferenceError
 
     if (kunci === 'sebutan_tangguh') {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}</div>`;
@@ -5509,27 +5510,21 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES</div>`;
         
-        let lokasiMahkamahCetak = "";
-        
         // INTERCEPT DATA DARI POP-UP BICARA
         let dBicara = window.tempDataBicara;
         if (dBicara) {
-            // Timpa nilai tarikh dan masa dari Pop-up
             tarikhRaw = dBicara.tarikhBicara;
             masaRaw = dBicara.masaBicara;
             tarikhMasaBaruGabung = formatTarikhMasaLengkap(tarikhRaw, masaRaw);
             
-            // Timpa Tarikh Surat
             let tN = new Date(dBicara.tarikhNotis);
             if (!isNaN(tN)) {
                 tarikhSurat = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
             }
             
-            // Timpa Nama Pegawai
             let pegawaiBicara = dBicara.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiBicara);
             
-            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
             if (dBicara.isBerbeza) {
                 let arrTpt = [dBicara.tempatNama, dBicara.a1, dBicara.a2, dBicara.a3].filter(Boolean);
                 let posBdr = [dBicara.pos, dBicara.bdr].filter(Boolean).join(' ');
@@ -5537,7 +5532,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dBicara.ngr) arrTpt.push(dBicara.ngr);
                 lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5557,12 +5551,10 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             }
             
-            // Kemaskini simpanan data sementara untuk dicetak di Sejarah
             window.dataNotisSemasa.tarikhStr = tarikhRaw;
             window.dataNotisSemasa.masaStr = masaRaw;
 
         } else {
-            // Lalai Asal (Jika tiada pop-up)
             let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
             let ptkBandar = "KLUANG";
             let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5620,8 +5612,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (TANGGUH)</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (TANGGUH)</div>`;
         
-        let lokasiMahkamahCetak = "";
-        
         // INTERCEPT DATA DARI POP-UP BICARA TANGGUH
         let dBicaraTangguh = window.tempDataBicaraTangguh;
         if (dBicaraTangguh) {
@@ -5637,7 +5627,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiBicaraTangguh = dBicaraTangguh.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiBicaraTangguh);
             
-            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
             if (dBicaraTangguh.isBerbeza) {
                 let arrTpt = [dBicaraTangguh.tempatNama, dBicaraTangguh.a1, dBicaraTangguh.a2, dBicaraTangguh.a3].filter(Boolean);
                 let posBdr = [dBicaraTangguh.pos, dBicaraTangguh.bdr].filter(Boolean).join(' ');
@@ -5645,7 +5634,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dBicaraTangguh.ngr) arrTpt.push(dBicaraTangguh.ngr);
                 lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5669,7 +5657,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             window.dataNotisSemasa.masaStr = masaRaw;
 
         } else {
-            // Lalai Asal (Jika tiada pop-up)
             let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
             let ptkBandar = "KLUANG";
             let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5707,8 +5694,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (SAMBUNG)</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS PERBICARAAN KES (SAMBUNG)</div>`;
         
-        let lokasiMahkamahCetak = "";
-        
         // INTERCEPT DATA DARI POP-UP BICARA SAMBUNG
         let dBicaraSambung = window.tempDataBicaraSambung;
         if (dBicaraSambung) {
@@ -5724,7 +5709,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiBicaraSambung = dBicaraSambung.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiBicaraSambung);
             
-            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
             if (dBicaraSambung.isBerbeza) {
                 let arrTpt = [dBicaraSambung.tempatNama, dBicaraSambung.a1, dBicaraSambung.a2, dBicaraSambung.a3].filter(Boolean);
                 let posBdr = [dBicaraSambung.pos, dBicaraSambung.bdr].filter(Boolean).join(' ');
@@ -5732,7 +5716,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dBicaraSambung.ngr) arrTpt.push(dBicaraSambung.ngr);
                 lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5756,7 +5739,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             window.dataNotisSemasa.masaStr = masaRaw;
 
         } else {
-            // Lalai Asal (Jika tiada pop-up)
             let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
             let ptkBandar = "KLUANG";
             let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5789,8 +5771,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KEPUTUSAN KES</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KEPUTUSAN KES</div>`;
         
-        let lokasiMahkamahCetak = "";
-        
         // INTERCEPT DATA DARI POP-UP KEPUTUSAN KES
         let dKeputusan = window.tempDataKeputusan;
         if (dKeputusan) {
@@ -5806,7 +5786,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiKeputusan = dKeputusan.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiKeputusan);
             
-            // Bina Alamat Penuh Mahkamah HANYA JIKA isBerbeza true
             if (dKeputusan.isBerbeza) {
                 let arrTpt = [dKeputusan.tempatNama, dKeputusan.a1, dKeputusan.a2, dKeputusan.a3].filter(Boolean);
                 let posBdr = [dKeputusan.pos, dKeputusan.bdr].filter(Boolean).join(' ');
@@ -5814,7 +5793,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dKeputusan.ngr) arrTpt.push(dKeputusan.ngr);
                 lokasiMahkamahCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5838,7 +5816,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             window.dataNotisSemasa.masaStr = masaRaw;
 
         } else {
-            // Lalai Asal (Jika tiada pop-up)
             let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
             let ptkBandar = "KLUANG";
             let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5886,7 +5863,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiSebutan = dSebutan.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSebutan);
             
-            // Bina Alamat Penuh Pejabat HANYA JIKA isBerbeza true
             if (dSebutan.isBerbeza) {
                 let arrTpt = [dSebutan.tempatNama, dSebutan.a1, dSebutan.a2, dSebutan.a3].filter(Boolean);
                 let posBdr = [dSebutan.pos, dSebutan.bdr].filter(Boolean).join(' ');
@@ -5894,7 +5870,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dSebutan.ngr) arrTpt.push(dSebutan.ngr);
                 lokasiPejabatCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -6024,7 +5999,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     } else if (kunci === 'saman_tampal' && window.tempDataSamanTampal && window.tempDataSamanTampal.senaraiPenerima) {
         senaraiPenerimaSebutan = window.tempDataSamanTampal.senaraiPenerima;
     } else if (kunci !== 'sebutan' && kunci !== 'sebutan_semula' && kunci !== 'sebutan_tangguh' && kunci !== 'bicara' && kunci !== 'bicara_tangguh' && kunci !== 'bicara_sambung' && kunci !== 'keputusan' && kunci !== 'saman_tampal') {
-        // Jika bukan notis di atas, benarkan default lama jalan (papar jika ada dalam senaraiPerwakilan)
         senaraiPenerimaSebutan = ['Peguam Pengadu', 'Peguam Defendan'];
     }
 
@@ -6079,7 +6053,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     `;
 
     if (peguamPengaduHTML !== '') {
-        // Tapis perkataan 'anak guam' khas untuk Kesatuan (Pengadu)
         let isiAkhirWakilPengadu = isiPeguamPengadu || isiPengadu;
         if (labelWakilPengadu.includes('Kesatuan')) {
             isiAkhirWakilPengadu = isiAkhirWakilPengadu.replace(/anak guam/gi, 'pihak yang tuan wakili');
@@ -6109,7 +6082,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         </div>
         `;
         if (peguamDefendanHTML !== '') {
-            // Tapis perkataan 'anak guam' khas untuk Kesatuan (Defendan)
             let isiAkhirWakilDefendan = isiPeguamDefendan || isiDefendan;
             let labelSalinanDefendan = "*Salinan untuk Peguamcara Defendan:";
             
@@ -6144,7 +6116,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         `;
 
         if (peguamDefendanHTML !== '') {
-            // Tapis perkataan 'anak guam' khas untuk Kesatuan (Defendan)
             let isiAkhirWakilDefendan = isiPeguamDefendan || isiDefendan;
             if (labelWakilDefendan.includes('Kesatuan')) {
                 isiAkhirWakilDefendan = isiAkhirWakilDefendan.replace(/anak guam/gi, 'pihak yang tuan wakili');
@@ -6164,7 +6135,7 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             </div>
             `;
         }
-    } // <--- INI ADALAH PENUTUP 'else' YANG TERCICIR SEBELUM INI. WAJIB ADA!
+    }
 
     const htmlNotisGenerik = `
         <style>
@@ -6199,14 +6170,9 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     
     let actionMenu = document.getElementById('actionMenu');
 
-    // =======================================================
-    // ENJIN PEMBERSIH MENU (GOD-MODE WIPER)
-    // =======================================================
-    // Menyembunyikan semua "hantu" butang yang ditinggalkan oleh fungsi lain
     Array.from(actionMenu.querySelectorAll('a')).forEach(btn => {
         btn.style.display = 'none';
     });
-    // =======================================================
 
     let btnNotisPengadu = document.getElementById('menuCetakNotisPengadu');
     if (!btnNotisPengadu) { btnNotisPengadu = document.createElement('a'); btnNotisPengadu.id = 'menuCetakNotisPengadu'; btnNotisPengadu.href = '#'; actionMenu.insertBefore(btnNotisPengadu, document.getElementById('menuBatal')); }
