@@ -4598,21 +4598,6 @@ function janaSebutanTangguhDariModal() {
     bukaPreviewNotisGenerik('sebutan_tangguh'); 
 }
 
-// =========================================================================
-// FUNGSI KHAS UNTUK KUATKUASA PERINTAH
-// =========================================================================
-function bukaModalKuatkuasaPerintah() {
-    // Menggunakan fungsi sedia ada bukaModalPeringatanBayaran dengan parameter 'Borang C' atau jenis yang berkaitan
-    if (typeof bukaModalPeringatanBayaran === 'function') {
-        bukaModalPeringatanBayaran('Borang C');
-        
-        // Kemaskini tajuk modal supaya memaparkan tajuk khusus 'Kuatkuasa Perintah'
-        const tajukModal = document.getElementById('tajukModalPeringatan');
-        if (tajukModal) {
-            tajukModal.innerText = 'Jana Surat Kuatkuasa Perintah';
-        }
-    }
-}
        
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
@@ -15499,27 +15484,6 @@ function bukaModalPeringatanBayaran(jenis) {
     });
 
     document.getElementById('modalPeringatanBayaran').style.display = 'flex';
-}
-// Fungsi membuka modal Kuatkuasa Perintah (Serupa gaya modalPeringatanBayaran)
-function bukaModalKuatkuasaPerintah() {
-    const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) {
-        alert("Sila pilih kes terlebih dahulu.");
-        return;
-    }
-
-    // Auto-isi Tarikh Notis dengan tarikh hari ini
-    const td = new Date();
-    document.getElementById('kp_tarikh_notis').value = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
-
-    // Reset pilihan checkbox penerima kepada lalai
-    document.querySelectorAll('input[name="kp_penerima"]').forEach(cb => {
-        if (cb.value === 'Defendan') cb.checked = true;
-        else cb.checked = false;
-    });
-
-    // Paparkan modal
-    document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
 }
 
 function janaPeringatanBayaran() {
