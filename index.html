@@ -3996,11 +3996,10 @@ function tindakanSebutan() {
     }
 }
 
-// =========================================================================
-// FUNGSI PREVIEW NOTIS KUATKUASA PERINTAH (DIPERBETULKAN)
-// =========================================================================
+// =========================================================
+// FUNGSI PREVIEW NOTIS KUATKUASA PERINTAH (FORMAT RASMI)
+// =========================================================
 function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
-    // 1. Dapatkan kes aktif menggunakan pembolehubah sebenar sistem (kesSemasa)
     let kes = null;
     if (typeof kesSemasa !== 'undefined' && kesSemasa) {
         kes = kesSemasa;
@@ -4014,8 +4013,6 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
     }
 
     let memoDataKuatkuasa = null;
-
-    // Decode jika dipanggil dari sejarah (dataSimpanan Base64)
     if (dataSimpanan && dataSimpanan !== 'null') {
         try {
             memoDataKuatkuasa = JSON.parse(decodeURIComponent(escape(atob(dataSimpanan))));
@@ -4024,10 +4021,13 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         }
     }
 
-    let dataKuatkuasa = memoDataKuatkuasa || window.tempDataKuatkuasa;
+    let dataKuatkuasa = memoDataKuatkuasa || window.tempDataKuatkuasa || {};
     let noKes = kes.noKes ? kes.noKes.replace(/<br>.*$/g, '').trim() : '-';
+    let tarikhNotisPapar = dataKuatkuasa.tarikhNotis ? 
+        new Date(dataKuatkuasa.tarikhNotis).toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 
+        '-';
 
-    // Ekstrak Nama & Alamat Defendan / Pengadu
+    // Ekstrak Nama & Alamat Pengadu / Defendan
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
@@ -4044,66 +4044,106 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         ].filter(a => a && a.trim() !== "");
 
         if (isMajikan) {
-            namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]';
-            alamatP = arrDef.join('<br>') || '[ALAMAT PENGADU]';
-            namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]';
-            alamatD = arrPeng.join('<br>') || '[ALAMAT DEFENDAN]';
+            namaP = inputs['namaDefendan'] || '';
+            alamatP = arrDef.join('<br>');
+            namaD = inputs['namaPengadu'] || '';
+            alamatD = arrPeng.join('<br>');
         } else {
-            namaP = inputs['namaPengadu'] || '[NAMA PENGADU]';
-            alamatP = arrPeng.join('<br>') || '[ALAMAT PENGADU]';
-            namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]';
-            alamatD = arrDef.join('<br>') || '[ALAMAT DEFENDAN]';
+            namaP = inputs['namaPengadu'] || '';
+            alamatP = arrPeng.join('<br>');
+            namaD = inputs['namaDefendan'] || '';
+            alamatD = arrDef.join('<br>');
         }
     } else {
         namaP = (kes.namaPengadu || '').replace(/<br>.*$/g, '');
-        alamatP = "[ALAMAT PENGADU]";
         namaD = (kes.namaDefendan || '').replace(/<br>.*$/g, '');
-        alamatD = "[ALAMAT DEFENDAN]";
     }
 
-    // 2. Bina Struktur Kertas A4 Preview (Mengikut standard sistem MyKBR)
+    // Semak status tandatangan pegawai
+    let radTandatanganVal = document.querySelector('input[name="radTandatangan"]:checked')?.value || 'OFF';
+    let statusTandatanganHTML = radTandatanganVal === 'ON' ? 
+        `<div style="margin-top: 25px; margin-bottom: 5px;"><img src="tandatangan.png" style="max-height: 60px; display: block;" onerror="this.style.display='none'"></div>
+         <div style="font-weight: bold; text-transform: uppercase;">MOHAMAD HAFIZ BIN ABU BAKAR</div>
+         <div style="font-size: 0.9em; color: #333;">Pegawai Tenaga Kerja / Timbalan Pengarah</div>
+         <div style="font-size: 0.85em; color: #555;">Pejabat Tenaga Kerja Kluang, Johor</div>` : 
+        `<div style="height: 70px;"></div>
+         <div style="font-weight: bold; text-transform: uppercase;">( MOHAMAD HAFIZ BIN ABU BAKAR )</div>
+         <div style="font-size: 0.9em; color: #333;">Pegawai Tenaga Kerja / Timbalan Pengarah</div>
+         <div style="font-size: 0.85em; color: #555;">Pejabat Tenaga Kerja Kluang, Johor</div>`;
+
+    // Format Rasmi Dokumen A4
     let htmlContent = `
         <div class="kertas-a4">
-            <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 25px;">
-                NOTIS ARAHAN KUATKUASA PERINTAH<br>
-                KES NO: ${noKes}
+            <!-- KEPALA SURAT RASMI -->
+            <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+                <div style="font-weight: bold; font-size: 13pt; text-transform: uppercase; margin-bottom: 4px;">PEJABAT TENAGA KERJA KLUANG</div>
+                <div style="font-size: 10pt; color: #333;">KEMENTERIAN SUMBER MANUSIA MALAYSIA</div>
+                <div style="font-size: 9pt; color: #555;">Jalan Pejabat Kerajaan, 86000 Kluang, Johor Darul Takzim</div>
             </div>
 
-            <table style="width: 100%; margin-bottom: 25px; border: none;">
+            <!-- RUJUKAN & TARIKH -->
+            <table style="width: 100%; margin-bottom: 25px; font-size: 10.5pt; border: none;">
                 <tr>
-                    <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
-                        <strong>PENGADU:</strong><br>
-                        ${namaP}<br>
-                        ${alamatP}
+                    <td style="border: none; padding: 0; width: 60%;">
+                        <strong>Rujukan Kes:</strong> ${noKes}
                     </td>
-                    <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
-                        <strong>DEFENDAN:</strong><br>
-                        ${namaD}<br>
-                        ${alamatD}
+                    <td style="border: none; padding: 0; width: 40%; text-align: right;">
+                        <strong>Tarikh:</strong> ${tarikhNotisPapar}
                     </td>
                 </tr>
             </table>
 
-            <div style="margin-top: 20px; line-height: 1.6; text-align: justify;">
-                <p>Bahawa Perintah di bawah Kes No. <strong>${noKes}</strong> telah dikeluarkan dan tindakan penguatkuasaan perintah hendaklah dilaksanakan mengikut peruntukan undang-undang yang berkuat kuasa.</p>
-                <p>Tarikh Notis: <strong>${dataKuatkuasa?.tarikhNotis || '-'}</strong></p>
+            <!-- PENERIMA (DEFENDAN / PIHAK KENA TUNTUT) -->
+            <div style="margin-bottom: 25px; font-size: 10.5pt; line-height: 1.5;">
+                <strong>Kepada:</strong><br>
+                <div style="font-weight: bold; text-transform: uppercase; margin-top: 3px;">${namaD}</div>
+                <div>${alamatD}</div>
+            </div>
+
+            <!-- TAJUK UTAMA NOTIS -->
+            <div style="text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11pt; margin-bottom: 25px; text-decoration: underline;">
+                NOTIS ARAHAN KEUATKUASAAN PERINTAH DI BAWAH AKTA KERJA 1955<br>
+                KES NO: ${noKes}
+            </div>
+
+            <!-- ISI KANDUNGAN UTAMA -->
+            <div style="margin-bottom: 25px; font-size: 10.5pt; line-height: 1.8; text-align: justify;">
+                <p>Adalah saya dengan hormatnya diarah menarik perhatian tuan/puan mengenai perkara di atas.</p>
+                
+                <p>2. Sukacita dimaklumkan bahawa Perintah di bawah Kes No. <strong>${noKes}</strong> yang melibatkan pihak Pengadu iaitu <strong>${namaP}</strong> telahpun dikeluarkan secara sah mengikut peruntukan undang-undang yang berkuat kuasa.</p>
+                
+                <p>3. Sehubungan dengan itu, tuan/puan adalah **DIARAHKAN** untuk mematuhi serta melaksanakan perintah penguatkuasaan tersebut dengan serta-merta dalam tempoh yang telah ditetapkan. Kegagalan tuan/puan untuk mematuhi arahan ini boleh mengakibatkan tindakan undang-undang selanjutnya diambil di bawah akta yang berkaitan.</p>
+                
+                <p>4. Kerjasama dan perhatian daripada pihak tuan/puan amatlah dihargai bagi memastikan kelancaran urusan pentadbiran keadilan buruh ini.</p>
+            </div>
+
+            <!-- PENUTUP SURAT -->
+            <div style="margin-top: 40px; font-size: 10.5pt;">
+                <div>Sekian, terima kasih.</div>
+                <br><br>
+                <div style="margin-top: 20px;">
+                    <strong>"MALAYSIA MADANI"</strong><br>
+                    <strong>"Pekerja MADANI Kesuma Bangsa"</strong>
+                </div>
+                <div style="margin-top: 35px;">
+                    ${statusTandatanganHTML}
+                </div>
             </div>
         </div>
     `;
 
-    // 3. Masukkan ke dalam kontena preview sebenar sistem (`previewContent`)
+    // Masukkan ke dalam kontena preview sistem
     let previewContainer = document.getElementById('previewContent');
     if (previewContainer) {
         previewContainer.innerHTML = htmlContent;
     }
 
-    // 4. Urus Paparan Action Menu di Penjuru Kanan Atas
+    // Urus Paparan Menu Tindakan & Butang
     let actionMenu = document.getElementById('actionMenu');
     if (actionMenu) {
         Array.from(actionMenu.querySelectorAll('a')).forEach(btn => btn.style.display = 'none');
     }
 
-    // Butang Cetak G1 / Kuatkuasa
     let btnCetakG1 = document.getElementById('menuCetakG1');
     if (btnCetakG1) {
         btnCetakG1.style.display = 'flex';
@@ -4115,7 +4155,6 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         };
     }
 
-    // Butang Kemaskini
     let btnKemaskini = document.getElementById('menuKemaskini');
     if (btnKemaskini) {
         btnKemaskini.style.display = 'flex';
@@ -4129,7 +4168,6 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         };
     }
 
-    // Butang Batal
     let btnBatal = document.getElementById('menuBatal');
     if (btnBatal) {
         btnBatal.style.display = 'flex';
@@ -4140,7 +4178,6 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         };
     }
 
-    // 5. Paparkan Suis Tandatangan & Buka Modal Preview
     if (typeof tunjukSuisTandatangan === 'function') {
         tunjukSuisTandatangan(true);
     } else {
