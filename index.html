@@ -4641,7 +4641,6 @@ function bukaPreviewKuatkuasaPerintah() {
     let noKes = kes.noKes.split('<br>')[0].trim();
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
 
-    // Ekstrak data pihak terlibat daripada simpanan borang kes
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
@@ -4660,11 +4659,10 @@ function bukaPreviewKuatkuasaPerintah() {
     const tH = new Date(); 
     let tarikhSurat = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
     
-    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit'].innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // Templat Header & Footer Rasmi yang seragam dengan bukaPreviewNotisGenerik
-    const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
+    const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
     
     let templateFooterHTML = `
         <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
@@ -4689,7 +4687,6 @@ function bukaPreviewKuatkuasaPerintah() {
         <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
     `;
 
-    // Gabungan penuh struktur surat untuk paparan Pengadu & Defendan
     let suratLengkap = `
         <div class="kertas-notis">
             ${templateHeaderHTML}
@@ -4737,11 +4734,9 @@ function bukaPreviewKuatkuasaPerintah() {
         ${suratLengkap}
     `;
 
-    // Masukkan data ke dalam kontena preview & cetak
     document.getElementById('previewContent').innerHTML = htmlNotisKuatkuasa;
     document.getElementById('printArea').innerHTML = htmlNotisKuatkuasa;
     
-    // Uruskan menu tindakan dropdown di skrin preview
     let actionMenu = document.getElementById('actionMenu');
     Array.from(actionMenu.querySelectorAll('a')).forEach(btn => { btn.style.display = 'none'; });
 
@@ -4765,7 +4760,6 @@ function bukaPreviewKuatkuasaPerintah() {
     const btnBatal = document.getElementById('menuBatal'); 
     if(btnBatal) btnBatal.style.display = 'flex';
 
-    // Paparkan skrin modal preview
     document.getElementById('modalPreview').style.display = 'flex';
 }
 // =========================================================================
