@@ -4572,20 +4572,21 @@ function janaSebutanTangguhDariModal() {
 }
 
 // =========================================================================
-// FUNGSI DUPLIKASI KHAS UNTUK BAYARAN MOU
+// FUNGSI KHAS UNTUK KUATKUASA PERINTAH
 // =========================================================================
-function bukaModalBayaranMou() {
-    // Menggunakan fungsi sedia ada bukaModalPeringatanBayaran dengan parameter 'MOU'
+function bukaModalKuatkuasaPerintah() {
+    // Menggunakan fungsi sedia ada bukaModalPeringatanBayaran dengan parameter 'Borang C' atau jenis yang berkaitan
     if (typeof bukaModalPeringatanBayaran === 'function') {
-        bukaModalPeringatanBayaran('MOU');
+        bukaModalPeringatanBayaran('Borang C');
         
-        // Kemaskini tajuk modal supaya memaparkan tajuk khusus 'Bayaran MOU'
+        // Kemaskini tajuk modal supaya memaparkan tajuk khusus 'Kuatkuasa Perintah'
         const tajukModal = document.getElementById('tajukModalPeringatan');
         if (tajukModal) {
-            tajukModal.innerText = 'Jana Surat Bayaran MOU';
+            tajukModal.innerText = 'Jana Surat Kuatkuasa Perintah';
         }
     }
 }
+       
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
