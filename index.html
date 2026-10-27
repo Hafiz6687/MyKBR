@@ -4611,7 +4611,6 @@ function bukaModalKuatkuasaPerintah() {
         modal.style.display = 'flex';
     }
 }
-
 // =========================================================================
 // FUNGSI JANA PREVIEW NOTIS KUATKUASA PERINTAH
 // =========================================================================
@@ -4658,7 +4657,6 @@ function janaKuatkuasaPerintah() {
     let tN = new Date(tarikhNotis);
     let tarikhSurat = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : "[Tarikh]";
 
-    // KOD YANG TELAH DIBETULKAN (Tanda ']' ditukar kepada ')')
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
@@ -4722,33 +4720,42 @@ function janaKuatkuasaPerintah() {
         <div class="notis-footer-line"></div>
     `;
 
-    // 4. Kandungan Surat Kuatkuasa Perintah (Defendan & Pengadu)
+    // 4. Kandungan Surat Kuatkuasa Perintah (Diselaraskan mengikut corak notis rasmi asal)
     let isiSuratKuatkuasa = `
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11pt;">
-            <div>
-                <strong>Kepada:</strong><br>
-                ${namaD}<br>
-                ${alamatD}
-            </div>
-            <div>
-                <strong>Tarikh:</strong> ${tarikhSurat}
-            </div>
+        <div style="text-align: right; margin-bottom: 15px; font-size: 11pt;">
+            <strong>Rujukan Kami :</strong> ${noKes}<br>
+            <strong>Tarikh :</strong> ${tarikhSurat}
         </div>
+        
+        <div style="margin-bottom: 20px; font-size: 11pt; line-height: 1.5;">
+            <strong>${namaD.toUpperCase()}</strong><br>
+            ${alamatD}<br>
+        </div>
+        
         <div style="margin-bottom: 15px; font-size: 11pt;">
-            <strong>Rujukan Kes: ${noKes}</strong><br>
-            <strong>Antara Pengadu:</strong> ${namaP}<br>
-            <strong>Terhadap Defendan:</strong> ${namaD}
+            Tuan,
         </div>
-        <div style="font-weight: bold; font-size: 12pt; text-align: center; margin: 20px 0; text-decoration: underline;">
-            NOTIS KUATKUASA PERINTAH
+        
+        <div style="font-weight: bold; font-size: 10.5pt; margin-bottom: 6px; text-transform: uppercase;">
+            KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}
         </div>
+        <div style="font-weight: bold; font-size: 10.5pt; margin-bottom: 6px; text-transform: uppercase;">
+            ANTARA PENGADU : ${namaP.toUpperCase()}
+        </div>
+        <div style="font-weight: bold; font-size: 10.5pt; margin-bottom: 6px; text-transform: uppercase;">
+            TERHADAP DEFENDAN : ${namaD.toUpperCase()}
+        </div>
+        <div style="font-weight: bold; font-size: 10.5pt; margin-bottom: 20px; text-transform: uppercase; text-decoration: underline;">
+            PERKARA: NOTIS KUATKUASA PERINTAH
+        </div>
+
         <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
             Dengan hormatnya merujuk kepada Perintah Mahkamah Buruh / Keputusan yang telah dikeluarkan di bawah kes bernombor <strong>${noKes}</strong>.
         </div>
         <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
             2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan diarah supaya mematuhi dan melaksanakan terma perintah yang telah ditetapkan dengan menjelaskan bayaran atau mematuhi arahan tersebut serta-merta dari tarikh notis ini dikeluarkan.
         </div>
-        <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 25px; line-height: 1.6;">
             3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan undang-undang selanjutnya diambil di bawah Akta Kerja 1955 tanpa sebarang rujukan lanjut.
         </div>
     `;
@@ -4786,7 +4793,8 @@ function janaKuatkuasaPerintah() {
     };
 
     document.getElementById('modalPreview').style.display = 'flex';
-}  
+}
+
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
