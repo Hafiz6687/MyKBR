@@ -4852,6 +4852,9 @@ function bukaPreviewKuatkuasaPerintah() {
         document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
     };
 
+    // ==========================================
+// KOD BAHARU PENGGANTI:
+// ==========================================
     let btnCetakKuatkuasa = document.getElementById('menuCetakKuatkuasa');
     if (!btnCetakKuatkuasa) { 
         btnCetakKuatkuasa = document.createElement('a'); 
@@ -4866,7 +4869,15 @@ function bukaPreviewKuatkuasaPerintah() {
         e.preventDefault(); 
         document.getElementById('actionMenu').classList.remove('show');
         window.print(); 
+        
+        // Rekod ke sejarah tindakan kes
         rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Kuatkuasa Perintah telah dijana dan dicetak.");
+        
+        // Tutup preview dan bawa pengguna kembali ke Maklumat Kes Terperinci
+        setTimeout(() => {
+            document.getElementById('modalPreview').style.display = 'none';
+            bukaMaklumatKes(indexKesSemasa);
+        }, 500);
     };
 
     const btnBatal = document.getElementById('menuBatal'); 
