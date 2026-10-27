@@ -501,7 +501,34 @@
             </div>
         </div>
     </div>
+<!-- MODAL POP-UP KHAS UNTUK KUATKUASA PERINTAH MOU -->
+    <div class="modal-overlay" id="modalKuatkuasaPerintahMou">
+        <div class="modal-box">
+            <div class="modal-title">Jana Surat Kuatkuasa Perintah MOU</div>
+            <input type="hidden" id=" jenisKuatkuasaMou" value="Kuatkuasa Perintah MOU">
+            
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Tarikh Notis <span>*</span></label>
+                <input type="date" id="kpm_tarikh_notis" style="width: 100%; box-sizing: border-box;">
+            </div>
 
+            <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
+                <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Tambahan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk salinan s.k. / notis wakil)</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpm_penerima" value="Defendan" checked> Defendan</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpm_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpm_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpm_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="kpm_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('modalKuatkuasaPerintahMou').style.display='none'">Batal</button>
+                <button class="btn-save" onclick="janaKuatkuasaPerintahMou()">✔ Teruskan</button>
+            </div>
+        </div>
+    </div>
     <!-- MODAL POP-UP KHAS UNTUK TARIK BALIK KES (MAJIKAN) -->
     <div class="modal-overlay" id="modalTarikBalikMajikan">
         <div class="modal-box">
@@ -1594,6 +1621,9 @@ Portal rasmi : jtksm.mohr.gov.my
                         <button class="btn-terapung" style="background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalPeringatanBayaran('MOU')">
                             <span>⚠️ Peringatan<br>Bayaran MOU</span>
                         </button>
+                        <button class="btn-terapung" style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalKuatkuasaPerintahMou()">
+                            <span>⚖️ Kuatkuasa<br>Perintah MOU</span>
+                        </button>                        
                         <button class="btn-terapung" style="background-color: var(--card-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px; font-size: 0.85em; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; height: 60px; line-height: 1.3;" onclick="bukaModalSamanA()">
                             <span>📄 Saman<br>(Borang A)</span>
                         </button>
@@ -4385,9 +4415,7 @@ function janaSebutanDariModal() {
     document.getElementById('modalSebutan').style.display = 'none';
     bukaPreviewNotisGenerik('sebutan'); 
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP SEBUTAN SEMULA
-// =========================================================================
+
 function toggleTempatSebutanSemula() {
     const isBerbeza = document.getElementById('tempatSebutanSemulaBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatSebutanSemula');
@@ -4411,9 +4439,7 @@ function toggleTempatSebutanSemula() {
         }
     }
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP SEBUTAN TANGGUH
-// =========================================================================
+
 function toggleTempatSebutanTangguh() {
     const isBerbeza = document.getElementById('tempatSebutanTangguhBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatSebutanTangguh');
@@ -4568,9 +4594,7 @@ function janaSebutanTangguhDariModal() {
     document.getElementById('modalSebutanTangguh').style.display = 'none';
     bukaPreviewNotisGenerik('sebutan_tangguh'); 
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP BICARA
-// =========================================================================
+
 function toggleTempatBicara() {
     const isBerbeza = document.getElementById('tempatBicaraBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatBicara');
@@ -4680,9 +4704,7 @@ function janaBicaraDariModal() {
     document.getElementById('modalBicara').style.display = 'none';
     bukaPreviewNotisGenerik('bicara'); // Buka terus ke skrin preview
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP BICARA (TANGGUH)
-// =========================================================================
+
 function toggleTempatBicaraTangguh() {
     const isBerbeza = document.getElementById('tempatBicaraTangguhBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatBicaraTangguh');
@@ -4795,9 +4817,7 @@ function janaBicaraTangguhDariModal() {
     document.getElementById('modalBicaraTangguh').style.display = 'none';
     bukaPreviewNotisGenerik('bicara_tangguh'); // Buka terus ke skrin preview
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP BICARA (SAMBUNG)
-// =========================================================================
+
 function toggleTempatBicaraSambung() {
     const isBerbeza = document.getElementById('tempatBicaraSambungBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatBicaraSambung');
@@ -4910,9 +4930,7 @@ function janaBicaraSambungDariModal() {
     document.getElementById('modalBicaraSambung').style.display = 'none';
     bukaPreviewNotisGenerik('bicara_sambung'); // Buka terus ke skrin preview
 }
-// =========================================================================
-// FUNGSI KAWALAN POP-UP KEPUTUSAN KES
-// =========================================================================
+
 function toggleTempatKeputusan() {
     const isBerbeza = document.getElementById('tempatKeputusanBerbeza').checked;
     const ruangan = document.getElementById('ruanganTempatKeputusan');
@@ -5025,9 +5043,7 @@ function janaKeputusanDariModal() {
     document.getElementById('modalKeputusan').style.display = 'none';
     bukaPreviewNotisGenerik('keputusan'); // Buka terus ke skrin preview
 }
-// =========================================================================
-// FUNGSI GENERIK MENCETAK DAN PREVIEW NOTIS (Sebutan, Bicara, Keputusan)
-// =========================================================================
+
 window.isNotisPengaduPrinted = false;
 window.isNotisDefendanPrinted = false;
 window.dataNotisSemasa = {};
@@ -5106,10 +5122,151 @@ function formatTarikhMasaLengkap(tarikhRaw, masaRaw) {
 
     return `${tarikhStr}, ${masaStr}`;
 }
-       
-// =========================================================================
-// FUNGSI GENERIK MENCETAK DAN PREVIEW NOTIS (Sebutan, Bicara, Keputusan)
-// =========================================================================
+
+// --- FUNGSI DUPLIKASI: KLUATKUASA PERINTAH MOU ---
+function bukaModalKuatkuasaPerintahMou() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    // Auto-isi tarikh hari ini pada Tarikh Notis
+    const td = new Date();
+    const tglHariIni = `${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+    const elTarikh = document.getElementById('kpm_tarikh_notis');
+    if (elTarikh) elTarikh.value = tglHariIni;
+
+    // Reset pilihan checkbox penerima
+    document.querySelectorAll('input[name="kpm_penerima"]').forEach(cb => {
+        if (cb.value === 'Defendan') cb.checked = true;
+        else cb.checked = false;
+    });
+
+    document.getElementById('modalKuatkuasaPerintahMou').style.display = 'flex';
+}
+
+function janaKuatkuasaPerintahMou() {
+    const tarikhNotis = document.getElementById('kpm_tarikh_notis').value;
+    if (!tarikhNotis) {
+        alert("Sila pilih Tarikh Notis terlebih dahulu.");
+        return;
+    }
+
+    const penerimaNode = document.querySelectorAll('input[name="kpm_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    document.getElementById('modalKuatkuasaPerintahMou').style.display = 'none';
+
+    // Panggil fungsi paparan preview dokumen Kuatkuasa Perintah MOU
+    bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima);
+}
+
+function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    let noKes = kes.noKes.split('<br>')[0].trim();
+    let namaP = "", alamatP = "", namaD = "", alamatD = "";
+
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        const inputs = kes.dataBorang.inputs;
+        const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
+        
+        let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
+        let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
+
+        if (isMajikan) {
+            namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]'; alamatP = arrDef.join('<br>');
+            namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]'; alamatD = arrPeng.join('<br>');
+        } else {
+            namaP = inputs['namaPengadu'] || '[NAMA PENGADU]'; alamatP = arrPeng.join('<br>');
+            namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]'; alamatD = arrDef.join('<br>');
+        }
+    } else {
+        namaP = kes.namaPengadu.replace(/<br>.*$/g, ''); alamatP = "[ALAMAT PENGADU]";
+        namaD = kes.namaDefendan.replace(/<br>.*$/g, ''); alamatD = "[ALAMAT DEFENDAN]";
+    }
+
+    const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    let tN = new Date(tarikhNotis);
+    let tarikhSuratStr = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : tarikhNotis;
+
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
+    const namaPegawai = namaPegawaiRaw.toUpperCase();
+
+    // Templat Header & Footer Rasmi Surat Jabatan
+    const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
+    
+    let templateFooterHTML = `
+        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
+        <div class="notis-slogan">
+            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
+        </div>
+        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
+        <div class="gambar-sign" style="position: relative; z-index: 2; pointer-events: none;">
+            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
+        </div>
+        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
+            ${namaPegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
+        </div>
+        <div class="notis-footer-line"></div>
+    `;
+
+    // Penjanaan Kandungan Surat untuk Defendan & Salinan Lain
+    let htmlSuratPenuh = '';
+    senaraiPenerimaforEachSafe = senaraiPenerima.length > 0 ? senaraiPenerima : ['Defendan'];
+
+    senaraiPenerimaforEachSafe.forEach((penerima, idx) => {
+        let alamatTujuan = penerima === 'Defendan' ? alamatD : alamatP;
+        let namaTujuanCetak = penerima === 'Defendan' ? namaD : namaP;
+
+        htmlSuratPenuh += `
+            <div class="kertas-a4 page-notis" style="page-break-after: always;">
+                ${templateHeaderHTML}
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt;">
+                    <div>Rujukan Kami: <strong>${noKes}</strong></div>
+                    <div>Tarikh: <strong>${tarikhSuratStr}</strong></div>
+                </div>
+                <div style="margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.4;">
+                    <strong>${namaTujuanCetak}</strong><br>
+                    ${alamatTujuan}
+                </div>
+                <div style="margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt;">
+                    Tuan/Puan,
+                </div>
+                <div class="notis-tajuk" style="font-weight: bold; margin: 15px 0; font-family: Arial, sans-serif; font-size: 10.5pt; text-transform: uppercase;">
+                    SURAT PERINGATAN / KUATKUASA PERINTAH PERSETUJUAN BERSAMA (MOU) BAGI KES NO. ${noKes}
+                </div>
+                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6;">
+                    Dengan hormatnya merujuk kepada perkara di atas dan Persetujuan Bersama (MOU) yang telah dimeterai sebelum ini.
+                </div>
+                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
+                    2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki segera mematuhi dan menyelesaikan bayaran terakru seperti terma yang dipersetujui dalam MOU tersebut. Kegagalan berbuat demikian boleh menyebabkan tindakan penguatkuasaan atau pelaksanaan perintah diambil menurut peruntukan Akta Kerja 1955 tanpa rujukan lanjut.
+                </div>
+                ${templateFooterHTML}
+            </div>
+        `;
+    });
+
+    document.getElementById('previewContent').innerHTML = htmlSuratPenuh;
+    document.getElementById('printArea').innerHTML = htmlSuratPenuh;
+
+    // Konfigurasi Menu Dropdown Preview
+    document.getElementById('menuCetakAkuan').style.display = 'none';
+    document.getElementById('menuCetakKenyataan').style.display = 'none';
+    document.getElementById('menuDaftar').style.display = 'none';
+    
+    const menuCetakG1 = document.getElementById('menuCetakG1');
+    menuCetakG1.style.display = 'flex';
+    menuCetakG1.innerHTML = '🖨️ Cetak Kuatkuasa Perintah MOU';
+    
+    menuCetakG1.onclick = function() {
+        document.getElementById('actionMenu').classList.remove('show');
+        window.print();
+        rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah MOU", "Surat Kuatkuasa Perintah MOU telah dijana dan dicetak.");
+    };
+
+    document.getElementById('modalPreview').style.display = 'flex';
+}
+
 function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
