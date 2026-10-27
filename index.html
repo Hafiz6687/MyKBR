@@ -4616,7 +4616,173 @@ function bukaModalKuatkuasaPerintah() {
         console.error("Elemen modalKuatkuasaPerintah tidak dijumpai di dalam HTML.");
     }
 }
-       
+// =========================================================================
+// FUNGSI JANA PREVIEW NOTIS KUATKUASA PERINTAH
+// =========================================================================
+function janaKuatkuasaPerintah() {
+    const kes = memoriSenaraiKes[indexKesSemasa];
+    if (!kes) return;
+
+    const tarikhNotis = document.getElementById('kp_tarikh_notis').value;
+    if (!tarikhNotis) {
+        alert("Sila pilih Tarikh Notis terlebih dahulu.");
+        return;
+    }
+
+    // Tangkap senarai penerima salinan (s.k.) yang ditanda
+    const penerimaNode = document.querySelectorAll('input[name="kp_penerima"]:checked');
+    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+
+    let noKes = kes.noKes.split('<br>')[0].trim();
+    let namaP = "", alamatP = "", namaD = "", alamatD = "";
+
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        const inputs = kes.dataBorang.inputs;
+        const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
+        
+        let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
+        let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
+
+        let almtDefHTML = arrDef.join('<br>');
+        let almtPengHTML = arrPeng.join('<br>');
+
+        if (isMajikan) {
+            namaP = inputs['namaDefendan'] || '[NAMA SYARIKAT]'; alamatP = almtDefHTML;
+            namaD = inputs['namaPengadu'] || '[NAMA PEKERJA]'; alamatD = almtPengHTML;
+        } else {
+            namaP = inputs['namaPengadu'] || '[NAMA PENGADU]'; alamatP = almtPengHTML;
+            namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]'; alamatD = almtDefHTML;
+        }
+    } else {
+        namaP = kes.namaPengadu.replace(/<br>.*$/g, ''); alamatP = "[ALAMAT PENGADU]";
+        namaD = kes.namaDefendan.replace(/<br>.*$/g, ''); alamatD = "[ALAMAT DEFENDAN]";
+    }
+
+    const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    let tN = new Date(tarikhNotis);
+    let tarikhSurat = !isNaN(tN) ? `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}` : "[Tarikh]";
+
+    let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit'].innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
+    const namaPegawai = namaPegawaiRaw.toUpperCase();
+
+    // 1. Bina Elemen Salinan Kepada (s.k.) jika ada dipilih
+    let skHTML = "";
+    if (senaraiPenerima.length > 0) {
+        let senaraiLi = senaraiPenerima.map(p => `<li>${p}</li>`).join('');
+        skHTML = `
+            <div class="notis-sk" style="margin-top: 25px; font-size: 10pt; page-break-inside: avoid;">
+                <strong> s.k:</strong>
+                <ol style="margin: 5px 0 0 0; padding-left: 20px;">
+                    ${senaraiLi}
+                </ol>
+            </div>
+        `;
+    }
+
+    // 2. Templat Letterhead Rasmi
+    const templateHeaderHTML = `
+        <div class="notis-header" style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+            <div class="notis-header-kiri" style="display: flex; gap: 15px; align-items: center;">
+                <div class="notis-logo"><img src="jata-negara.png" alt="Logo" style="width: 70px; height: auto;"></div>
+                <div class="notis-jabatan">
+                    <div style="font-family: Arial, sans-serif; font-size: 11pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 9pt; font-weight: bold;">JALAN PEJABAT KERAJAAN, 86000 KLUANG, JOHOR</div>
+                </div>
+            </div>
+            <div class="notis-hubungi" style="font-family: Arial, sans-serif; font-size: 8pt;">
+                <table>
+                    <tr><td>Telefon</td><td>: 07-772 1646</td></tr>
+                    <tr><td>E-mel</td><td>: jtkdkluang@mohr.gov.my</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // 3. Templat Footer & Tandatangan Rasmi
+    let templateFooterHTML = `
+        <div class="notis-isi" style="margin-top: 20px;">Sekian, terima kasih.</div>
+        <div class="notis-slogan" style="margin: 20px 0; text-align: center; font-size: 9pt; font-weight: bold;">
+            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
+        </div>
+        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
+        <div class="gambar-sign" style="position: relative; z-index: 2; pointer-events: none;">
+            <img src="tandatangan.png" alt="Tandatangan" style="height: 110px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -20px;">
+        </div>
+        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -30px;">
+            ${namaPegawai}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
+        </div>
+        ${skHTML}
+        <div class="notis-footer-line" style="border-top: 1px solid #ccc; margin-top: 30px;"></div>
+    `;
+
+    // 4. Kandungan Surat Kuatkuasa Perintah (Defendan & Pengadu)
+    let isiSuratKuatkuasa = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 11pt;">
+            <div>
+                <strong>Kepada:</strong><br>
+                ${namaD}<br>
+                ${alamatD}
+            </div>
+            <div>
+                <strong>Tarikh:</strong> ${tarikhSurat}
+            </div>
+        </div>
+        <div style="margin-bottom: 15px; font-size: 11pt;">
+            <strong>Rujukan Kes: ${noKes}</strong><br>
+            <strong>Antara Pengadu:</strong> ${namaP}<br>
+            <strong>Terhadap Defendan:</strong> ${namaD}
+        </div>
+        <div style="font-weight: bold; font-size: 12pt; text-align: center; margin: 20px 0; text-decoration: underline;">
+            NOTIS KUATKUASA PERINTAH
+        </div>
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
+            Dengan hormatnya merujuk kepada Perintah Mahkamah Buruh / Keputusan yang telah dikeluarkan di bawah kes bernombor <strong>${noKes}</strong>.
+        </div>
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
+            2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan diarah supaya mematuhi dan melaksanakan terma perintah yang telah ditetapkan dengan menjelaskan bayaran atau mematuhi arahan tersebut serta-merta dari tarikh notis ini dikeluarkan.
+        </div>
+        <div class="notis-isi" style="text-align: justify; margin-bottom: 12px; line-height: 1.6;">
+            3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan undang-undang selanjutnya diambil di bawah Akta Kerja 1955 tanpa sebarang rujukan lanjut.
+        </div>
+    `;
+
+    // Gabungkan dalam format Kertas A4 Preview
+    const htmlPreview = `
+        <div class="kertas-a4" style="background: white; width: 21cm; min-height: 29.7cm; padding: 2cm 2.5cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, sans-serif; color: black; font-size: 11pt; box-sizing: border-box;">
+            ${templateHeaderHTML}
+            ${isiSuratKuatkuasa}
+            ${templateFooterHTML}
+        </div>
+    `;
+
+    // Tutup modal input dan buka skrin Preview
+    document.getElementById('modalKuatkuasaPerintah').style.display = 'none';
+    document.getElementById('previewContent').innerHTML = htmlPreview;
+    document.getElementById('printArea').innerHTML = htmlPreview;
+
+    // Laraskan menu butang tindakan di penjuru atas kanan paparan preview
+    document.getElementById('menuCetakAkuan').style.display = 'none';
+    document.getElementById('menuCetakKenyataan').style.display = 'none';
+    document.getElementById('menuDaftar').style.display = 'none';
+    
+    const menuCetakG1 = document.getElementById('menuCetakG1');
+    menuCetakG1.style.display = 'flex';
+    menuCetakG1.innerHTML = '🖨️ Cetak Notis Kuatkuasa Perintah';
+    menuCetakG1.onclick = function() {
+        document.getElementById('actionMenu').classList.remove('show');
+        window.print();
+        
+        // Simpan rekod tindakan ke dalam sejarah kes
+        if (typeof rekodSejarahTindakan === 'function') {
+            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Kuatkuasa Perintah telah dijana dan dicetak.");
+        }
+    };
+
+    document.getElementById('modalPreview').style.display = 'flex';
+}       
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
@@ -17522,8 +17688,6 @@ window.bukaPemantauanMou = function() {
         }
     }
 };
-
-
 
       
 window.selesaiPemfailanLuarPreview = function() {
