@@ -4597,7 +4597,25 @@ function janaSebutanTangguhDariModal() {
     document.getElementById('modalSebutanTangguh').style.display = 'none';
     bukaPreviewNotisGenerik('sebutan_tangguh'); 
 }
-
+// =========================================================================
+// FUNGSI KHAS UNTUK KAWALAN MODAL KUATKUASA PERINTAH
+// =========================================================================
+function bukaModalKuatkuasaPerintah() {
+    const modal = document.getElementById('modalKuatkuasaPerintah');
+    if (modal) {
+        // Auto-isi tarikh notis dengan tarikh hari ini
+        const td = new Date();
+        const elTarikh = document.getElementById('kp_tarikh_notis');
+        if (elTarikh) {
+            elTarikh.value = `${td.getFullYear()}-${String(td.getMonth() + 1).padStart(2, '0')}-${String(td.getDate()).padStart(2, '0')}`;
+        }
+        
+        // Paparkan modal
+        modal.style.display = 'flex';
+    } else {
+        console.error("Elemen modalKuatkuasaPerintah tidak dijumpai di dalam HTML.");
+    }
+}
        
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
