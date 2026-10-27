@@ -4612,16 +4612,44 @@ function bukaModalKuatkuasaPerintah() {
     }
 }
 // =========================================================================
-// FUNGSI JANA PREVIEW NOTIS KUATKUASA PERINTAH (KERTAS A4 KOSONG)
+// FUNGSI JANA PREVIEW NOTIS KUATKUASA PERINTAH (DENGAN LETTERHEAD)
 // =========================================================================
 function janaKuatkuasaPerintah() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
 
-    // Jana format Kertas A4 kosong tanpa sebarang maklumat teks, letterhead atau tandatangan
+    // Template Letterhead Rasmi (Diambil tepat dari kod asal)
+    const templateHeaderHTML = `
+        <div class="notis-header">
+            <div class="notis-header-kiri">
+                <div class="notis-logo">
+                    <img src="jata-negara.png" alt="Logo Jata Negara">
+                </div>
+                <div class="notis-jabatan">
+                    <div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div>
+                    <div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div>
+                </div>
+            </div>
+            <div class="notis-hubungi">
+                <table style="font-family: Arial, sans-serif; font-size: 8pt;">
+                    <tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr>
+                    <tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr>
+                    <tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr>
+                    <tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // Jana format Kertas A4 mengandungi Letterhead Rasmi
     const htmlPreview = `
         <div class="kertas-a4" style="background: white; width: 21cm; min-height: 29.7cm; padding: 2cm 2.5cm; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, sans-serif; color: black; font-size: 11pt; box-sizing: border-box;">
-            <!-- Kertas A4 Kosong -->
+            ${templateHeaderHTML}
         </div>
     `;
 
@@ -4637,14 +4665,14 @@ function janaKuatkuasaPerintah() {
     
     const menuCetakG1 = document.getElementById('menuCetakG1');
     menuCetakG1.style.display = 'flex';
-    menuCetakG1.innerHTML = '🖨️ Cetak Halaman Kosong';
+    menuCetakG1.innerHTML = '🖨️ Cetak Notis Kuatkuasa Perintah';
     menuCetakG1.onclick = function() {
         document.getElementById('actionMenu').classList.remove('show');
         window.print();
         
         // Simpan rekod tindakan ke dalam sejarah kes
         if (typeof rekodSejarahTindakan === 'function') {
-            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Halaman kosong telah dicetak.");
+            rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Arahan Kuatkuasa Perintah telah dijana dan dicetak.");
         }
     };
 
