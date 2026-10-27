@@ -3995,16 +3995,27 @@ function tindakanSebutan() {
         bukaPreviewNotisGenerik('sebutan');
     }
 }
-// =========================================================
-// FUNGSI PREVIEW NOTIS KUATKUASA PERINTAH (KOD BAHARU)
-// =========================================================
+
+// =========================================================================
+// FUNGSI PREVIEW NOTIS KUATKUASA PERINTAH (DIPERBETULKAN)
+// =========================================================================
 function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
-    const kes = memoriSenaraiKes[indexKesSemasa];
-    if (!kes) return;
+    // 1. Dapatkan kes aktif menggunakan pembolehubah sebenar sistem (kesSemasa)
+    let kes = null;
+    if (typeof kesSemasa !== 'undefined' && kesSemasa) {
+        kes = kesSemasa;
+    } else if (typeof memoriSenaraiKes !== 'undefined' && typeof indexKesSemasa !== 'undefined') {
+        kes = memoriSenaraiKes[indexKesSemasa];
+    }
+
+    if (!kes) {
+        alert("Tiada maklumat kes yang dipilih.");
+        return;
+    }
 
     let memoDataKuatkuasa = null;
 
-    // Decode jika dipanggil dari rekod sejarah (dataSimpanan Base64)
+    // Decode jika dipanggil dari sejarah (dataSimpanan Base64)
     if (dataSimpanan && dataSimpanan !== 'null') {
         try {
             memoDataKuatkuasa = JSON.parse(decodeURIComponent(escape(atob(dataSimpanan))));
@@ -4013,37 +4024,23 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         }
     }
 
-    // Jika tiada data sementara & tiada data simpanan, buka modal borang input asal
-    if (!memoDataKuatkuasa && !window.tempDataKuatkuasa) {
-        if (typeof bukaModalKuatkuasaPerintah === 'function') {
-            bukaModalKuatkuasaPerintah();
-        }
-        return;
-    }
-
     let dataKuatkuasa = memoDataKuatkuasa || window.tempDataKuatkuasa;
-    let noKes = kes.noKes ? kes.noKes.split('<br>')[0].trim() : '';
+    let noKes = kes.noKes ? kes.noKes.replace(/<br>.*$/g, '').trim() : '-';
 
-    // Extrak Nama & Alamat Pengadu/Defendan mengikut peranan Majikan/Pekerja
+    // Ekstrak Nama & Alamat Defendan / Pengadu
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         const isMajikan = inputs['majikan'] === true || inputs['majikan'] === "true";
         
         let arrDef = [
-            inputs['alamatDefendan1'], 
-            inputs['alamatDefendan2'], 
-            inputs['alamatDefendan3'], 
-            (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), 
-            inputs['negeriDefendan']
+            inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], 
+            (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']
         ].filter(a => a && a.trim() !== "");
 
         let arrPeng = [
-            inputs['alamatPengadu1'], 
-            inputs['alamatPengadu2'], 
-            inputs['alamatPengadu3'], 
-            (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), 
-            inputs['negeriPengadu']
+            inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], 
+            (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']
         ].filter(a => a && a.trim() !== "");
 
         if (isMajikan) {
@@ -4059,29 +4056,27 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         }
     } else {
         namaP = (kes.namaPengadu || '').replace(/<br>.*$/g, '');
-        alamatP = "[ALAMAT PENGADU TIDAK LENGKAP]";
+        alamatP = "[ALAMAT PENGADU]";
         namaD = (kes.namaDefendan || '').replace(/<br>.*$/g, '');
-        alamatD = "[ALAMAT DEFENDAN TIDAK LENGKAP]";
+        alamatD = "[ALAMAT DEFENDAN]";
     }
 
-    // ---------------------------------------------------------
-    // RANGKA KANDUNGAN NOTIS KUATKUASA PERINTAH (Boleh di-edit kelak)
-    // ---------------------------------------------------------
+    // 2. Bina Struktur Kertas A4 Preview (Mengikut standard sistem MyKBR)
     let htmlContent = `
-        <div style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.6; color: #000; padding: 20px;">
-            <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 20px;">
+        <div class="kertas-a4">
+            <div style="text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 25px;">
                 NOTIS ARAHAN KUATKUASA PERINTAH<br>
                 KES NO: ${noKes}
             </div>
 
-            <table style="width: 100%; margin-bottom: 20px;">
+            <table style="width: 100%; margin-bottom: 25px; border: none;">
                 <tr>
-                    <td style="width: 50%; vertical-align: top;">
+                    <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
                         <strong>PENGADU:</strong><br>
                         ${namaP}<br>
                         ${alamatP}
                     </td>
-                    <td style="width: 50%; vertical-align: top;">
+                    <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
                         <strong>DEFENDAN:</strong><br>
                         ${namaD}<br>
                         ${alamatD}
@@ -4089,54 +4084,39 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
                 </tr>
             </table>
 
-            <div id="kandunganNotisKuatkuasa" style="margin-top: 15px;">
-                <!-- KANDUNGAN SPESIFIK AKAN DI-EDIT KEMUDIAN DI SINI -->
-                <p>Bahawa Perintah di bawah Kes No. <strong>${noKes}</strong> telah dikeluarkan dan tindakan penguatkuasaan perintah hendaklah dilaksanakan mengikut peruntukan undang-undang.</p>
+            <div style="margin-top: 20px; line-height: 1.6; text-align: justify;">
+                <p>Bahawa Perintah di bawah Kes No. <strong>${noKes}</strong> telah dikeluarkan dan tindakan penguatkuasaan perintah hendaklah dilaksanakan mengikut peruntukan undang-undang yang berkuat kuasa.</p>
+                <p>Tarikh Notis: <strong>${dataKuatkuasa?.tarikhNotis || '-'}</strong></p>
             </div>
         </div>
     `;
 
-    // Masukkan ke dalam kontena preview modal
-    let previewContainer = document.getElementById('kandunganPreview') || document.getElementById('modalPreviewBody');
+    // 3. Masukkan ke dalam kontena preview sebenar sistem (`previewContent`)
+    let previewContainer = document.getElementById('previewContent');
     if (previewContainer) {
         previewContainer.innerHTML = htmlContent;
     }
 
-    // ---------------------------------------------------------
-    // SELENGGARA TETAP AN ACTION MENU & BUTANG PREVIEW
-    // ---------------------------------------------------------
+    // 4. Urus Paparan Action Menu di Penjuru Kanan Atas
     let actionMenu = document.getElementById('actionMenu');
     if (actionMenu) {
         Array.from(actionMenu.querySelectorAll('a')).forEach(btn => btn.style.display = 'none');
     }
 
-    // Butang Cetak Notis Kuatkuasa
-    let btnCetakPeringatan = document.getElementById('menuCetakG1');
-    if (btnCetakPeringatan) {
-        btnCetakPeringatan.style.display = 'flex';
-        btnCetakPeringatan.innerHTML = '🖨️ Cetak Notis Kuatkuasa';
-        btnCetakPeringatan.onclick = function (e) {
+    // Butang Cetak G1 / Kuatkuasa
+    let btnCetakG1 = document.getElementById('menuCetakG1');
+    if (btnCetakG1) {
+        btnCetakG1.style.display = 'flex';
+        btnCetakG1.innerHTML = '🖨️ Cetak Notis Kuatkuasa';
+        btnCetakG1.onclick = function (e) {
             e.preventDefault();
             document.getElementById('actionMenu').classList.remove('show');
             window.print();
-
-            let d64 = btoa(unescape(encodeURIComponent(JSON.stringify(dataKuatkuasa))));
-            rekodSejarahTindakan(
-                indexKesSemasa, 
-                "Kuatkuasa Perintah", 
-                `Notis Arahan Kuatkuasa Perintah telah dicetak. [DATA_KUATKUASA: ${d64}]`
-            );
-
-            window.tempDataKuatkuasa = null;
-            setTimeout(() => {
-                document.getElementById('modalPreview').style.display = 'none';
-                tukarView('senarai');
-            }, 500);
         };
     }
 
     // Butang Kemaskini
-    const btnKemaskini = document.getElementById('menuKemaskini');
+    let btnKemaskini = document.getElementById('menuKemaskini');
     if (btnKemaskini) {
         btnKemaskini.style.display = 'flex';
         btnKemaskini.onclick = function (e) {
@@ -4150,7 +4130,7 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
     }
 
     // Butang Batal
-    const btnBatal = document.getElementById('menuBatal');
+    let btnBatal = document.getElementById('menuBatal');
     if (btnBatal) {
         btnBatal.style.display = 'flex';
         btnBatal.onclick = function (e) {
@@ -4160,11 +4140,35 @@ function bukaPreviewKuatkuasaPerintah(dataSimpanan = null) {
         };
     }
 
-    // Paparkan suis tandatangan & buka modal preview
+    // 5. Paparkan Suis Tandatangan & Buka Modal Preview
     if (typeof tunjukSuisTandatangan === 'function') {
         tunjukSuisTandatangan(true);
+    } else {
+        let bekassuis = document.getElementById('bekasSuisTandatangan');
+        if (bekassuis) bekassuis.style.display = 'flex';
     }
-    document.getElementById('modalPreview').style.display = 'flex';
+
+    let modalPreview = document.getElementById('modalPreview');
+    if (modalPreview) {
+        modalPreview.style.display = 'flex';
+    }
+}
+
+// FUNGSI PENYAMBUNG DARI MODAL INPUT KE PREVIEW
+function sahkanJanaNotisKuatkuasa() {
+    window.tempDataKuatkuasa = {
+        tarikhNotis: document.getElementById('kp_tarikh_notis')?.value || '',
+        skDefendan: document.getElementById('kp_penerima')?.checked || false
+    };
+
+    // Tutup modal borang input
+    let modalInput = document.getElementById('modalKuatkuasaPerintah');
+    if (modalInput) {
+        modalInput.style.display = 'none';
+    }
+
+    // Buka skrin preview
+    bukaPreviewKuatkuasaPerintah();
 }
 
        
@@ -4781,26 +4785,6 @@ function bukaModalKuatkuasaPerintah() {
             elTarikh.value = `${td.getFullYear()}-${String(td.getMonth() + 1).padStart(2, '0')}-${String(td.getDate()).padStart(2, '0')}`;
         }
         modal.style.display = 'flex';
-    }
-}
-
-// FUNGSI PENYAMBUNG APABILA KLIK BUTANG TERUSKAN
-function sahkanJanaNotisKuatkuasa() {
-    // Simpan pilihan input pengguna dari modal sementara
-    window.tempDataKuatkuasa = {
-        tarikhNotis: document.getElementById('kp_tarikh_notis')?.value || '',
-        skDefendan: document.getElementById('skDefendan')?.checked || false
-    };
-
-    // Tutup modal borang input
-    const modal = document.getElementById('modalKuatkuasaPerintah');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-
-    // Buka paparan Preview
-    if (typeof bukaPreviewKuatkuasaPerintah === 'function') {
-        bukaPreviewKuatkuasaPerintah();
     }
 }
 
