@@ -5942,23 +5942,22 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         const isMajikanForm = inputs['majikan'] === true || inputs['majikan'] === "true" || kes.jenisAduan === 'Majikan';
 
         if (isMajikanForm) {
-            isiDefendan = `
+            isiPengadu = `
                 <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pihak Majikan (Pengadu) dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 terhadap pihak tuan/puan dengan jumlah tuntutan dianggarkan sebanyak <strong>RM${jumlahKeseluruhanFormat}</strong>.</div>
-                <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan/Puan diminta hadir ${ayatKeTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
-                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila bawa bersama dokumen-dokumen atau bukti berkaitan semasa hadir.</div>
-                <div class="notis-isi">5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan/puan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Mohon tuan menepati masa yang telah ditetapkan dan kelewatan tuan akan mengganggu perjalanan kes lain. Sekiranya kes ini tidak dapat diselesaikan pada hari sebutan, satu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, surat wakil kuasa yang ditandatangani oleh Pengarah Syarikat/ Pengerusi, salinan maklumat syarikat (SSM) dan sesalinan KWSP/PERKESO (menunjukkan nama wakil yang hadir) hendaklah dikemukakan dalam hal berkaitan perwakilan tersebut untuk semakan pegawai pendengar.</div>
+                <div class="notis-isi">5.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
             `;
         } else {
-            isiDefendan = `
+            isiPengadu = `
                 <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
-                <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatKeTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
-                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
-                <div class="notis-isi">5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
             `;
         }
-// ================= TAMAT KODING BARU =================
+        // ================= TAMAT KODING BARU =================
 
         if (kunci === 'sebutan') {
             isiPeguamDefendan = `
