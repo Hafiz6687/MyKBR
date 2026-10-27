@@ -4791,9 +4791,31 @@ function bukaPreviewKuatkuasaPerintah() {
     document.getElementById('previewContent').innerHTML = htmlNotisKuatkuasa;
     document.getElementById('printArea').innerHTML = htmlNotisKuatkuasa;
     
+    // ==========================================
+// KOD BAHARU PENGGANTI (Menyokong Butang Cetak & Kemaskini):
+// ==========================================
     let actionMenu = document.getElementById('actionMenu');
     Array.from(actionMenu.querySelectorAll('a')).forEach(btn => { btn.style.display = 'none'; });
 
+    // Butang Kemaskini (Membuka semula modal tetapan Kuatkuasa Perintah)
+    let btnKemaskini = document.getElementById('menuKemaskini');
+    if (!btnKemaskini) {
+        btnKemaskini = document.createElement('a');
+        btnKemaskini.id = 'menuKemaskini';
+        btnKemaskini.href = '#';
+        actionMenu.insertBefore(btnKemaskini, document.getElementById('menuBatal'));
+    }
+    btnKemaskini.style.display = 'flex';
+    btnKemaskini.style.color = 'var(--text-main)';
+    btnKemaskini.innerHTML = '✏️ Kemaskini';
+    btnKemaskini.onclick = function(e) {
+        e.preventDefault();
+        document.getElementById('actionMenu').classList.remove('show');
+        document.getElementById('modalPreview').style.display = 'none';
+        document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
+    };
+
+    // Butang Cetak Notis Kuatkuasa Perintah
     let btnCetakKuatkuasa = document.getElementById('menuCetakKuatkuasa');
     if (!btnCetakKuatkuasa) { 
         btnCetakKuatkuasa = document.createElement('a'); 
