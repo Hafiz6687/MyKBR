@@ -5192,7 +5192,17 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
 
-    // Templat Header & Footer Rasmi Surat Jabatan
+    // Dapatkan baki amaun atau jumlah keseluruhan dari kes
+    let jumlahBaki = "0.00";
+    if (kes.dataBorang && kes.dataBorang.tuntutanBiasa) {
+        let total = 0;
+        kes.dataBorang.tuntutanBiasa.forEach(item => {
+            let val = parseFloat(item.jumlah);
+            if (!isNaN(val)) total += val;
+        });
+        jumlahBaki = total.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     const templateHeaderHTML = `<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>`;
     
     let templateFooterHTML = `
@@ -5210,37 +5220,58 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
         <div class="notis-footer-line"></div>
     `;
 
-    // Penjanaan Kandungan Surat untuk Defendan & Salinan Lain
     let htmlSuratPenuh = '';
-    senaraiPenerimaforEachSafe = senaraiPenerima.length > 0 ? senaraiPenerima : ['Defendan'];
+    let penerimaList = senaraiPenerima && senaraiPenerima.length > 0 ? senaraiPenerima : ['Defendan'];
 
-    senaraiPenerimaforEachSafe.forEach((penerima, idx) => {
+    penerimaList.forEach((penerima) => {
         let alamatTujuan = penerima === 'Defendan' ? alamatD : alamatP;
         let namaTujuanCetak = penerima === 'Defendan' ? namaD : namaP;
 
         htmlSuratPenuh += `
             <div class="kertas-a4 page-notis" style="page-break-after: always;">
                 ${templateHeaderHTML}
-                <div style="display: flex; justify-content: space-between; margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt;">
-                    <div>Rujukan Kami: <strong>${noKes}</strong></div>
-                    <div>Tarikh: <strong>${tarikhSuratStr}</strong></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px; font-family: Arial, sans-serif; font-size: 10pt;">
+                    <div style="font-size: 13pt; font-weight: bold; text-decoration: underline;">PERINGATAN</div>
+                    <div style="text-align: right;">
+                        Rujukan Kami : <strong>${noKes}</strong><br>
+                        Tarikh : <strong>${tarikhSuratStr}</strong>
+                    </div>
                 </div>
-                <div style="margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.4;">
+
+                <div style="margin-top: 15px; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.4; text-transform: uppercase;">
                     <strong>${namaTujuanCetak}</strong><br>
                     ${alamatTujuan}
                 </div>
-                <div style="margin-top: 20px; font-family: Arial, sans-serif; font-size: 10pt;">
+
+                <div style="margin-top: 15px; font-family: Arial, sans-serif; font-size: 10pt;">
                     Tuan/Puan,
                 </div>
-                <div class="notis-tajuk" style="font-weight: bold; margin: 15px 0; font-family: Arial, sans-serif; font-size: 10.5pt; text-transform: uppercase;">
-                    SURAT PERINGATAN / KUATKUASA PERINTAH PERSETUJUAN BERSAMA (MOU) BAGI KES NO. ${noKes}
+
+                <div style="margin-top: 12px; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.4;">
+                    <strong>KETUA PENGARAH TENAGA KERJA KES NO. ${noKes}</strong><br>
+                    <strong>ANTARA PENGADU : ${namaP}</strong><br>
+                    <strong>TERHADAP DEFENDAN : ${namaD}</strong><br>
+                    <strong>PERKARA: KUATKUASA PERINTAH / PERINGATAN MAKLUM BALAS STATUS BAYARAN (MOU)</strong>
+                    <hr style="border: 0; border-top: 1px solid #000; margin-top: 6px; margin-bottom: 0;">
                 </div>
-                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6;">
-                    Dengan hormatnya merujuk kepada perkara di atas dan Persetujuan Bersama (MOU) yang telah dimeterai sebelum ini.
-                </div>
+
                 <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
-                    2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki segera mematuhi dan menyelesaikan bayaran terakru seperti terma yang dipersetujui dalam MOU tersebut. Kegagalan berbuat demikian boleh menyebabkan tindakan penguatkuasaan atau pelaksanaan perintah diambil menurut peruntukan Akta Kerja 1955 tanpa rujukan lanjut.
+                    Dengan hormatnya merujuk kepada perkara di atas.
                 </div>
+
+                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
+                    2.<span class="jarak-tab"></span>Tuan dengan ini diberikan <strong>PERINGATAN</strong> untuk mengamanahkan wang berjumlah <strong>RM ${jumlahBaki}</strong> sebagaimana PERSETUJUAN BERSAMA (MOU) yang telah dimeterai sebelum ini. Bayaran hendaklah dibuat di Pejabat Tenaga Kerja Kluang, Johor dalam tempoh <strong>14 hari</strong> dari tarikh surat ini.
+                </div>
+
+                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
+                    3.<span class="jarak-tab"></span>Sila ambil perhatian, sekiranya tuan/puan gagal berbuat demikian maka tindakan menguatkuasakan perintah kes ini boleh dilaksanakan oleh pengadu terhadap tuan/puan tanpa sebarang rujukan kepada tuan/puan.
+                </div>
+
+                <div class="notis-isi" style="text-align: justify; font-family: Arial, sans-serif; font-size: 10pt; line-height: 1.6; margin-top: 10px;">
+                    4.<span class="jarak-tab"></span>Sekiranya perintah telah dipatuhi, tuan dikehendaki mengemukakan bukti pematuhan kepada pejabat ini atau email ke <strong>hafizabubakar@mohr.gov.my</strong> untuk perhatian En. Mohamad Hafiz bin Abu Bakar dalam tempoh 14 hari dari tarikh surat ini. Sila hubungi Unit Kes Buruh ditalian 07-7721646 ext. 133 untuk tujuan pembayaran atau sebarang pertanyaan.
+                </div>
+
                 ${templateFooterHTML}
             </div>
         `;
@@ -5249,7 +5280,6 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
     document.getElementById('previewContent').innerHTML = htmlSuratPenuh;
     document.getElementById('printArea').innerHTML = htmlSuratPenuh;
 
-    // Konfigurasi Menu Dropdown Preview
     document.getElementById('menuCetakAkuan').style.display = 'none';
     document.getElementById('menuCetakKenyataan').style.display = 'none';
     document.getElementById('menuDaftar').style.display = 'none';
@@ -5266,7 +5296,6 @@ function bukaPreviewKuatkuasaPerintahMou(tarikhNotis, senaraiPenerima) {
 
     document.getElementById('modalPreview').style.display = 'flex';
 }
-
 function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
