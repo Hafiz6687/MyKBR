@@ -1812,7 +1812,7 @@ Portal rasmi : jtksm.mohr.gov.my
         </div>
     </div>
 </div>
-<!-- MODAL POP-UP KHAS UNTUK KUATKUASA PERINTAH -->
+<!-- KOD BAHARU PENGGANTI (Lengkap dengan pilihan s.k.) -->
 <div class="modal-overlay" id="modalKuatkuasaPerintah">
     <div class="modal-box" style="max-width: 600px;">
         <div class="modal-title">Jana Notis Kuatkuasa Perintah</div>
@@ -1827,6 +1827,7 @@ Portal rasmi : jtksm.mohr.gov.my
             <input type="text" id="kp_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
         </div>
 
+        <!-- TAMBAHAN BAHAGIAN s.k. -->
         <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
             <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Tambahan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk salinan s.k. / notis wakil)</span></label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
@@ -4655,6 +4656,9 @@ function bukaModalKuatkuasaPerintah() {
     document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
 }
 
+// =========================================================================
+// FUNGSI JANA KLU KECIL KUATKUASA PERINTAH DARI MODAL
+// =========================================================================
 function janaKuatkuasaPerintahDariModal() {
     const tarikhNotis = document.getElementById('kp_tarikh_notis').value;
     const pegawai = document.getElementById('kp_pegawai').value.trim();
@@ -4667,7 +4671,7 @@ function janaKuatkuasaPerintahDariModal() {
     const penerimaNode = document.querySelectorAll('input[name="kp_penerima"]:checked');
     let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
 
-    // Simpan pilihan sementara untuk diproses dalam preview
+    // Simpan data pilihan s.k. sementara
     window.tempDataKuatkuasaPerintah = { tarikhNotis, pegawai, senaraiPenerima };
 
     document.getElementById('modalKuatkuasaPerintah').style.display = 'none';
@@ -4700,9 +4704,9 @@ function bukaPreviewKuatkuasaPerintah() {
 
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     
-    // Ambil tarikh dari modal jika ada
     let tarikhSuratFormatted = '';
     let namaPegawaiFinal = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'MOHAMAD HAFIZ BIN ABU BAKAR';
+    let senaraiPenerimaKuatkuasa = ['Defendan']; // Lalai
 
     if (window.tempDataKuatkuasaPerintah) {
         let dKp = window.tempDataKuatkuasaPerintah;
@@ -4711,9 +4715,45 @@ function bukaPreviewKuatkuasaPerintah() {
             tarikhSuratFormatted = `${tN.getDate()} ${bulanMY[tN.getMonth()]} ${tN.getFullYear()}`;
         }
         namaPegawaiFinal = dKp.pegawai;
+        senaraiPenerimaKuatkuasa = dKp.senaraiPenerima;
     } else {
         const tH = new Date();
         tarikhSuratFormatted = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
+    }
+
+    // Penjanaan blok s.k. (Salinan Kepada) secara automatik
+    let skHTML = "";
+    let senaraiSK = [];
+
+    if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
+        senaraiSK.push(`<strong>${namaD}</strong><br>${alamatD}`);
+    }
+
+    // Semak peguam / wakil pengadu atau defendan jika ditanda
+    if (kes.senaraiPerwakilan) {
+        if (senaraiPenerimaKuatkuasa.includes('Peguam Pengadu')) {
+            let wp = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+            if (wp) senaraiSK.push(`<strong>${wp.firma.toUpperCase()}</strong><br>${wp.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Pengadu)</em>`);
+        }
+        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Pengadu')) {
+            let wk = kes.senaraiPerwakilan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            if (wk) senaraiSK.push(`<strong>${wk.firma.toUpperCase()}</strong><br>${wk.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Pengadu)</em>`);
+        }
+    }
+
+    if (kes.senaraiPerwakilanDefendan) {
+        if (senaraiPenerimaKuatkuasa.includes('Peguam Defendan')) {
+            let wpd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
+            if (wpd) senaraiSK.push(`<strong>${wpd.firma.toUpperCase()}</strong><br>${wpd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Defendan)</em>`);
+        }
+        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Defendan')) {
+            let wkd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            if (wkd) senaraiSK.push(`<strong>${wkd.firma.toUpperCase()}</strong><br>${wkd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Defendan)</em>`);
+        }
+    }
+
+    if (senaraiSK.length > 0) {
+        skHTML = `<div class="notis-sk" style="margin-top: 25px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k:</strong><div style="margin-top: 5px; line-height: 1.4;">${senaraiSK.join('<br><br>')}</div></div>`;
     }
 
     const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
@@ -4730,6 +4770,7 @@ function bukaPreviewKuatkuasaPerintah() {
         <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
             ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
         </div>
+        ${skHTML}
         <div class="notis-footer-line"></div>
     `;
 
@@ -4746,7 +4787,7 @@ function bukaPreviewKuatkuasaPerintah() {
             ${templateHeaderHTML}
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                 <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSuratFormatted}</div>
-                <div class="notis-alamat"><strong>${namaD}</strong><br>${alamatD}</div>
+                <div class="notis-alamat"><strong>${namaP}</strong><br>${alamatP}</div>
                 <div style="margin-bottom: 15px;">Tuan/Puan,</div>
                 ${tajukSuratHtml}
                 <hr class="notis-garis-tajuk">
@@ -4791,13 +4832,9 @@ function bukaPreviewKuatkuasaPerintah() {
     document.getElementById('previewContent').innerHTML = htmlNotisKuatkuasa;
     document.getElementById('printArea').innerHTML = htmlNotisKuatkuasa;
     
-    // ==========================================
-// KOD BAHARU PENGGANTI (Menyokong Butang Cetak & Kemaskini):
-// ==========================================
     let actionMenu = document.getElementById('actionMenu');
     Array.from(actionMenu.querySelectorAll('a')).forEach(btn => { btn.style.display = 'none'; });
 
-    // Butang Kemaskini (Membuka semula modal tetapan Kuatkuasa Perintah)
     let btnKemaskini = document.getElementById('menuKemaskini');
     if (!btnKemaskini) {
         btnKemaskini = document.createElement('a');
@@ -4815,7 +4852,6 @@ function bukaPreviewKuatkuasaPerintah() {
         document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
     };
 
-    // Butang Cetak Notis Kuatkuasa Perintah
     let btnCetakKuatkuasa = document.getElementById('menuCetakKuatkuasa');
     if (!btnCetakKuatkuasa) { 
         btnCetakKuatkuasa = document.createElement('a'); 
