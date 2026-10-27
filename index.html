@@ -5581,20 +5581,38 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             const lokasiMahkamah = `${ptkNamaPenuh}, ${ptkBandar}, ${ptkNegeri}`;
             lokasiMahkamahCetak = lokasiMahkamah.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
         }
-        
+
+    } else if (kunci === 'sebutan') {
+        tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS SEBUTAN KES</div>`;
+        tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS SEBUTAN KES</div>`;
+
         let p4_majikan_teks = `4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya Pengarah Syarikat/ Pengerusi mewakilkan seorang yang lain, suatu surat wakil kuasa yang ditandatangani oleh Pengarah Syarikat/ Pengerusi, salinan KWSP/PERKESO terkini dan sesalinan maklumat syarikat (SSM)/organisasi/pertubuhan hendaklah dikemukakan dalam hal berkaitan perwakilan tersebut untuk semakan pegawai pendengar.`;
 
-        isiPengadu = `
-            <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
-            <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes akan dibatalkan sekiranya tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
-            <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
-        `;
+        // Semak adakah majikan bertindak sebagai pengadu
+        const isMajikanPengadu = (kes.dataBorang && kes.dataBorang.inputs && (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true"));
+
+        if (isMajikanPengadu) {
+            // Ayat khusus untuk Pengadu (Majikan)
+            isiPengadu = `
+                <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa sebutan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
+                <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan / Wakil syarikat adalah dikehendaki hadir pada tarikh dan masa tersebut untuk tujuan sebutan dan penyelesaian kes.</div>
+                <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) serta surat wakil kuasa yang sah sekiranya diwakili.</div>
+                <div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>
+            `;
+        } else {
+            // Ayat asal untuk Pekerja sebagai pengadu
+            isiPengadu = `
+                <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
+                <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes akan dibatalkan sekiranya tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
+                <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
+            `;
+        }
 
         isiDefendan = `
             <div class="notis-isi" style="text-align: justify;">Sila ambil perhatian bahawa perbicaraan kes tersebut di atas telah ditetapkan pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiMahkamahCetak}</strong>.</div>
             <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut dan adalah diingatkan bahawa kes ini akan dibicarakan dengan ketidakhadiran tuan jika tuan tidak hadir pada tarikh dan masa yang ditetapkan.</div>
             <div class="notis-isi" style="text-align: justify;">3.<span class="jarak-tab"></span>Tuan dinasihatkan membawa bersama-sama dokumen/bukti (3 salinan) dan saksi-saksi berkenaan jika ada.</div>
-            ${!isMajikanCheck ? `<div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>` : ''}
+            <div class="notis-isi" style="text-align: justify;">${p4_majikan_teks}</div>
         `;
     } else if (kunci === 'bicara_tangguh') {
         const isMajikanCheck = (kes.dataBorang && kes.dataBorang.inputs && (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true"));
