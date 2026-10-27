@@ -5851,6 +5851,8 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             <div class="notis-isi" style="text-align: justify;">2.<span class="jarak-tab"></span>Tuan adalah dikehendaki hadir pada tarikh dan masa tersebut. Mohon tuan menepati masa yang telah ditetapkan dan kelewatan tuan akan mengganggu perjalanan kes lain.</div>
         `;
     } else {
+        const isMajikanCheck = (kes.dataBorang && kes.dataBorang.inputs && (kes.dataBorang.inputs['majikan'] === true || kes.dataBorang.inputs['majikan'] === "true"));
+        
         tajukPengadu = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS ${c.tajukSurat}</div>`;
         tajukDefendan = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS ${c.tajukSurat}</div>`;
         
@@ -5869,7 +5871,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
             let pegawaiSebutan = dSebutan.pegawai.toUpperCase();
             templateFooterHTML = templateFooterHTML.replace(namaPegawai, pegawaiSebutan);
             
-            // Bina Alamat Penuh Pejabat HANYA JIKA isBerbeza true
             if (dSebutan.isBerbeza) {
                 let arrTpt = [dSebutan.tempatNama, dSebutan.a1, dSebutan.a2, dSebutan.a3].filter(Boolean);
                 let posBdr = [dSebutan.pos, dSebutan.bdr].filter(Boolean).join(' ');
@@ -5877,7 +5878,6 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
                 if (dSebutan.ngr) arrTpt.push(dSebutan.ngr);
                 lokasiPejabatCetak = arrTpt.join(', ').toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
             } else {
-                // Ekstrak dari pejabat semasa jika TIDAK berbeza
                 let ptkNamaPenuh = "PEJABAT TENAGA KERJA KLUANG";
                 let ptkBandar = "KLUANG";
                 let ptkNegeri = "JOHOR DARUL TAKZIM";
@@ -5921,36 +5921,56 @@ function bukaPreviewNotisGenerik(kunci, tarikhHst = null, masaHst = null) {
         }
 
         let ayatDiTempatHadir = (kunci === 'sebutan' && window.tempDataSebutan) ? `di <strong>${lokasiPejabatCetak}</strong>` : `di pejabat ini`;
-        let ayatKeTempatHadir = (kunci === 'sebutan' && window.tempDataSebutan) ? `ke <strong>${lokasiPejabatCetak}</strong>` : `ke pejabat ini`;
+        let ayatKeTempatHadir = (kunci === 'sebutan' && window.tempDataSebutan) ? `ke <strong>${lokasiMahkamahCetak || lokasiPejabatCetak}</strong>` : `ke pejabat ini`;
 
-        isiPengadu = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
-            <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
-        `;
-
-        if (kunci === 'sebutan') {
-            isiPeguamPengadu = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabatCetak}</strong> untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+        if (kunci === 'sebutan' && isMajikanCheck) {
+            let jumlahTuntutanMajikanStr = "RM " + jumlahKeseluruhanFormat;
+            
+            isiPengadu = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir di <strong>${lokasiPejabatCetak}</strong> pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
+                <div class="notis-isi">5.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
             `;
-        }
 
-        isiDefendan = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatKeTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
-            <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
-            <div class="notis-isi">5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
-        `;
-
-        if (kunci === 'sebutan') {
-            isiPeguamDefendan = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabatCetak}</strong> untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+            isiDefendan = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>${jumlahTuntutanMajikanStr}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ke <strong>${lokasiPejabatCetak}</strong> pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
             `;
+        } else {
+            // Logik asal bagi kes pekerja atau notis lain
+            isiPengadu = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatDiTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> dengan membawa bukti-bukti (3 salinan) mengenai tuntutan tuan.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Kes ini akan disebut pada hari dan waktu yang tersebut di atas untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian, kes akan dibatalkan sekiranya tuan gagal hadir sebagaimana ketetapan tersebut di atas.</div>
+            `;
+
+            if (kunci === 'sebutan') {
+                isiPeguamPengadu = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabatCetak}</strong> untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+                `;
+            }
+
+            isiDefendan = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Tuan diminta hadir ${ayatKeTempatHadir} pada <strong>${tarikhMasaBaruGabung}</strong> untuk sebutan kes. Sila ambil perhatian sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, suatu tarikh perbicaraan akan ditetapkan.</div>
+                <div class="notis-isi">4.<span class="jarak-tab"></span>Sila ambil perhatian bahawa sekiranya wakil yang hadir, surat wakil yang ditandatangani oleh Pengarah syarikat, salinan maklumat syarikat (SSM) dan sesalinan KWSP terkini (menunjukkan nama wakil yang hadir) hendaklah ditunjukkan untuk semakan pegawai pendengar.</div>
+                <div class="notis-isi">5.<span class="jarak-tab"></span>Saman akan dikeluarkan sekiranya pihak tuan gagal hadir pada tarikh dan masa yang ditetapkan.</div>
+            `;
+
+            if (kunci === 'sebutan') {
+                isiPeguamDefendan = `
+                <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas.</div>
+                <div class="notis-isi">2.<span class="jarak-tab"></span>Dimaklumkan bahawa pengadu dalam kes ini telah memfailkan tuntutan di bawah Akta Kerja 1955 untuk menuntut daripada defendan wang yang dianggarkan berjumlah <strong>RM${jumlahKeseluruhanFormat}</strong>. Butiran tuntutan adalah sebagaimana Lampiran 1 JTKSM(A)06/01.</div>
+                <div class="notis-isi">3.<span class="jarak-tab"></span>Untuk makluman tuan, kes ini akan disebut pada <strong>${tarikhMasaBaruGabung}</strong> di <strong>${lokasiPejabatCetak}</strong> untuk tujuan mencapai penyelesaian. Sekiranya kes ini tidak dapat diselesaikan pada hari tersebut, satu tarikh perbicaraan akan ditetapkan.</div>
+                `;
+            }
         }
     }
 
