@@ -4721,66 +4721,7 @@ function bukaPreviewKuatkuasaPerintah() {
         tarikhSuratFormatted = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
     }
 
-    // Penjanaan blok s.k. (Salinan Kepada) secara automatik
-    let skHTML = "";
-    let senaraiSK = []; 
-    if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
-        // Jika kes majikan pengadu, s.k. masukkan defendan (pekerja), dan sebaliknya
-        let pihakLawanNama = isMajikanKes ? namaD : namaP;
-        let pihakLawanAlamat = isMajikanKes ? alamatD : alamatP;
-        senaraiSK.push(`<strong>${pihakLawanNama}</strong><br>${pihakLawanAlamat}`);
-    }
-
-    // Semak peguam / wakil pengadu atau defendan jika ditanda
-    if (kes.senaraiPerwakilan) {
-        if (senaraiPenerimaKuatkuasa.includes('Peguam Pengadu')) {
-            let wp = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
-            if (wp) senaraiSK.push(`<strong>${wp.firma.toUpperCase()}</strong><br>${wp.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Pengadu)</em>`);
-        }
-        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Pengadu')) {
-            let wk = kes.senaraiPerwakilan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
-            if (wk) senaraiSK.push(`<strong>${wk.firma.toUpperCase()}</strong><br>${wk.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Pengadu)</em>`);
-        }
-    }
-
-    if (kes.senaraiPerwakilanDefendan) {
-        if (senaraiPenerimaKuatkuasa.includes('Peguam Defendan')) {
-            let wpd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
-            if (wpd) senaraiSK.push(`<strong>${wpd.firma.toUpperCase()}</strong><br>${wpd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Defendan)</em>`);
-        }
-        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Defendan')) {
-            let wkd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
-            if (wkd) senaraiSK.push(`<strong>${wkd.firma.toUpperCase()}</strong><br>${wkd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Defendan)</em>`);
-        }
-    }
-
-    if (senaraiSK.length > 0) {
-        skHTML = `<div class="notis-sk" style="margin-top: 25px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k:</strong><div style="margin-top: 5px; line-height: 1.4;">${senaraiSK.join('<br><br>')}</div></div>`;
-    }
-
-    const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
-    
-    let templateFooterHTML = `
-        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
-        <div class="notis-slogan">
-            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
-        </div>
-        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
-        <div class="gambar-sign" id="tandatanganDigitalContainer" style="position: relative; z-index: 2; pointer-events: none; display: block;">
-            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
-        </div>
-        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
-            ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
-        </div>
-        ${skHTML}
-        <div class="notis-footer-line"></div>
-    `;
-
-    let tajukSuratHtml = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KUATKUASA PERINTAH</div>`;
-
-    // ==========================================
-// KOD BAHARU PENGGANTI:
-// ==========================================
+    // Semak adakah kes berstatus Majikan sebagai Pengadu
     let isMajikanKes = false;
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inp = kes.dataBorang.inputs;
@@ -4789,29 +4730,12 @@ function bukaPreviewKuatkuasaPerintah() {
         isMajikanKes = kes.jenisAduan === 'Majikan';
     }
 
-    let isiSuratHtml = "";
-    if (isMajikanKes) {
-        isiSuratHtml = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah seksyen 69 Akta Kerja 1955 bagi kes di atas adalah berkaitan.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Sekiranya defendan gagal mematuhi perintah tersebut dan pihak tuan ingin meneruskan tindakan terhadap defendan, tuan adalah dinasihatkan untuk mengambil tindakan penguatkuasaan ke atas perintah tersebut sebagaimana seksyen 75 Akta Kerja 1955.</div>
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Oleh yang demikian, kes ini adalah dianggap selesai.</div>
-        `;
-    } else {
-        isiSuratHtml = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas.</div>
-            <div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki mematuhi serta melaksanakan terma-terma perintah yang telah ditetapkan dengan kadar segera.</div>
-            <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
-        `;
-    }
-
-    // ==========================================
-// KOD BAHARU PENGGANTI:
-// ==========================================
+    // Tentukan penerima utama surat (Jika Majikan pengadu -> Pengadu, Jika biasa -> Defendan)
     let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
     let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
 
-    // Pastikan pihak sebelah sana (Defendan jika Majikan Pengadu) sentiasa masuk senarai s.k. jika kotak Defendan ditanda
-    let senaraiSK = [];
+    // Penjanaan blok s.k. (Salinan Kepada) secara automatik
+    let senaraiSK = []; 
     if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
         let pihakLawanNama = isMajikanKes ? namaD : namaP;
         let pihakLawanAlamat = isMajikanKes ? alamatD : alamatP;
@@ -4846,8 +4770,9 @@ function bukaPreviewKuatkuasaPerintah() {
         skHTML = `<div class="notis-sk" style="margin-top: 25px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k.:</strong><div style="margin-top: 5px; line-height: 1.4;">${senaraiSK.join('<br><br>')}</div></div>`;
     }
 
-    // Kemaskini template footer bersama blok s.k. yang betul
-    templateFooterHTML = `
+    const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
+    
+    let templateFooterHTML = `
         <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
         <div class="notis-slogan">
             " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
@@ -4863,6 +4788,23 @@ function bukaPreviewKuatkuasaPerintah() {
         <div class="notis-footer-line"></div>
     `;
 
+    let tajukSuratHtml = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KUATKUASA PERINTAH</div>`;
+
+    let isiSuratHtml = "";
+    if (isMajikanKes) {
+        isiSuratHtml = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah seksyen 69 Akta Kerja 1955 bagi kes di atas adalah berkaitan.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Sekiranya defendan gagal mematuhi perintah tersebut dan pihak tuan ingin meneruskan tindakan terhadap defendan, tuan adalah dinasihatkan untuk mengambil tindakan penguatkuasaan ke atas perintah tersebut sebagaimana seksyen 75 Akta Kerja 1955.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Oleh yang demikian, kes ini adalah dianggap selesai.</div>
+        `;
+    } else {
+        isiSuratHtml = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki mematuhi serta melaksanakan terma-terma perintah yang telah ditetapkan dengan kadar segera.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
+        `;
+    }
+
     let suratLengkap = `
         <div class="kertas-notis">
             ${templateHeaderHTML}
@@ -4877,6 +4819,7 @@ function bukaPreviewKuatkuasaPerintah() {
             </div>
         </div>
     `;
+
     const htmlNotisKuatkuasa = `
         <style>
             @media print { 
@@ -4932,9 +4875,6 @@ function bukaPreviewKuatkuasaPerintah() {
         document.getElementById('modalKuatkuasaPerintah').style.display = 'flex';
     };
 
-    // ==========================================
-// KOD BAHARU PENGGANTI:
-// ==========================================
     let btnCetakKuatkuasa = document.getElementById('menuCetakKuatkuasa');
     if (!btnCetakKuatkuasa) { 
         btnCetakKuatkuasa = document.createElement('a'); 
@@ -4950,10 +4890,8 @@ function bukaPreviewKuatkuasaPerintah() {
         document.getElementById('actionMenu').classList.remove('show');
         window.print(); 
         
-        // Rekod ke sejarah tindakan kes
         rekodSejarahTindakan(indexKesSemasa, "Kuatkuasa Perintah", "Notis Kuatkuasa Perintah telah dijana dan dicetak.");
         
-        // Tutup preview dan bawa pengguna kembali ke Maklumat Kes Terperinci
         setTimeout(() => {
             document.getElementById('modalPreview').style.display = 'none';
             bukaMaklumatKes(indexKesSemasa);
@@ -4973,6 +4911,7 @@ function bukaPreviewKuatkuasaPerintah() {
         tunjukSuisTandatangan(true);
     }
 
+    document.getElementById('modalPreview').style.display = 'none';
     document.getElementById('modalPreview').style.display = 'flex';
 }
 // =========================================================================
