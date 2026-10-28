@@ -4702,6 +4702,20 @@ function bukaPreviewKuatkuasaPerintah() {
         namaD = kes.namaDefendan.replace(/<br>.*$/g, ''); alamatD = "[ALAMAT DEFENDAN]";
     }
 
+    // Semak adakah kes berstatus Majikan sebagai Pengadu
+    let isMajikanKes = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        const inp = kes.dataBorang.inputs;
+        isMajikanKes = inp['majikan'] === true || inp['majikan'] === "true";
+    } else {
+        isMajikanKes = kes.jenisAduan === 'Majikan';
+    }
+
+    // Tentukan penerima utama surat secara tepat: 
+    // Jika Majikan pengadu -> Surat kepada Pengadu (Majikan). Jika kes biasa -> Surat kepada Defendan (Majikan).
+    let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
+    let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
+
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     
     let tarikhSuratFormatted = '';
@@ -4721,22 +4735,10 @@ function bukaPreviewKuatkuasaPerintah() {
         tarikhSuratFormatted = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
     }
 
-    // Semak adakah kes berstatus Majikan sebagai Pengadu
-    let isMajikanKes = false;
-    if (kes.dataBorang && kes.dataBorang.inputs) {
-        const inp = kes.dataBorang.inputs;
-        isMajikanKes = inp['majikan'] === true || inp['majikan'] === "true";
-    } else {
-        isMajikanKes = kes.jenisAduan === 'Majikan';
-    }
-
-    // Tentukan penerima utama surat (Jika Majikan pengadu -> Pengadu, Jika biasa -> Defendan)
-    let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
-    let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
-
     // Penjanaan blok s.k. (Salinan Kepada) secara automatik
     let senaraiSK = []; 
     if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
+        // Jika kes majikan pengadu, pihak lawan dalam s.k. ialah Defendan (Pekerja), dan sebaliknya
         let pihakLawanNama = isMajikanKes ? namaD : namaP;
         let pihakLawanAlamat = isMajikanKes ? alamatD : alamatP;
         senaraiSK.push(`<strong>${pihakLawanNama}</strong><br>${pihakLawanAlamat}`);
@@ -4911,7 +4913,6 @@ function bukaPreviewKuatkuasaPerintah() {
         tunjukSuisTandatangan(true);
     }
 
-    document.getElementById('modalPreview').style.display = 'none';
     document.getElementById('modalPreview').style.display = 'flex';
 }
 // =========================================================================
