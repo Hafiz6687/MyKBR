@@ -4688,33 +4688,44 @@ function bukaPreviewKuatkuasaPerintah() {
     let noKes = kes.noKes.split('<br>')[0].trim();
     let namaP = "", alamatP = "", namaD = "", alamatD = "";
 
+    // Semak adakah kes berstatus Majikan sebagai Pengadu (Semak lebih awal)
+    let isMajikanKes = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        const inp = kes.dataBorang.inputs;
+        isMajikanKes = inp['majikan'] === true || inp['majikan'] === "true" || inp['majikan'] === "Ya";
+    }
+    if (!isMajikanKes && kes.jenisAduan) {
+        isMajikanKes = kes.jenisAduan === 'Majikan';
+    }
+
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
         let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
 
-        namaP = inputs['namaPengadu'] || '[NAMA PENGADU]'; 
-        alamatP = arrPeng.join('<br>') || '[ALAMAT PENGADU]';
-        namaD = inputs['namaDefendan'] || '[NAMA DEFENDAN]'; 
-        alamatD = arrDef.join('<br>') || '[ALAMAT DEFENDAN]';
+        // Jika Majikan Pengadu: Pengadu adalah Majikan/Syarikat, Defendan adalah Pekerja
+        if (isMajikanKes) {
+            namaP = inputs['namaDefendan'] || inputs['namaPengadu'] || kes.namaPengadu.replace(/<br>.*$/g, '');
+            alamatP = arrDef.length > 0 ? arrDef.join('<br>') : (arrPeng.join('<br>') || '[ALAMAT PENGADU]');
+            
+            namaD = inputs['namaPengadu'] || inputs['namaDefendan'] || kes.namaDefendan.replace(/<br>.*$/g, '');
+            alamatD = arrPeng.length > 0 ? arrPeng.join('<br>') : (arrDef.join('<br>') || '[ALAMAT DEFENDAN]');
+        } else {
+            // Kes Biasa: Pengadu adalah Pekerja, Defendan adalah Majikan/Syarikat
+            namaP = inputs['namaPengadu'] || kes.namaPengadu.replace(/<br>.*$/g, ''); 
+            alamatP = arrPeng.join('<br>') || '[ALAMAT PENGADU]';
+            namaD = inputs['namaDefendan'] || kes.namaDefendan.replace(/<br>.*$/g, ''); 
+            alamatD = arrDef.join('<br>') || '[ALAMAT DEFENDAN]';
+        }
     } else {
         namaP = kes.namaPengadu.replace(/<br>.*$/g, ''); alamatP = "[ALAMAT PENGADU]";
         namaD = kes.namaDefendan.replace(/<br>.*$/g, ''); alamatD = "[ALAMAT DEFENDAN]";
     }
 
-    // Semak adakah kes berstatus Majikan sebagai Pengadu
-    let isMajikanKes = false;
-    if (kes.dataBorang && kes.dataBorang.inputs) {
-        const inp = kes.dataBorang.inputs;
-        isMajikanKes = inp['majikan'] === true || inp['majikan'] === "true";
-    } else {
-        isMajikanKes = kes.jenisAduan === 'Majikan';
-    }
-
     // Tentukan penerima utama surat secara tepat: 
-    // Jika Majikan pengadu -> Surat kepada Pengadu (Majikan). Jika kes biasa -> Surat kepada Defendan (Majikan).
-    let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
-    let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
+    // Surat Notis Kuatkuasa Perintah sentiasa dialamatkan kepada Pengadu (Pihak yang memohon penguatkuasaan)
+    let penerimaUtamaNama = namaP;
+    let penerimaUtamaAlamat = alamatP;
 
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     
