@@ -4776,11 +4776,31 @@ function bukaPreviewKuatkuasaPerintah() {
 
     let tajukSuratHtml = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KUATKUASA PERINTAH</div>`;
 
-    let isiSuratHtml = `
-        <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas.</div>
-        <div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki mematuhi serta melaksanakan terma-terma perintah yang telah ditetapkan dengan kadar segera.</div>
-        <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
-    `;
+    // ==========================================
+// KOD BAHARU PENGGANTI:
+// ==========================================
+    let isMajikanKes = false;
+    if (kes.dataBorang && kes.dataBorang.inputs) {
+        const inp = kes.dataBorang.inputs;
+        isMajikanKes = inp['majikan'] === true || inp['majikan'] === "true";
+    } else {
+        isMajikanKes = kes.jenisAduan === 'Majikan';
+    }
+
+    let isiSuratHtml = "";
+    if (isMajikanKes) {
+        isiSuratHtml = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah seksyen 69 Akta Kerja 1955 bagi kes di atas adalah berkaitan.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Sekiranya defendan gagal mematuhi perintah tersebut dan pihak tuan ingin meneruskan tindakan terhadap defendan, tuan adalah dinasihatkan untuk mengambil tindakan penguatkuasaan ke atas perintah tersebut sebagaimana seksyen 75 Akta Kerja 1955.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Oleh yang demikian, kes ini adalah dianggap selesai.</div>
+        `;
+    } else {
+        isiSuratHtml = `
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas.</div>
+            <div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki mematuhi serta melaksanakan terma-terma perintah yang telah ditetapkan dengan kadar segera.</div>
+            <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
+        `;
+    }
 
     let suratLengkap = `
         <div class="kertas-notis">
