@@ -4804,8 +4804,64 @@ function bukaPreviewKuatkuasaPerintah() {
         `;
     }
 
+    // ==========================================
+// KOD BAHARU PENGGANTI:
+// ==========================================
     let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
     let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
+
+    // Pastikan pihak sebelah sana (Defendan jika Majikan Pengadu) sentiasa masuk senarai s.k. jika kotak Defendan ditanda
+    let senaraiSK = [];
+    if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
+        let pihakLawanNama = isMajikanKes ? namaD : namaP;
+        let pihakLawanAlamat = isMajikanKes ? alamatD : alamatP;
+        senaraiSK.push(`<strong>${pihakLawanNama}</strong><br>${pihakLawanAlamat}`);
+    }
+
+    // Semak peguam / wakil pengadu atau defendan jika ditanda
+    if (kes.senaraiPerwakilan) {
+        if (senaraiPenerimaKuatkuasa.includes('Peguam Pengadu')) {
+            let wp = kes.senaraiPerwakilan.find(p => p.kategori === 'Peguam');
+            if (wp) senaraiSK.push(`<strong>${wp.firma.toUpperCase()}</strong><br>${wp.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Pengadu)</em>`);
+        }
+        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Pengadu')) {
+            let wk = kes.senaraiPerwakilan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            if (wk) senaraiSK.push(`<strong>${wk.firma.toUpperCase()}</strong><br>${wk.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Pengadu)</em>`);
+        }
+    }
+
+    if (kes.senaraiPerwakilanDefendan) {
+        if (senaraiPenerimaKuatkuasa.includes('Peguam Defendan')) {
+            let wpd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Peguam');
+            if (wpd) senaraiSK.push(`<strong>${wpd.firma.toUpperCase()}</strong><br>${wpd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Peguamcara bagi Defendan)</em>`);
+        }
+        if (senaraiPenerimaKuatkuasa.includes('Wakil Kesatuan Defendan')) {
+            let wkd = kes.senaraiPerwakilanDefendan.find(p => p.kategori === 'Wakil Kesatuan' || p.kategori === 'Kesatuan');
+            if (wkd) senaraiSK.push(`<strong>${wkd.firma.toUpperCase()}</strong><br>${wkd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Defendan)</em>`);
+        }
+    }
+
+    let skHTML = "";
+    if (senaraiSK.length > 0) {
+        skHTML = `<div class="notis-sk" style="margin-top: 25px; font-size: 10pt; page-break-inside: avoid;"><strong>s.k.:</strong><div style="margin-top: 5px; line-height: 1.4;">${senaraiSK.join('<br><br>')}</div></div>`;
+    }
+
+    // Kemaskini template footer bersama blok s.k. yang betul
+    templateFooterHTML = `
+        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
+        <div class="notis-slogan">
+            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
+        </div>
+        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
+        <div class="gambar-sign" id="tandatanganDigitalContainer" style="position: relative; z-index: 2; pointer-events: none; display: block;">
+            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
+        </div>
+        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
+            ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
+        </div>
+        ${skHTML}
+        <div class="notis-footer-line"></div>
+    `;
 
     let suratLengkap = `
         <div class="kertas-notis">
