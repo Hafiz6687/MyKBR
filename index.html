@@ -4723,10 +4723,12 @@ function bukaPreviewKuatkuasaPerintah() {
 
     // Penjanaan blok s.k. (Salinan Kepada) secara automatik
     let skHTML = "";
-    let senaraiSK = [];
-
+    let senaraiSK = []; 
     if (senaraiPenerimaKuatkuasa.includes('Defendan')) {
-        senaraiSK.push(`<strong>${namaD}</strong><br>${alamatD}`);
+        // Jika kes majikan pengadu, s.k. masukkan defendan (pekerja), dan sebaliknya
+        let pihakLawanNama = isMajikanKes ? namaD : namaP;
+        let pihakLawanAlamat = isMajikanKes ? alamatD : alamatP;
+        senaraiSK.push(`<strong>${pihakLawanNama}</strong><br>${pihakLawanAlamat}`);
     }
 
     // Semak peguam / wakil pengadu atau defendan jika ditanda
@@ -4802,12 +4804,15 @@ function bukaPreviewKuatkuasaPerintah() {
         `;
     }
 
+    let penerimaUtamaNama = isMajikanKes ? namaP : namaD;
+    let penerimaUtamaAlamat = isMajikanKes ? alamatP : alamatD;
+
     let suratLengkap = `
         <div class="kertas-notis">
             ${templateHeaderHTML}
             <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                 <div class="notis-rujukan">Rujukan Kami : ${noKes}<br>Tarikh : ${tarikhSuratFormatted}</div>
-                <div class="notis-alamat"><strong>${namaP}</strong><br>${alamatP}</div>
+                <div class="notis-alamat"><strong>${penerimaUtamaNama}</strong><br>${penerimaUtamaAlamat}</div>
                 <div style="margin-bottom: 15px;">Tuan/Puan,</div>
                 ${tajukSuratHtml}
                 <hr class="notis-garis-tajuk">
@@ -4816,7 +4821,6 @@ function bukaPreviewKuatkuasaPerintah() {
             </div>
         </div>
     `;
-
     const htmlNotisKuatkuasa = `
         <style>
             @media print { 
