@@ -15950,13 +15950,26 @@ function bukaPreviewPeringatanMOU(dataSimpanan = null) {
     const bulanMY = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
     
     let tarikhSurat = "";
-    if (dataPeringatan && dataPeringatan.tarikhNotis) {
-        let t = new Date(dataPeringatan.tarikhNotis);
-        tarikhSurat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
-    } else {
-        const tH = new Date(); 
-        tarikhSurat = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
+let targetTarikhSurat = (typeof memoDataPeringatan !== 'undefined' && memoDataPeringatan && memoDataPeringatan.tarikh) ? memoDataPeringatan.tarikh : document.getElementById('bc_tarikh')?.value;
+
+if (targetTarikhSurat) {
+    let tP = new Date(targetTarikhSurat);
+    if (!isNaN(tP.getTime())) {
+        tarikhSurat = `${tP.getDate()} ${bulanMY[tP.getMonth()]} ${tP.getFullYear()}`;
     }
+}
+
+if (!tarikhSurat && dataPeringatan && dataPeringatan.tarikhNotis) {
+    let t = new Date(dataPeringatan.tarikhNotis);
+    if (!isNaN(t.getTime())) {
+        tarikhSurat = `${t.getDate()} ${bulanMY[t.getMonth()]} ${t.getFullYear()}`;
+    }
+}
+
+if (!tarikhSurat) {
+    const tH = new Date(); 
+    tarikhSurat = `${tH.getDate()} ${bulanMY[tH.getMonth()]} ${tH.getFullYear()}`;
+}
     
     let namaPegawaiRaw = document.getElementById('namaProfilEdit') ? document.getElementById('namaProfilEdit').innerText.replace(/\n/g, ' ').trim() : 'PEGAWAI PENDENGAR';
     const namaPegawai = namaPegawaiRaw.toUpperCase();
