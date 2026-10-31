@@ -4777,52 +4777,20 @@ function bukaPreviewKuatkuasaPerintah() {
             if (wkd) senaraiSK.push(`<div class="wrapper-sk-item" style="page-break-inside: avoid; break-inside: avoid; margin-bottom: 12px;"><strong>${wkd.firma.toUpperCase()}</strong><br>${wkd.alamat.toUpperCase().replace(/,\s*/g, '<br>')}<br><em>(Kesatuan bagi Defendan)</em></div>`);
         }
     }
-
-    // =======================================================
-// FORMAT S.K. (SALINAN KEPADA)
-// DISERAGAMKAN DENGAN FORMAT SURAT LAIN
-// =======================================================
-
 let skHTML = "";
 
 if (senaraiSK.length > 0) {
     skHTML = `
-        <div class="notis-sk" style="
-            margin-top: 25px;
-            font-size: 10pt;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        ">
-            <table class="notis-sk-table" style="
-                border: none;
-                font-size: 10pt;
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed;
-            ">
-                <tr>
-                    <td style="
-                        vertical-align: top;
-                        width: 40px;
-                        border: none;
-                        padding: 0;
-                        white-space: nowrap;
-                    ">
-                        s.k:
-                    </td>
-
-                    <td style="
-                        vertical-align: top;
-                        border: none;
-                        padding: 0;
-                        text-transform: uppercase;
-                        overflow-wrap: anywhere;
-                        word-wrap: break-word;
-                        word-break: break-word;
-                    ">
-                        ${senaraiSK.join('<br><br>')}
-                    </td>
-                </tr>
+        <div class="notis-sk">
+            <table class="notis-sk-table">
+                <tbody>
+                    <tr>
+                        <td class="notis-sk-label">s.k.:</td>
+                        <td class="notis-sk-kandungan">
+                            ${senaraiSK.join('<br><br>')}
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     `;
@@ -4830,20 +4798,33 @@ if (senaraiSK.length > 0) {
     const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
     
     let templateFooterHTML = `
-        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
-        <div class="notis-slogan">
-            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
-        </div>
-        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
-        <div class="gambar-sign" id="tandatanganDigitalContainer" style="position: relative; z-index: 2; pointer-events: none; display: block;">
-            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
-        </div>
-        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
-            ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
-        </div>
-        ${skHTML}
-        <div class="notis-footer-line"></div>
-    `;
+    <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
+
+    <div class="notis-slogan">
+        " MALAYSIA MADANI "<br>
+        " BERKHIDMAT UNTUK NEGARA "<br>
+        <em>"Pekerja MADANI Kesuma Bangsa"</em>
+    </div>
+
+    <div class="notis-sign" style="margin-bottom: 5px;">
+        Saya yang menjalankan amanah,
+    </div>
+
+    <div class="gambar-sign" style="position: relative; z-index: 2; pointer-events: none;">
+        <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
+    </div>
+
+    <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
+        ${namaPegawaiFinal}<br>
+        <span style="font-weight: normal; text-transform: none;">
+            b.p Ketua Pengarah Tenaga Kerja
+        </span>
+    </div>
+
+    ${skHTML}
+
+    <div class="notis-footer-line"></div>
+`;
 
     let tajukSuratHtml = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KUATKUASA PERINTAH</div>`;
 
@@ -4878,13 +4859,12 @@ if (senaraiSK.length > 0) {
         </div>
     `;
 
-    const htmlNotisKuatkuasa = `
+const htmlNotisKuatkuasa = `
     <style>
 
-        /* ==================================================
-           FORMAT CETAKAN
-           DISELARASKAN DENGAN SURAT NOTIS LAIN
-        ================================================== */
+        /* =========================================
+           FORMAT CETAK - SAMA SEPERTI NOTIS GENERIK
+        ========================================= */
 
         @media print {
 
@@ -4915,7 +4895,6 @@ if (senaraiSK.length > 0) {
                 min-height: 297mm !important;
                 page-break-after: always;
                 position: relative !important;
-                box-sizing: border-box !important;
             }
 
             .kertas-notis:last-child {
@@ -4923,10 +4902,9 @@ if (senaraiSK.length > 0) {
             }
         }
 
-
-        /* ==================================================
-           FORMAT KERTAS A4
-        ================================================== */
+        /* =========================================
+           KERTAS SURAT
+        ========================================= */
 
         .kertas-notis {
             background: white;
@@ -4943,10 +4921,9 @@ if (senaraiSK.length > 0) {
             position: relative;
         }
 
-
-        /* ==================================================
+        /* =========================================
            LETTERHEAD
-        ================================================== */
+        ========================================= */
 
         .notis-header {
             display: flex;
@@ -5010,10 +4987,9 @@ if (senaraiSK.length > 0) {
             text-align: center;
         }
 
-
-        /* ==================================================
+        /* =========================================
            KANDUNGAN SURAT
-        ================================================== */
+        ========================================= */
 
         .notis-body-wrapper {
             padding: 0 1.23cm;
@@ -5059,10 +5035,9 @@ if (senaraiSK.length > 0) {
             width: 30px;
         }
 
-
-        /* ==================================================
+        /* =========================================
            SLOGAN DAN TANDATANGAN
-        ================================================== */
+        ========================================= */
 
         .notis-slogan {
             font-weight: bold;
@@ -5076,17 +5051,17 @@ if (senaraiSK.length > 0) {
             font-size: 10pt;
         }
 
-
-        /* ==================================================
-           S.K. (SALINAN KEPADA)
-           FORMAT YANG SAMA UNTUK PRATAYANG DAN CETAK
-        ================================================== */
+        /* =========================================
+           SALINAN KEPADA (S.K.)
+        ========================================= */
 
         .notis-sk {
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
+            margin-top: 25px;
             font-size: 10pt;
+            line-height: 1.4;
             page-break-inside: avoid;
             break-inside: avoid;
         }
@@ -5098,6 +5073,7 @@ if (senaraiSK.length > 0) {
             border-collapse: collapse;
             table-layout: fixed;
             box-sizing: border-box;
+            font-size: 10pt;
         }
 
         .notis-sk-table td {
@@ -5106,17 +5082,21 @@ if (senaraiSK.length > 0) {
             vertical-align: top;
         }
 
-        .notis-sk-table td:last-child {
+        .notis-sk-label {
+            width: 40px;
+            white-space: nowrap;
+        }
+
+        .notis-sk-kandungan {
             min-width: 0;
             overflow-wrap: anywhere;
             word-wrap: break-word;
             word-break: break-word;
         }
 
-
-        /* ==================================================
-           GARIS KAKI SURAT
-        ================================================== */
+        /* =========================================
+           GARIS BAWAH SURAT
+        ========================================= */
 
         .notis-footer-line {
             position: absolute;
@@ -5130,7 +5110,6 @@ if (senaraiSK.length > 0) {
 
     ${suratLengkap}
 `;
-
 
     document.getElementById('previewContent').innerHTML = htmlNotisKuatkuasa;
     document.getElementById('printArea').innerHTML = htmlNotisKuatkuasa;
@@ -5181,15 +5160,13 @@ if (senaraiSK.length > 0) {
     const btnBatal = document.getElementById('menuBatal'); 
     if(btnBatal) btnBatal.style.display = 'flex';
 
-    const radOFF = document.querySelector('input[name="radTandatangan"][value="OFF"]');
-    if (radOFF) {
-        radOFF.checked = true;
-        if (typeof kawalTandatanganCetak === 'function') kawalTandatanganCetak();
-    }
-    
-    if (typeof tunjukSuisTandatangan === 'function') {
-        tunjukSuisTandatangan(true);
-    }
+    const radON = document.querySelector('input[name="radTandatangan"][value="ON"]');
+
+if (radON) {
+    radON.checked = true;
+}
+
+tunjukSuisTandatangan(true);
 
     document.getElementById('modalPreview').style.display = 'flex';
 }   
