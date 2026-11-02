@@ -892,16 +892,6 @@
                     <input type="text" id="seb_pegawai" style="width: 100%; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase()">
                 </div>
 
-                <div class="form-group" style="grid-template-columns: 1fr; margin-bottom: 12px;">
-                    <label style="text-align: left;">Salinan Kepada (s.k.) / Penerima Notis Perwakilan <br><span style="font-size: 0.8em; color: var(--text-muted); font-weight: normal;">(Tanda untuk jana notis wakil / s.k.)</span></label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Peguam Pengadu"> Peguam (Pengadu)</label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Peguam Defendan"> Peguam (Defendan)</label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Wakil Kesatuan Pengadu"> Kesatuan (Pengadu)</label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;"><input type="checkbox" name="seb_penerima" value="Wakil Kesatuan Defendan"> Kesatuan (Defendan)</label>
-                    </div>
-                </div>
-
                 <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0 15px 0;">
                 <h5 style="margin-top:0; color:var(--primary-blue); font-size: 0.95em; margin-bottom: 10px;">Maklumat Sebutan</h5>
 
@@ -4433,8 +4423,7 @@ function janaSebutanDariModal() {
         return;
     }
 
-    const penerimaNode = document.querySelectorAll('input[name="seb_penerima"]:checked');
-    let senaraiPenerima = Array.from(penerimaNode).map(cb => cb.value);
+    let senaraiPenerima = [];
 
     // Simpan ke hidden inputs untuk maintain reset loops (sekiranya ditarik oleh fungsi lain)
     if(document.getElementById('mk_tarikh_sebutan')) document.getElementById('mk_tarikh_sebutan').value = tarikhSebutan;
@@ -4444,7 +4433,7 @@ function janaSebutanDariModal() {
     window.tempDataSebutan = { tarikhNotis, pegawai, tarikhSebutan, masaSebutan, isBerbeza, tempatNama, a1, a2, a3, pos, bdr, ngr, senaraiPenerima };
     
     document.getElementById('modalSebutan').style.display = 'none';
-    bukaPreviewNotisGenerik('sebutan'); 
+    bukaPreviewNotisGenerik('sebutan');
 }
 // =========================================================================
 // FUNGSI KAWALAN POP-UP SEBUTAN SEMULA
