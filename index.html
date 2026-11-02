@@ -4793,22 +4793,6 @@ function bukaPreviewKuatkuasaPerintah() {
 
     const templateHeaderHTML = '<div class="notis-header"><div class="notis-header-kiri"><div class="notis-logo"><img src="jata-negara.png" alt="Logo Jata Negara"></div><div class="notis-jabatan"><div style="font-family: Arial, sans-serif; font-size: 12pt; font-weight: bold;">PEJABAT TENAGA KERJA KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(KLUANG LABOUR OFFICE)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">(KEMENTERIAN SUMBER MANUSIA)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-style: italic; font-weight: bold;">(MINISTRY OF HUMAN RESOURCES)</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JALAN PEJABAT KERAJAAN</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">86000 KLUANG</div><div style="font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold;">JOHOR DARUL TAKZIM</div></div></div><div class="notis-hubungi"><table style="font-family: Arial, sans-serif; font-size: 8pt;"><tr><td class="kol-label">Telefon</td><td class="kol-titik">:</td><td>07-772 1646/2646</td></tr><tr><td class="kol-label">Telefax</td><td class="kol-titik">:</td><td>07-7737111</td></tr><tr><td class="kol-label">E-mel</td><td class="kol-titik">:</td><td>jtkdkluang@mohr.gov.my</td></tr><tr><td class="kol-label">Portal rasmi</td><td class="kol-titik">:</td><td>jtksm.mohr.gov.my</td></tr></table></div></div>';
     
-    let templateFooterHTML = `
-        <div class="notis-isi" style="margin-top: 15px;">Sekian, terima kasih.</div>
-        <div class="notis-slogan">
-            " MALAYSIA MADANI "<br>" BERKHIDMAT UNTUK NEGARA "<br><em>"Pekerja MADANI Kesuma Bangsa"</em>
-        </div>
-        <div class="notis-sign" style="margin-bottom: 5px;">Saya yang menjalankan amanah,</div>
-        <div class="gambar-sign" id="tandatanganDigitalContainer" style="position: relative; z-index: 2; pointer-events: none; display: block;">
-            <img src="tandatangan.png" alt="Tandatangan" style="height: 135px; width: auto; mix-blend-mode: multiply; display: block; margin-top: -25px;">
-        </div>
-        <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
-            ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
-        </div>
-        ${skHTML}
-        <div class="notis-footer-line"></div>
-    `;
-
     let tajukSuratHtml = `<div class="notis-tajuk">KETUA PENGARAH TENAGA KERJA KES SAMAN NO. ${noKes}<br>ANTARA PENGADU : ${namaP}<br>TERHADAP DEFENDAN : ${namaD}<br>PERKARA: NOTIS KUATKUASA PERINTAH</div>`;
 
     let isiSuratHtml = "";
@@ -4826,7 +4810,7 @@ function bukaPreviewKuatkuasaPerintah() {
         `;
     }
 
-    // Pembentukan Halaman 1 (Surat Utama)
+    // Pembentukan Halaman Tunggal (s.k. bersambung terus di bawah tandatangan)
     let mukasurat1 = `
         <div class="kertas-notis">
             ${templateHeaderHTML}
@@ -4848,24 +4832,13 @@ function bukaPreviewKuatkuasaPerintah() {
                 <div class="teks-nama-sign" style="font-weight: bold; text-transform: uppercase; position: relative; z-index: 1; margin-top: -40px;">
                     ${namaPegawaiFinal}<br><span style="font-weight: normal; text-transform: none;">b.p Ketua Pengarah Tenaga Kerja</span>
                 </div>
+                ${skHTML}
                 <div class="notis-footer-line"></div>
             </div>
         </div>
     `;
 
-    // Pembentukan Halaman 2 (Kertas Putih A4 Asing untuk s.k. jika wujud)
     let mukasurat2 = "";
-    if (skHTML && skHTML.trim() !== "") {
-        mukasurat2 = `
-            <div class="kertas-notis" style="margin-top: 20px;">
-                <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 1cm;">
-                    <div class="notis-rujukan" style="margin-bottom: 15px;">Rujukan Kami : ${noKes}</div>
-                    ${skHTML}
-                    <div class="notis-footer-line"></div>
-                </div>
-            </div>
-        `;
-    }
 
     const htmlNotisKuatkuasa = `
         <style>
