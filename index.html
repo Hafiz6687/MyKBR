@@ -15829,11 +15829,34 @@ function janaPeringatanBayaran() {
     const jenis = document.getElementById('jenisPeringatan').value;
 
     if (!tarikh) { alert('Sila masukkan Tarikh Notis.'); return; }
+
+    // Semak sama ada aduan semasa berstatus Majikan adalah Pengadu
+    const kesAktif = (typeof memoriSenaraiKes !== 'undefined' && indexKesSemasa >= 0) ? memoriSenaraiKes[indexKesSemasa] : null;
+    let isMajikanPengadu = false;
+    if (kesAktif) {
+        if (kesAktif.jenisAduan === 'Majikan') {
+            isMajikanPengadu = true;
+        } else if (kesAktif.dataBorang && kesAktif.dataBorang.inputs) {
+            const inp = kesAktif.dataBorang.inputs;
+            isMajikanPengadu = inp['majikan'] === true || inp['majikan'] === "true" || inp['majikan'] === "Ya";
+        }
+    }
+
+    // KHAS UNTUK MAJIKAN ADALAH PENGADU: 
+    // Sekat penjanaan lampiran muka surat berasingan (3 & 4) untuk s.k., 
+    // pastikan ia hanya dipaparkan di bawah muka surat 2.
+    if (isMajikanPengadu) {
+        // Anda boleh kawal tatasusunan penerima atau tandakan flag khas di sini
+        window.isMajikanPengaduSK = true;
+    } else {
+        window.isMajikanPengaduSK = false;
+    }
     
     // Simpan ke memori sementara
     window.tempDataPeringatan = {
         tarikhNotis: tarikh,
-        senaraiPenerima: penerima
+        senaraiPenerima: penerima,
+        isMajikanPengadu: isMajikanPengadu
     };
 
     document.getElementById('modalPeringatanBayaran').style.display = 'none';
