@@ -4776,17 +4776,17 @@ function bukaPreviewKuatkuasaPerintah() {
             // Anjakkan keseluruhan s.k. ke muka surat 2 mengikut margin standard surat
             skSambunganHTML = `
                 <div class="kertas-notis page-borang">
-                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 1.5cm;">
-                        <div style="margin-bottom: 15px; text-align: left;">
-                            <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
-                            <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
+                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 0.75cm;">
+                        <div style="margin-bottom: 8px; text-align: left; line-height: 1;">
+                            <div style="font-size: 10pt; font-weight: bold; margin-bottom: 2px; line-height: 1;">Ruj. Kami: ${noKes}</div>
+                            <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; line-height: 1;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
                         </div>
-                        <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
+                        <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 10px;"></div>
                         
-                        <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
+                        <div class="notis-sk-container" style="margin-top: 5px; font-size: 10pt; line-height: 1;">
                             <strong>s.k.:</strong>
                             ${senaraiSK.map(item => `
-                                <div class="notis-sk-item" style="margin-top: 15px; line-height: 1.4;">
+                                <div class="notis-sk-item" style="margin-top: 8px; line-height: 1;">
                                     ${item}
                                 </div>
                             `).join('')}
@@ -4804,28 +4804,28 @@ function bukaPreviewKuatkuasaPerintah() {
                 </div>`;
 
             // Baki s.k. kedua dan seterusnya ke muka surat 2 mengikut margin standard surat
-                if (senaraiSK.length > 1) {
-                    const bakiSK = senaraiSK.slice(1);
-                    skSambunganHTML = `
-                        <div class="kertas-notis page-borang">
-                            <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 1.5cm;">
-                                <div style="margin-bottom: 8px; text-align: left; line-height: 1;">
-                                    <div style="font-size: 10pt; font-weight: bold; margin-bottom: 2px; line-height: 1;">Ruj. Kami: ${noKes}</div>
-                                    <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; line-height: 1;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
-                                </div>
-                                <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 10px;"></div>
-                                
-                                <div class="notis-sk-container" style="margin-top: 5px; font-size: 10pt; line-height: 1;">
-                                    <strong>s.k. (Sambungan):</strong>
-                                    ${bakiSK.map(item => `
-                                        <div class="notis-sk-item" style="margin-top: 8px; line-height: 1;">
-                                            ${item}
-                                        </div>
-                                    `).join('')}
-                                </div>
+            if (senaraiSK.length > 1) {
+                const bakiSK = senaraiSK.slice(1);
+                skSambunganHTML = `
+                    <div class="kertas-notis page-borang">
+                        <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 0.75cm;">
+                            <div style="margin-bottom: 8px; text-align: left; line-height: 1;">
+                                <div style="font-size: 10pt; font-weight: bold; margin-bottom: 2px; line-height: 1;">Ruj. Kami: ${noKes}</div>
+                                <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; line-height: 1;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
                             </div>
-                        </div>`;
-                }
+                            <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 10px;"></div>
+                            
+                            <div class="notis-sk-container" style="margin-top: 5px; font-size: 10pt; line-height: 1;">
+                                <strong>s.k. (Sambungan):</strong>
+                                ${bakiSK.map(item => `
+                                    <div class="notis-sk-item" style="margin-top: 8px; line-height: 1;">
+                                        ${item}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
         }
     }
 
