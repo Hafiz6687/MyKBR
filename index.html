@@ -4775,12 +4775,12 @@ function bukaPreviewKuatkuasaPerintah() {
         // Jika alamat s.k. pertama terlalu panjang (> 3 baris), anjakkan semuanya ke muka surat 2
         if (barisSkPertama > 3) {
             skSambunganHTML = `
-                <div class="kertas-notis page-borang" style="padding-left: 0; padding-right: 0;">
-                    <div style="padding: 0 1.27cm; margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
+                <div class="kertas-notis page-borang">
+                    <div style="margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
                         <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
                         <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
                     </div>
-                    <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
+                    <div style="border-bottom: 1.5px solid #000; width: calc(100% + 2.54cm); margin-left: -1.27cm; margin-right: -1.27cm; margin-bottom: 20px;"></div>
                     
                     <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                         <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
@@ -4803,16 +4803,16 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
 
-            // Baki s.k. seterusnya ke muka surat 2 dengan Header Aligned Kiri & Garisan Penuh Menembusi Margin
+            // Baki s.k. seterusnya ke muka surat 2 dengan Margin Asal Terjaga & Garisan Melintas Penuh Margin
             if (senaraiSK.length > 1) {
                 const bakiSK = senaraiSK.slice(1);
                 skSambunganHTML = `
-                    <div class="kertas-notis page-borang" style="padding-left: 0; padding-right: 0;">
-                        <div style="padding: 0 1.27cm; margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
+                    <div class="kertas-notis page-borang">
+                        <div style="margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
                             <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
                             <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
                         </div>
-                        <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
+                        <div style="border-bottom: 1.5px solid #000; width: calc(100% + 2.54cm); margin-left: -1.27cm; margin-right: -1.27cm; margin-bottom: 20px;"></div>
                         
                         <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                             <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
