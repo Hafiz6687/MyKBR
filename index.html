@@ -4664,7 +4664,6 @@ function janaKuatkuasaPerintahDariModal() {
     document.getElementById('modalKuatkuasaPerintah').style.display = 'none';
     bukaPreviewKuatkuasaPerintah();
 }
-
 function bukaPreviewKuatkuasaPerintah() {
     const kes = memoriSenaraiKes[indexKesSemasa];
     if (!kes) return;
@@ -4688,7 +4687,7 @@ function bukaPreviewKuatkuasaPerintah() {
     if (kes.dataBorang && kes.dataBorang.inputs) {
         const inputs = kes.dataBorang.inputs;
         let arrDef = [inputs['alamatDefendan1'], inputs['alamatDefendan2'], inputs['alamatDefendan3'], (inputs['poskodDefendan'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriDefendan']].filter(a => a && a.trim() !== "");
-        let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarPengadu'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
+        let arrPeng = [inputs['alamatPengadu1'], inputs['alamatPengadu2'], inputs['alamatPengadu3'], (inputs['poskodPengadu'] || '') + " " + (inputs['bandarDefendan'] || ''), inputs['negeriPengadu']].filter(a => a && a.trim() !== "");
 
         // Jika Majikan Pengadu: Pengadu adalah Majikan/Syarikat, Defendan adalah Pekerja
         if (isMajikanKes) {
@@ -4770,10 +4769,12 @@ function bukaPreviewKuatkuasaPerintah() {
     let skSambunganHTML = "";
 
     if (senaraiSK.length > 0) {
+        // Semak anggaran panjang baris alamat s.k. pertama (jika lebih 5 baris/panjang, anjak ke muka surat 2)
         let barisSkPertama = senaraiSK[0].split('<br>').length;
         
-        // Jika alamat s.k. pertama terlalu panjang (> 3 baris), anjakkan semuanya ke muka surat 2
-        if (barisSkPertama > 3) {
+        // Jika s.k. pertama terlalu panjang (cth: > 5 baris) atau ada banyak senarai s.k.
+        if (barisSkPertama > 5) {
+            // Anjakkan keseluruhan s.k. ke muka surat 2 dengan Ruj. Kami, Perkara, dan Garisan Penuh Menembusi Margin
             skSambunganHTML = `
                 <div class="kertas-notis page-borang">
                     <div style="margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
@@ -4794,7 +4795,7 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
         } else {
-            // Muat 1 s.k. di muka surat 1
+            // Muat alamat s.k. pertama di muka surat 1 seperti biasa
             skUtamaHTML = `
                 <div class="notis-sk-container" style="margin-top: 20px; font-size: 10pt;">
                     <strong>s.k.:</strong>
@@ -4803,7 +4804,7 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
 
-            // Baki s.k. seterusnya ke muka surat 2 dengan Margin Asal Terjaga & Garisan Melintas Penuh Margin
+            // Baki s.k. kedua dan seterusnya ke muka surat 2 dengan Ruj. Kami, Perkara, dan Garisan Penuh Menembusi Margin
             if (senaraiSK.length > 1) {
                 const bakiSK = senaraiSK.slice(1);
                 skSambunganHTML = `
@@ -4842,7 +4843,7 @@ function bukaPreviewKuatkuasaPerintah() {
         `;
     } else {
         isiSuratHtml = `
-            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas.</div>
+            <div class="notis-isi">Dengan hormatnya merujuk kepada perkara di atas dan Perintah yang telah dikeluarkan di bawah Akta Kerja 1955 bagi kes di atas adalah berkaitan.</div>
             <div class="notis-isi">2.<span class="jarak-tab"></span>Adalah dimaklumkan bahawa pihak tuan/puan dikehendaki mematuhi serta melaksanakan terma-terma perintah yang telah ditetapkan dengan kadar segera.</div>
             <div class="notis-isi">3.<span class="jarak-tab"></span>Kegagalan pihak tuan/puan untuk mematuhi perintah ini dalam tempoh yang ditetapkan boleh menyebabkan tindakan penguatkuasaan selanjutnya diambil di mahkamah mengikut peruntukan undang-undang yang berkuat kuasa.</div>
         `;
@@ -4958,7 +4959,7 @@ function bukaPreviewKuatkuasaPerintah() {
         btnCetakKuatkuasa = document.createElement('a'); 
         btnCetakKuatkuasa.id = 'menuCetakKuatkuasa'; 
         btnCetakKuatkuasa.href = '#'; 
-        actionMenu.insertBefore(btnCetakKuatkuasa, document.getElementById('menuBatal')); 
+        actionMenu.insertBefore(btnCetakKuatkuasa, document.getElementById('modalBatal')); 
     }
     btnCetakKuatkuasa.style.display = 'flex'; 
     btnCetakKuatkuasa.style.color = 'var(--text-main)'; 
@@ -4991,6 +4992,7 @@ function bukaPreviewKuatkuasaPerintah() {
 
     document.getElementById('modalPreview').style.display = 'flex';
 }
+
 // =========================================================================
 // FUNGSI KAWALAN POP-UP BICARA
 // =========================================================================
