@@ -4765,30 +4765,24 @@ function bukaPreviewKuatkuasaPerintah() {
         }
     }
 
-    // Pembahagian s.k. (Hanya 1 alamat di Muka Surat 1, selebihnya bawa ke Muka Surat 2)
+    // Pembahagian s.k. (Kawal limpahan ke muka surat seterusnya jika menyentuh margin bawah)
     let skUtamaHTML = "";
     let skSambunganHTML = "";
 
     if (senaraiSK.length > 0) {
-        // Alamat s.k. Pertama (Muka Surat 1)
-        skUtamaHTML = `
-            <div class="notis-sk-container" style="margin-top: 20px; font-size: 10pt;">
-                <strong>s.k.:</strong>
-                <div class="notis-sk-item" style="margin-top: 5px; line-height: 1.4;">
-                    ${senaraiSK[0]}
-                </div>
-            </div>`;
-
-        // Alamat s.k. Kedua dan Seterusnya (Muka Surat 2)
-        if (senaraiSK.length > 1) {
-            const bakiSK = senaraiSK.slice(1);
+        // Semak anggaran panjang baris alamat s.k. pertama (jika lebih 3 baris/panjang, anjak ke muka surat 2)
+        let barisSkPertama = senaraiSK[0].split('<br>').length;
+        
+        // Jika s.k. pertama terlalu panjang (cth: > 3 baris) atau ada banyak senarai s.k.
+        if (barisSkPertama > 3) {
+            // Anjakkan keseluruhan s.k. ke muka surat 2
             skSambunganHTML = `
                 <div class="kertas-notis page-borang">
                     <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 2cm;">
                         <div class="notis-rujukan">No. Kes: ${noKes}</div>
                         <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
-                            <strong>s.k. (Sambungan):</strong>
-                            ${bakiSK.map(item => `
+                            <strong>s.k.:</strong>
+                            ${senaraiSK.map(item => `
                                 <div class="notis-sk-item" style="margin-top: 15px; line-height: 1.4;">
                                     ${item}
                                 </div>
@@ -4796,6 +4790,34 @@ function bukaPreviewKuatkuasaPerintah() {
                         </div>
                     </div>
                 </div>`;
+        } else {
+            // Muat alamat s.k. pertama di muka surat 1 seperti biasa
+            skUtamaHTML = `
+                <div class="notis-sk-container" style="margin-top: 20px; font-size: 10pt;">
+                    <strong>s.k.:</strong>
+                    <div class="notis-sk-item" style="margin-top: 5px; line-height: 1.4;">
+                        ${senaraiSK[0]}
+                    </div>
+                </div>`;
+
+            // Baki s.k. kedua dan seterusnya ke muka surat 2
+            if (senaraiSK.length > 1) {
+                const bakiSK = senaraiSK.slice(1);
+                skSambunganHTML = `
+                    <div class="kertas-notis page-borang">
+                        <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 2cm;">
+                            <div class="notis-rujukan">No. Kes: ${noKes}</div>
+                            <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
+                                <strong>s.k. (Sambungan):</strong>
+                                ${bakiSK.map(item => `
+                                    <div class="notis-sk-item" style="margin-top: 15px; line-height: 1.4;">
+                                        ${item}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
         }
     }
 
