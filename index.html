@@ -4800,22 +4800,22 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
 
-            // Baki s.k. kedua dan seterusnya ke muka surat 2 (Dilengkapi Header Sambungan Rasmi)
+            // Baki s.k. kedua dan seterusnya ke muka surat 2 (Dilengkapi Header Sambungan Rasmi Penuh)
             if (senaraiSK.length > 1 || barisSkPertama > 3) {
                 // Tentukan baki item s.k. yang perlu dibawa ke muka surat 2
                 const bakiSK = barisSkPertama > 3 ? senaraiSK : senaraiSK.slice(1);
                 
                 skSambunganHTML = `
-                    <div class="kertas-notis page-borang">
-                        <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 1.5cm;">
-                            <!-- HEADER SAMBUNGAN MUKA SURAT KEDUA -->
-                            <div style="margin-bottom: 15px;">
-                                <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
-                                <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
-                                <div style="border-bottom: 1.5px solid #000; width: 100%; margin-top: 5px; margin-bottom: 20px;"></div>
-                            </div>
-                            
-                            <!-- KANDUNGAN SAMBUNGAN S.K. -->
+                    <div class="kertas-notis page-borang" style="padding-left: 0; padding-right: 0;">
+                        <!-- HEADER SAMBUNGAN MUKA SURAT KEDUA (Merentang Penuh Margin Kiri & Kanan) -->
+                        <div style="padding: 0 1.27cm; margin-bottom: 15px; padding-top: 1.5cm;">
+                            <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
+                            <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 8px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
+                        </div>
+                        <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
+                        
+                        <!-- KANDUNGAN SAMBUNGAN S.K. -->
+                        <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                             <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
                                 <strong>s.k. (Sambungan):</strong>
                                 ${bakiSK.map(item => `
