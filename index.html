@@ -4696,7 +4696,7 @@ function bukaPreviewKuatkuasaPerintah() {
             alamatP = arrDef.length > 0 ? arrDef.join('<br>') : (arrPeng.join('<br>') || '[ALAMAT PENGADU]');
             
             namaD = inputs['namaPengadu'] || inputs['namaDefendan'] || kes.namaDefendan.replace(/<br>.*$/g, '');
-            alamatD = arrPeng.length > 0 ? arrPeng.join('<br>') : (arrDef.join('<br>') || '[ALAMAT DEFENDAN]');
+            alamatD = arrPeng.join('<br>') || (arrDef.join('<br>') || '[ALAMAT DEFENDAN]');
         } else {
             // Kes Biasa: Pengadu adalah Pekerja, Defendan adalah Majikan/Syarikat
             namaP = inputs['namaPengadu'] || kes.namaPengadu.replace(/<br>.*$/g, ''); 
@@ -4770,16 +4770,19 @@ function bukaPreviewKuatkuasaPerintah() {
     let skSambunganHTML = "";
 
     if (senaraiSK.length > 0) {
-        // Semak anggaran panjang baris alamat s.k. pertama (jika lebih 3 baris/panjang, anjak ke muka surat 2)
         let barisSkPertama = senaraiSK[0].split('<br>').length;
         
-        // Jika s.k. pertama terlalu panjang (cth: > 3 baris) atau ada banyak senarai s.k.
+        // Jika alamat s.k. pertama terlalu panjang (> 3 baris), anjakkan semuanya ke muka surat 2
         if (barisSkPertama > 3) {
-            // Anjakkan keseluruhan s.k. ke muka surat 2
             skSambunganHTML = `
-                <div class="kertas-notis page-borang">
-                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt; padding-top: 2cm;">
-                        <div class="notis-rujukan">No. Kes: ${noKes}</div>
+                <div class="kertas-notis page-borang" style="padding-left: 0; padding-right: 0;">
+                    <div style="padding: 0 1.27cm; margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
+                        <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
+                        <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
+                    </div>
+                    <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
+                    
+                    <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                         <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
                             <strong>s.k.:</strong>
                             ${senaraiSK.map(item => `
@@ -4791,7 +4794,7 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
         } else {
-            // Muat alamat s.k. pertama di muka surat 1 seperti biasa
+            // Muat 1 s.k. di muka surat 1
             skUtamaHTML = `
                 <div class="notis-sk-container" style="margin-top: 20px; font-size: 10pt;">
                     <strong>s.k.:</strong>
@@ -4800,21 +4803,17 @@ function bukaPreviewKuatkuasaPerintah() {
                     </div>
                 </div>`;
 
-            // Baki s.k. kedua dan seterusnya ke muka surat 2 (Header diratakan ke kiri dengan garisan penuh)
-            if (senaraiSK.length > 1 || barisSkPertama > 3) {
-                // Tentukan baki item s.k. yang perlu dibawa ke muka surat 2
-                const bakiSK = barisSkPertama > 3 ? senaraiSK : senaraiSK.slice(1);
-                
+            // Baki s.k. seterusnya ke muka surat 2 dengan Header Aligned Kiri & Garisan Penuh Menembusi Margin
+            if (senaraiSK.length > 1) {
+                const bakiSK = senaraiSK.slice(1);
                 skSambunganHTML = `
                     <div class="kertas-notis page-borang" style="padding-left: 0; padding-right: 0;">
-                        <!-- HEADER SAMBUNGAN MUKA SURAT KEDUA (Align Kiri & Garisan Penuh Menembusi Margin) -->
                         <div style="padding: 0 1.27cm; margin-bottom: 15px; padding-top: 1.5cm; text-align: left;">
                             <div style="font-size: 10pt; font-weight: bold; margin-bottom: 4px;">Ruj. Kami: ${noKes}</div>
                             <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;">PERKARA: NOTIS KUATKUASA PERINTAH</div>
                         </div>
                         <div style="border-bottom: 1.5px solid #000; width: 100%; margin-bottom: 20px;"></div>
                         
-                        <!-- KANDUNGAN SAMBUNGAN S.K. -->
                         <div class="notis-body-wrapper" style="font-family: Arial, sans-serif; font-size: 10pt;">
                             <div class="notis-sk-container" style="margin-top: 10px; font-size: 10pt;">
                                 <strong>s.k. (Sambungan):</strong>
@@ -4877,7 +4876,7 @@ function bukaPreviewKuatkuasaPerintah() {
         </div>
     `;
 
-    // Muka Surat 2 (Jika wujud s.k. melebihi 1)
+    // Muka Surat 2 (Sambungan s.k.)
     let mukasurat2 = skSambunganHTML;
 
     const htmlNotisKuatkuasa = `
